@@ -1,0 +1,877 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="_ds/modernist-5edd7b4f-fb92-43dc-aa34-0814c1b6c242/styles.css">
+<script src="_ds/modernist-5edd7b4f-fb92-43dc-aa34-0814c1b6c242/_ds_bundle.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800&display=swap">
+<style>
+:root{
+--n50:#faf9f9;--n100:#f3f2f2;--n200:#eae7e7;--n300:#d7d3d3;--n400:#bab6b6;--n500:#9b9797;--n600:#7d7979;--n700:#605d5d;--n800:#444141;--n900:#2d2b2b;--n950:#201e1d;
+--b50:#fff7f5;--b100:#fff2ef;--b200:#ffe0d9;--b300:#ffc4b8;--b400:#ff9783;--b500:#ff563c;--b600:#ec3013;--b700:#ae1800;--b800:#7c1405;--b900:#4d170e;
+--g50:#eff8f1;--g100:#d9efdd;--g200:#b4dfbd;--g300:#83c993;--g400:#4cae63;--g500:#2f9149;--g600:#22763a;--g700:#1a5c2e;--g800:#154524;--g900:#11301a;
+--w50:#fff8e8;--w100:#ffedc2;--w200:#ffdb85;--w300:#fbc23f;--w400:#e9a500;--w500:#c98a00;--w600:#a37000;--w700:#7e5600;--w800:#5d3f00;--w900:#402c00;
+--i50:#eef5fd;--i100:#d6e8fb;--i200:#aed1f6;--i300:#7bb2ee;--i400:#4390e0;--i500:#1f73c7;--i600:#145ca4;--i700:#0f4680;--i800:#0c3560;--i900:#0a2643;
+--mono:ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+body{margin:0;background:#f3f2f2;color:#201e1d;font-family:Archivo,system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+a{color:#ae1800;text-underline-offset:3px}
+a:hover{color:#7c1405}
+@keyframes skshimmer{0%{background-position:-320px 0}100%{background-position:320px 0}}
+@keyframes skspin{to{transform:rotate(360deg)}}
+@keyframes sktoast{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+</style>
+</helmet>
+
+<div style="max-width:1180px;margin:0 auto;padding:0 20px 96px">
+
+<header style="padding:56px 0 28px;border-bottom:2px solid rgba(32,30,29,.4)">
+<div style="display:flex;flex-wrap:wrap;gap:12px;align-items:baseline;justify-content:space-between">
+<div style="font:600 11px/1 var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--n700)">Reference sheet · v0.1</div>
+<div style="font:600 11px/1 var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--b700)">React · Tailwind · shadcn/ui</div>
+</div>
+<h1 style="font:800 clamp(38px,6vw,64px)/1.02 Archivo,sans-serif;letter-spacing:-.03em;margin:18px 0 10px;max-width:16ch">Skating Academy Design System</h1>
+<p style="font:400 17px/1.5 Archivo,sans-serif;max-width:62ch;margin:0 0 4px;color:var(--n800)">Mobile-first tokens and components for three audiences: academy admins on desktop, coaches on a phone rink-side with gloves on, and parents checking a skater's progress. Light mode only.</p>
+</header>
+
+<section style="padding:28px 0 8px;border-bottom:2px solid rgba(32,30,29,.4)">
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:28px">
+<div>
+<h6 style="font:600 11px/1 var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--n700);margin:0 0 10px">Decisions I made for you</h6>
+<ol style="margin:0;padding-left:18px;font:400 14px/1.6 Archivo,sans-serif;color:var(--n900)">
+<li><strong>Primary action is ink, not red.</strong> On the attendance screen red means absent and green means present. A red primary button next to those would misread, so brand red is reserved for identity, destructive actions and the absent state.</li>
+<li><strong>Corners are rounded (4–16px).</strong> A deliberate departure from the parent Modernist system's 0px radius — a sports app a parent reads in ten seconds wants softer affordances. Everything else stays Modernist: Archivo, flush-left labels, 2px section rules.</li>
+<li><strong>Minimum control height is 44px; 56px rink-side.</strong> Coach-facing controls step up a size class rather than getting their own component.</li>
+</ol>
+</div>
+<div>
+<h6 style="font:600 11px/1 var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--n700);margin:0 0 10px">Open questions for you</h6>
+<ol style="margin:0;padding-left:18px;font:400 14px/1.6 Archivo,sans-serif;color:var(--n900)">
+<li>Does the academy have existing brand colors this should defer to? The palette currently inherits the attached design system's red.</li>
+<li>Is Archivo acceptable on Android and iOS, or do you want a system-font fallback path for the native shells?</li>
+<li>Should parents and coaches share one component set, or do you want a separate coach-only "rink" size scale documented as its own variant?</li>
+</ol>
+</div>
+</div>
+</section>
+
+<section style="padding:44px 0 8px;border-bottom:2px solid rgba(32,30,29,.4)">
+<div style="display:flex;align-items:baseline;gap:14px;margin-bottom:22px">
+<span style="font:800 13px/1 var(--mono);color:var(--b600)">01</span>
+<h2 style="font:800 30px/1.05 Archivo,sans-serif;letter-spacing:-.02em;margin:0">Color</h2>
+</div>
+
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:24px;margin-bottom:32px">
+<div>
+<div style="font:600 11px/1 var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--n700);margin-bottom:8px">Primary — ink</div>
+<div style="display:flex;height:72px;border:1px solid var(--n300)">
+<div style="flex:1;background:var(--n950)"></div><div style="flex:1;background:var(--n900)"></div><div style="flex:1;background:var(--n800)"></div><div style="flex:1;background:var(--n700)"></div>
+</div>
+<p style="font:400 13px/1.5 Archivo,sans-serif;color:var(--n800);margin:8px 0 0">Primary buttons, headings, icons. <code style="font:500 12px var(--mono)">ink-950</code> on <code style="font:500 12px var(--mono)">n100</code> is 14.8:1 — readable in direct sunlight.</p>
+</div>
+<div>
+<div style="font:600 11px/1 var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--n700);margin-bottom:8px">Secondary — brand red</div>
+<div style="display:flex;height:72px;border:1px solid var(--n300)">
+<div style="flex:1;background:var(--b400)"></div><div style="flex:1;background:var(--b500)"></div><div style="flex:1;background:var(--b600)"></div><div style="flex:1;background:var(--b700)"></div>
+</div>
+<p style="font:400 13px/1.5 Archivo,sans-serif;color:var(--n800);margin:8px 0 0">Identity, key CTA, destructive, absent. Use <code style="font:500 12px var(--mono)">brand-700</code> for body-size red text (4.9:1); <code style="font:500 12px var(--mono)">brand-600</code> only at 20px+ or as a fill.</p>
+</div>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:2px;margin-bottom:28px">
+<div style="display:grid;grid-template-columns:120px 1fr;gap:16px;align-items:center;font:600 11px/1 var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--n600);padding-bottom:6px">
+<span>Ramp</span>
+<div style="display:grid;grid-template-columns:repeat(10,1fr);gap:2px"><span>50</span><span>100</span><span>200</span><span>300</span><span>400</span><span>500</span><span>600</span><span>700</span><span>800</span><span>900</span></div>
+</div>
+
+<div style="display:grid;grid-template-columns:120px 1fr;gap:16px;align-items:center;padding:6px 0;border-top:1px solid var(--n300)">
+<span style="font:700 13px/1.2 Archivo,sans-serif">neutral</span>
+<div style="display:grid;grid-template-columns:repeat(10,1fr);gap:2px;height:44px">
+<div style="background:var(--n50)"></div><div style="background:var(--n100)"></div><div style="background:var(--n200)"></div><div style="background:var(--n300)"></div><div style="background:var(--n400)"></div><div style="background:var(--n500)"></div><div style="background:var(--n600)"></div><div style="background:var(--n700)"></div><div style="background:var(--n800)"></div><div style="background:var(--n900)"></div>
+</div>
+</div>
+<div style="display:grid;grid-template-columns:120px 1fr;gap:16px;align-items:center;padding:6px 0;border-top:1px solid var(--n300)">
+<span style="font:700 13px/1.2 Archivo,sans-serif">brand <span style="font:400 11px var(--mono);color:var(--n600)">/ danger</span></span>
+<div style="display:grid;grid-template-columns:repeat(10,1fr);gap:2px;height:44px">
+<div style="background:var(--b50)"></div><div style="background:var(--b100)"></div><div style="background:var(--b200)"></div><div style="background:var(--b300)"></div><div style="background:var(--b400)"></div><div style="background:var(--b500)"></div><div style="background:var(--b600)"></div><div style="background:var(--b700)"></div><div style="background:var(--b800)"></div><div style="background:var(--b900)"></div>
+</div>
+</div>
+<div style="display:grid;grid-template-columns:120px 1fr;gap:16px;align-items:center;padding:6px 0;border-top:1px solid var(--n300)">
+<span style="font:700 13px/1.2 Archivo,sans-serif">success</span>
+<div style="display:grid;grid-template-columns:repeat(10,1fr);gap:2px;height:44px">
+<div style="background:var(--g50)"></div><div style="background:var(--g100)"></div><div style="background:var(--g200)"></div><div style="background:var(--g300)"></div><div style="background:var(--g400)"></div><div style="background:var(--g500)"></div><div style="background:var(--g600)"></div><div style="background:var(--g700)"></div><div style="background:var(--g800)"></div><div style="background:var(--g900)"></div>
+</div>
+</div>
+<div style="display:grid;grid-template-columns:120px 1fr;gap:16px;align-items:center;padding:6px 0;border-top:1px solid var(--n300)">
+<span style="font:700 13px/1.2 Archivo,sans-serif">warning</span>
+<div style="display:grid;grid-template-columns:repeat(10,1fr);gap:2px;height:44px">
+<div style="background:var(--w50)"></div><div style="background:var(--w100)"></div><div style="background:var(--w200)"></div><div style="background:var(--w300)"></div><div style="background:var(--w400)"></div><div style="background:var(--w500)"></div><div style="background:var(--w600)"></div><div style="background:var(--w700)"></div><div style="background:var(--w800)"></div><div style="background:var(--w900)"></div>
+</div>
+</div>
+<div style="display:grid;grid-template-columns:120px 1fr;gap:16px;align-items:center;padding:6px 0;border-top:1px solid var(--n300);border-bottom:1px solid var(--n300)">
+<span style="font:700 13px/1.2 Archivo,sans-serif">info</span>
+<div style="display:grid;grid-template-columns:repeat(10,1fr);gap:2px;height:44px">
+<div style="background:var(--i50)"></div><div style="background:var(--i100)"></div><div style="background:var(--i200)"></div><div style="background:var(--i300)"></div><div style="background:var(--i400)"></div><div style="background:var(--i500)"></div><div style="background:var(--i600)"></div><div style="background:var(--i700)"></div><div style="background:var(--i800)"></div><div style="background:var(--i900)"></div>
+</div>
+</div>
+</div>
+
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-bottom:28px">
+<div style="background:var(--g50);border:1px solid var(--g200);border-radius:8px;padding:14px">
+<div style="font:700 14px/1.2 Archivo,sans-serif;color:var(--g800)">Success</div>
+<p style="font:400 13px/1.5 Archivo,sans-serif;color:var(--g900);margin:6px 0 0">Present, paid, passed. Fill <code style="font:500 12px var(--mono)">success-600</code>, text <code style="font:500 12px var(--mono)">success-800</code>.</p>
+</div>
+<div style="background:var(--w50);border:1px solid var(--w200);border-radius:8px;padding:14px">
+<div style="font:700 14px/1.2 Archivo,sans-serif;color:var(--w800)">Warning</div>
+<p style="font:400 13px/1.5 Archivo,sans-serif;color:var(--w900);margin:6px 0 0">Late, expiring waiver, low session credit. Never white text on amber — use <code style="font:500 12px var(--mono)">warning-900</code>.</p>
+</div>
+<div style="background:var(--b50);border:1px solid var(--b200);border-radius:8px;padding:14px">
+<div style="font:700 14px/1.2 Archivo,sans-serif;color:var(--b800)">Danger</div>
+<p style="font:400 13px/1.5 Archivo,sans-serif;color:var(--b900);margin:6px 0 0">Absent, unpaid, delete. Shares the brand ramp — always pair with an icon or word, never color alone.</p>
+</div>
+<div style="background:var(--i50);border:1px solid var(--i200);border-radius:8px;padding:14px">
+<div style="font:700 14px/1.2 Archivo,sans-serif;color:var(--i800)">Info</div>
+<p style="font:400 13px/1.5 Archivo,sans-serif;color:var(--i900);margin:6px 0 0">Schedule changes, tips, neutral notices. Also the rink/ice accent in charts.</p>
+</div>
+</div>
+
+<sc-if value="{{ showCode }}" hint-placeholder-val="{{ true }}">
+<div style="margin-bottom:8px">
+<div style="font:600 11px/1 var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--n700);margin-bottom:8px">tailwind.config.js — colors</div>
+<pre style="margin:0;background:var(--n950);color:var(--n100);padding:18px;border-radius:8px;overflow:auto;font:400 12.5px/1.65 var(--mono)">{{ codeColors }}</pre>
+</div>
+</sc-if>
+</section>
+
+<section style="padding:44px 0 8px;border-bottom:2px solid rgba(32,30,29,.4)">
+<div style="display:flex;align-items:baseline;gap:14px;margin-bottom:22px">
+<span style="font:800 13px/1 var(--mono);color:var(--b600)">02</span>
+<h2 style="font:800 30px/1.05 Archivo,sans-serif;letter-spacing:-.02em;margin:0">Typography</h2>
+</div>
+<p style="font:400 15px/1.55 Archivo,sans-serif;color:var(--n800);max-width:64ch;margin:0 0 24px">One family, Archivo — a grotesque wide enough to read at a glance and neutral enough for a parent to trust. Sizes are mobile values; the <code style="font:500 13px var(--mono)">md:</code> column is the desktop admin step-up.</p>
+
+<div style="border-top:1px solid var(--n300)">
+<div style="display:grid;grid-template-columns:minmax(0,1fr) 200px;gap:20px;align-items:baseline;padding:16px 0;border-bottom:1px solid var(--n300)">
+<div style="font:800 30px/1.1 Archivo,sans-serif;letter-spacing:-.02em">Spring Showcase</div>
+<div style="font:400 12px/1.5 var(--mono);color:var(--n700)">h1 · 30/33 · 800 · -0.02em<br>md: 40/42</div>
+</div>
+<div style="display:grid;grid-template-columns:minmax(0,1fr) 200px;gap:20px;align-items:baseline;padding:16px 0;border-bottom:1px solid var(--n300)">
+<div style="font:800 24px/1.15 Archivo,sans-serif;letter-spacing:-.015em">Learn-to-Skate Level 3</div>
+<div style="font:400 12px/1.5 var(--mono);color:var(--n700)">h2 · 24/28 · 800 · -0.015em<br>md: 30/34</div>
+</div>
+<div style="display:grid;grid-template-columns:minmax(0,1fr) 200px;gap:20px;align-items:baseline;padding:16px 0;border-bottom:1px solid var(--n300)">
+<div style="font:700 20px/1.25 Archivo,sans-serif;letter-spacing:-.01em">Tuesday, 4:30 PM</div>
+<div style="font:400 12px/1.5 var(--mono);color:var(--n700)">h3 · 20/25 · 700 · -0.01em</div>
+</div>
+<div style="display:grid;grid-template-columns:minmax(0,1fr) 200px;gap:20px;align-items:baseline;padding:16px 0;border-bottom:1px solid var(--n300)">
+<div style="font:700 17px/1.3 Archivo,sans-serif">Coach Nadia Petrov</div>
+<div style="font:400 12px/1.5 var(--mono);color:var(--n700)">h4 · 17/22 · 700</div>
+</div>
+<div style="display:grid;grid-template-columns:minmax(0,1fr) 200px;gap:20px;align-items:baseline;padding:16px 0;border-bottom:1px solid var(--n300)">
+<div style="font:400 16px/1.55 Archivo,sans-serif;max-width:52ch">Body. Mila landed her first clean waltz jump this week and is ready to start work on the salchow. Attendance is 11 of 12 sessions.</div>
+<div style="font:400 12px/1.5 var(--mono);color:var(--n700)">body · 16/25 · 400<br>never below 16 on mobile</div>
+</div>
+<div style="display:grid;grid-template-columns:minmax(0,1fr) 200px;gap:20px;align-items:baseline;padding:16px 0;border-bottom:1px solid var(--n300)">
+<div style="font:400 14px/1.5 Archivo,sans-serif;color:var(--n800);max-width:52ch">Small. Secondary detail inside cards and table rows — session notes, timestamps, coach initials.</div>
+<div style="font:400 12px/1.5 var(--mono);color:var(--n700)">small · 14/21 · 400</div>
+</div>
+<div style="display:grid;grid-template-columns:minmax(0,1fr) 200px;gap:20px;align-items:baseline;padding:16px 0;border-bottom:1px solid var(--n300)">
+<div style="font:600 12px/1.4 Archivo,sans-serif;letter-spacing:.1em;text-transform:uppercase;color:var(--n700)">Caption · Group A · Rink 2</div>
+<div style="font:400 12px/1.5 var(--mono);color:var(--n700)">caption · 12/17 · 600 · 0.1em · uppercase</div>
+</div>
+</div>
+
+<sc-if value="{{ showCode }}" hint-placeholder-val="{{ true }}">
+<div style="margin:24px 0 8px">
+<div style="font:600 11px/1 var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--n700);margin-bottom:8px">tailwind.config.js — type</div>
+<pre style="margin:0;background:var(--n950);color:var(--n100);padding:18px;border-radius:8px;overflow:auto;font:400 12.5px/1.65 var(--mono)">{{ codeType }}</pre>
+</div>
+</sc-if>
+</section>
+
+<section style="padding:44px 0 8px;border-bottom:2px solid rgba(32,30,29,.4)">
+<div style="display:flex;align-items:baseline;gap:14px;margin-bottom:22px">
+<span style="font:800 13px/1 var(--mono);color:var(--b600)">03</span>
+<h2 style="font:800 30px/1.05 Archivo,sans-serif;letter-spacing:-.02em;margin:0">Spacing, radius, elevation</h2>
+</div>
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:32px">
+<div>
+<div style="font:600 11px/1 var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--n700);margin-bottom:12px">Spacing — 4px base, Tailwind default steps</div>
+<div style="display:flex;flex-direction:column;gap:6px">
+<div style="display:flex;align-items:center;gap:12px"><span style="width:52px;font:500 12px var(--mono);color:var(--n700)">1 · 4</span><div style="height:12px;width:4px;background:var(--b600)"></div></div>
+<div style="display:flex;align-items:center;gap:12px"><span style="width:52px;font:500 12px var(--mono);color:var(--n700)">2 · 8</span><div style="height:12px;width:8px;background:var(--b600)"></div></div>
+<div style="display:flex;align-items:center;gap:12px"><span style="width:52px;font:500 12px var(--mono);color:var(--n700)">3 · 12</span><div style="height:12px;width:12px;background:var(--b600)"></div></div>
+<div style="display:flex;align-items:center;gap:12px"><span style="width:52px;font:500 12px var(--mono);color:var(--n700)">4 · 16</span><div style="height:12px;width:16px;background:var(--b600)"></div></div>
+<div style="display:flex;align-items:center;gap:12px"><span style="width:52px;font:500 12px var(--mono);color:var(--n700)">5 · 20</span><div style="height:12px;width:20px;background:var(--b600)"></div></div>
+<div style="display:flex;align-items:center;gap:12px"><span style="width:52px;font:500 12px var(--mono);color:var(--n700)">6 · 24</span><div style="height:12px;width:24px;background:var(--b600)"></div></div>
+<div style="display:flex;align-items:center;gap:12px"><span style="width:52px;font:500 12px var(--mono);color:var(--n700)">8 · 32</span><div style="height:12px;width:32px;background:var(--b600)"></div></div>
+<div style="display:flex;align-items:center;gap:12px"><span style="width:52px;font:500 12px var(--mono);color:var(--n700)">10 · 40</span><div style="height:12px;width:40px;background:var(--b600)"></div></div>
+<div style="display:flex;align-items:center;gap:12px"><span style="width:52px;font:500 12px var(--mono);color:var(--n700)">12 · 48</span><div style="height:12px;width:48px;background:var(--b600)"></div></div>
+<div style="display:flex;align-items:center;gap:12px"><span style="width:52px;font:500 12px var(--mono);color:var(--n700)">16 · 64</span><div style="height:12px;width:64px;background:var(--b600)"></div></div>
+</div>
+<p style="font:400 13px/1.55 Archivo,sans-serif;color:var(--n800);margin:14px 0 0">Screen gutter 16 on mobile, 24 on tablet, 32 in the admin shell. Card padding 16. Vertical rhythm between card groups 24.</p>
+</div>
+<div>
+<div style="font:600 11px/1 var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--n700);margin-bottom:12px">Radius</div>
+<div style="display:flex;flex-wrap:wrap;gap:12px">
+<div><div style="width:76px;height:56px;background:var(--n200);border:1px solid var(--n400);border-radius:4px"></div><div style="font:500 11px var(--mono);color:var(--n700);margin-top:6px">sm · 4</div></div>
+<div><div style="width:76px;height:56px;background:var(--n200);border:1px solid var(--n400);border-radius:6px"></div><div style="font:500 11px var(--mono);color:var(--n700);margin-top:6px">DEFAULT · 6</div></div>
+<div><div style="width:76px;height:56px;background:var(--n200);border:1px solid var(--n400);border-radius:8px"></div><div style="font:500 11px var(--mono);color:var(--n700);margin-top:6px">md · 8</div></div>
+<div><div style="width:76px;height:56px;background:var(--n200);border:1px solid var(--n400);border-radius:12px"></div><div style="font:500 11px var(--mono);color:var(--n700);margin-top:6px">lg · 12</div></div>
+<div><div style="width:76px;height:56px;background:var(--n200);border:1px solid var(--n400);border-radius:16px"></div><div style="font:500 11px var(--mono);color:var(--n700);margin-top:6px">xl · 16</div></div>
+<div><div style="width:76px;height:56px;background:var(--n200);border:1px solid var(--n400);border-radius:999px"></div><div style="font:500 11px var(--mono);color:var(--n700);margin-top:6px">full</div></div>
+</div>
+<p style="font:400 13px/1.55 Archivo,sans-serif;color:var(--n800);margin:14px 0 18px">Buttons and inputs <strong>md</strong>. Cards and sheets <strong>lg</strong>. Modal <strong>xl</strong>. Badges and avatars <strong>full</strong>.</p>
+<div style="font:600 11px/1 var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--n700);margin-bottom:12px">Elevation</div>
+<div style="display:flex;flex-wrap:wrap;gap:16px">
+<div><div style="width:96px;height:56px;background:#fff;border-radius:8px;box-shadow:0 1px 2px rgba(45,43,43,.14)"></div><div style="font:500 11px var(--mono);color:var(--n700);margin-top:8px">sm · cards</div></div>
+<div><div style="width:96px;height:56px;background:#fff;border-radius:8px;box-shadow:0 3px 10px rgba(45,43,43,.16)"></div><div style="font:500 11px var(--mono);color:var(--n700);margin-top:8px">md · nav, toast</div></div>
+<div><div style="width:96px;height:56px;background:#fff;border-radius:8px;box-shadow:0 12px 32px rgba(45,43,43,.22)"></div><div style="font:500 11px var(--mono);color:var(--n700);margin-top:8px">lg · modal</div></div>
+</div>
+</div>
+</div>
+<sc-if value="{{ showCode }}" hint-placeholder-val="{{ true }}">
+<div style="margin:28px 0 8px">
+<pre style="margin:0;background:var(--n950);color:var(--n100);padding:18px;border-radius:8px;overflow:auto;font:400 12.5px/1.65 var(--mono)">{{ codeSpace }}</pre>
+</div>
+</sc-if>
+</section>
+
+<section style="padding:44px 0 8px;border-bottom:2px solid rgba(32,30,29,.4)">
+<div style="display:flex;align-items:baseline;gap:14px;margin-bottom:8px">
+<span style="font:800 13px/1 var(--mono);color:var(--b600)">04</span>
+<h2 style="font:800 30px/1.05 Archivo,sans-serif;letter-spacing:-.02em;margin:0">Components</h2>
+</div>
+<p style="font:400 15px/1.55 Archivo,sans-serif;color:var(--n800);max-width:64ch;margin:0 0 28px">Each maps to a shadcn primitive; the shadcn name is noted per component. States are rendered statically so you can compare them side by side — the live examples below each grid respond to real interaction.</p>
+
+<div style="font:700 20px/1.2 Archivo,sans-serif;margin:0 0 4px">Button <span style="font:400 12px var(--mono);color:var(--n600)">shadcn/ui Button — variant + size</span></div>
+<div style="overflow-x:auto;margin:16px 0 20px">
+<div style="min-width:720px;display:grid;grid-template-columns:120px repeat(5,1fr);gap:12px;align-items:center">
+<span></span>
+<span style="font:600 11px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--n600)">Default</span>
+<span style="font:600 11px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--n600)">Hover</span>
+<span style="font:600 11px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--n600)">Focus</span>
+<span style="font:600 11px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--n600)">Disabled</span>
+<span style="font:600 11px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--n600)">Loading</span>
+
+<span style="font:700 13px Archivo,sans-serif">default</span>
+<div style="height:44px;display:flex;align-items:center;justify-content:flex-start;padding:0 16px;background:var(--n950);color:#fff;border-radius:8px;font:700 15px Archivo,sans-serif">Save</div>
+<div style="height:44px;display:flex;align-items:center;padding:0 16px;background:var(--n800);color:#fff;border-radius:8px;font:700 15px Archivo,sans-serif">Save</div>
+<div style="height:44px;display:flex;align-items:center;padding:0 16px;background:var(--n950);color:#fff;border-radius:8px;font:700 15px Archivo,sans-serif;outline:2px solid var(--b600);outline-offset:2px">Save</div>
+<div style="height:44px;display:flex;align-items:center;padding:0 16px;background:var(--n950);color:#fff;border-radius:8px;font:700 15px Archivo,sans-serif;opacity:.45">Save</div>
+<div style="height:44px;display:flex;align-items:center;gap:8px;padding:0 16px;background:var(--n950);color:#fff;border-radius:8px;font:700 15px Archivo,sans-serif">{{ spinnerLight }}<span>Saving</span></div>
+
+<span style="font:700 13px Archivo,sans-serif">brand</span>
+<div style="height:44px;display:flex;align-items:center;padding:0 16px;background:var(--b600);color:#fff;border-radius:8px;font:700 15px Archivo,sans-serif">Book session</div>
+<div style="height:44px;display:flex;align-items:center;padding:0 16px;background:var(--b700);color:#fff;border-radius:8px;font:700 15px Archivo,sans-serif">Book session</div>
+<div style="height:44px;display:flex;align-items:center;padding:0 16px;background:var(--b600);color:#fff;border-radius:8px;font:700 15px Archivo,sans-serif;outline:2px solid var(--n950);outline-offset:2px">Book session</div>
+<div style="height:44px;display:flex;align-items:center;padding:0 16px;background:var(--b600);color:#fff;border-radius:8px;font:700 15px Archivo,sans-serif;opacity:.45">Book session</div>
+<div style="height:44px;display:flex;align-items:center;gap:8px;padding:0 16px;background:var(--b600);color:#fff;border-radius:8px;font:700 15px Archivo,sans-serif">{{ spinnerLight }}<span>Booking</span></div>
+
+<span style="font:700 13px Archivo,sans-serif">outline</span>
+<div style="height:44px;display:flex;align-items:center;padding:0 16px;background:#fff;color:var(--n950);border:1.5px solid var(--n400);border-radius:8px;font:700 15px Archivo,sans-serif">Reschedule</div>
+<div style="height:44px;display:flex;align-items:center;padding:0 16px;background:var(--n100);color:var(--n950);border:1.5px solid var(--n600);border-radius:8px;font:700 15px Archivo,sans-serif">Reschedule</div>
+<div style="height:44px;display:flex;align-items:center;padding:0 16px;background:#fff;color:var(--n950);border:1.5px solid var(--n400);border-radius:8px;font:700 15px Archivo,sans-serif;outline:2px solid var(--b600);outline-offset:2px">Reschedule</div>
+<div style="height:44px;display:flex;align-items:center;padding:0 16px;background:#fff;color:var(--n950);border:1.5px solid var(--n400);border-radius:8px;font:700 15px Archivo,sans-serif;opacity:.45">Reschedule</div>
+<div style="height:44px;display:flex;align-items:center;gap:8px;padding:0 16px;background:#fff;color:var(--n950);border:1.5px solid var(--n400);border-radius:8px;font:700 15px Archivo,sans-serif">{{ spinnerDark }}<span>Working</span></div>
+
+<span style="font:700 13px Archivo,sans-serif">ghost</span>
+<div style="height:44px;display:flex;align-items:center;padding:0 12px;color:var(--n950);border-radius:8px;font:700 15px Archivo,sans-serif">Skip</div>
+<div style="height:44px;display:flex;align-items:center;padding:0 12px;color:var(--n950);background:var(--n200);border-radius:8px;font:700 15px Archivo,sans-serif">Skip</div>
+<div style="height:44px;display:flex;align-items:center;padding:0 12px;color:var(--n950);border-radius:8px;font:700 15px Archivo,sans-serif;outline:2px solid var(--b600);outline-offset:2px">Skip</div>
+<div style="height:44px;display:flex;align-items:center;padding:0 12px;color:var(--n950);border-radius:8px;font:700 15px Archivo,sans-serif;opacity:.45">Skip</div>
+<div style="height:44px;display:flex;align-items:center;gap:8px;padding:0 12px;color:var(--n950);border-radius:8px;font:700 15px Archivo,sans-serif">{{ spinnerDark }}<span>Skip</span></div>
+
+<span style="font:700 13px Archivo,sans-serif">destructive</span>
+<div style="height:44px;display:flex;align-items:center;padding:0 16px;background:#fff;color:var(--b700);border:1.5px solid var(--b300);border-radius:8px;font:700 15px Archivo,sans-serif">Remove skater</div>
+<div style="height:44px;display:flex;align-items:center;padding:0 16px;background:var(--b100);color:var(--b800);border:1.5px solid var(--b400);border-radius:8px;font:700 15px Archivo,sans-serif">Remove skater</div>
+<div style="height:44px;display:flex;align-items:center;padding:0 16px;background:#fff;color:var(--b700);border:1.5px solid var(--b300);border-radius:8px;font:700 15px Archivo,sans-serif;outline:2px solid var(--b700);outline-offset:2px">Remove skater</div>
+<div style="height:44px;display:flex;align-items:center;padding:0 16px;background:#fff;color:var(--b700);border:1.5px solid var(--b300);border-radius:8px;font:700 15px Archivo,sans-serif;opacity:.45">Remove skater</div>
+<div style="height:44px;display:flex;align-items:center;gap:8px;padding:0 16px;background:#fff;color:var(--b700);border:1.5px solid var(--b300);border-radius:8px;font:700 15px Archivo,sans-serif">{{ spinnerBrand }}<span>Removing</span></div>
+</div>
+</div>
+<div style="display:flex;flex-wrap:wrap;gap:16px;align-items:flex-end;padding:16px;background:#fff;border:1px solid var(--n300);border-radius:12px;margin-bottom:12px">
+<div>
+<div style="font:600 11px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--n600);margin-bottom:8px">Live — tap it</div>
+<button type="button" onClick="{{ fakeSave }}" style="height:44px;min-width:150px;display:inline-flex;align-items:center;gap:8px;padding:0 16px;background:var(--n950);color:#fff;border:0;border-radius:8px;font:700 15px Archivo,sans-serif;cursor:pointer" style-hover="background:var(--n800)" style-active="background:var(--n900)">{{ saveLabelNode }}</button>
+</div>
+<div>
+<div style="font:600 11px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--n600);margin-bottom:8px">Sizes</div>
+<div style="display:flex;flex-wrap:wrap;gap:10px;align-items:center">
+<div style="height:36px;display:flex;align-items:center;padding:0 12px;background:var(--n200);border-radius:8px;font:700 13px Archivo,sans-serif">sm 36 · desktop only</div>
+<div style="height:44px;display:flex;align-items:center;padding:0 16px;background:var(--n200);border-radius:8px;font:700 15px Archivo,sans-serif">md 44 · mobile default</div>
+<div style="height:56px;display:flex;align-items:center;padding:0 20px;background:var(--n200);border-radius:8px;font:700 17px Archivo,sans-serif">lg 56 · rink-side</div>
+</div>
+</div>
+</div>
+
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:28px;margin-top:36px">
+<div>
+<div style="font:700 20px/1.2 Archivo,sans-serif;margin:0 0 14px">Input <span style="font:400 12px var(--mono);color:var(--n600)">shadcn Input + Label</span></div>
+<div style="display:flex;flex-direction:column;gap:14px">
+<div><div style="font:600 13px Archivo,sans-serif;margin-bottom:6px">Skater name</div><div style="height:48px;display:flex;align-items:center;padding:0 14px;background:#fff;border:1.5px solid var(--n400);border-radius:8px;font:400 16px Archivo,sans-serif;color:var(--n500)">Default — placeholder</div></div>
+<div><div style="font:600 13px Archivo,sans-serif;margin-bottom:6px">Skater name</div><div style="height:48px;display:flex;align-items:center;padding:0 14px;background:#fff;border:1.5px solid var(--n950);border-radius:8px;font:400 16px Archivo,sans-serif">Hover</div></div>
+<div><div style="font:600 13px Archivo,sans-serif;margin-bottom:6px">Skater name</div><div style="height:48px;display:flex;align-items:center;padding:0 14px;background:#fff;border:1.5px solid var(--n950);border-radius:8px;font:400 16px Archivo,sans-serif;outline:2px solid var(--b600);outline-offset:2px">Focus<span style="width:1.5px;height:20px;background:var(--n950);margin-left:1px"></span></div></div>
+<div><div style="font:600 13px Archivo,sans-serif;margin-bottom:6px;color:var(--n500)">Skater name</div><div style="height:48px;display:flex;align-items:center;padding:0 14px;background:var(--n100);border:1.5px solid var(--n300);border-radius:8px;font:400 16px Archivo,sans-serif;color:var(--n500)">Disabled</div></div>
+<div><div style="font:600 13px Archivo,sans-serif;margin-bottom:6px;color:var(--b800)">Skater name</div><div style="height:48px;display:flex;align-items:center;padding:0 14px;background:#fff;border:1.5px solid var(--b600);border-radius:8px;font:400 16px Archivo,sans-serif">Mila</div><div style="font:400 13px Archivo,sans-serif;color:var(--b800);margin-top:5px">Error — a last name is required.</div></div>
+<div><div style="font:600 13px Archivo,sans-serif;margin-bottom:6px">Live field</div><input type="text" value="{{ fieldValue }}" onChange="{{ onField }}" placeholder="Type here" style="width:100%;height:48px;padding:0 14px;background:#fff;border:1.5px solid var(--n400);border-radius:8px;font:400 16px Archivo,sans-serif;color:var(--n950);outline-offset:2px" style-focus="border-color:#201e1d;outline:2px solid #ec3013"></div>
+</div>
+</div>
+<div>
+<div style="font:700 20px/1.2 Archivo,sans-serif;margin:0 0 14px">Select <span style="font:400 12px var(--mono);color:var(--n600)">shadcn Select</span></div>
+<div style="display:flex;flex-direction:column;gap:14px">
+<div><div style="font:600 13px Archivo,sans-serif;margin-bottom:6px">Group</div><div style="height:48px;display:flex;align-items:center;justify-content:space-between;padding:0 14px;background:#fff;border:1.5px solid var(--n400);border-radius:8px;font:400 16px Archivo,sans-serif;color:var(--n500)"><span>Select a group</span>{{ chevron }}</div></div>
+<div><div style="font:600 13px Archivo,sans-serif;margin-bottom:6px">Group</div><div style="height:48px;display:flex;align-items:center;justify-content:space-between;padding:0 14px;background:#fff;border:1.5px solid var(--n950);border-radius:8px;font:400 16px Archivo,sans-serif"><span>Learn-to-Skate 3</span>{{ chevron }}</div></div>
+<div>
+<div style="font:600 13px Archivo,sans-serif;margin-bottom:6px">Open</div>
+<div style="height:48px;display:flex;align-items:center;justify-content:space-between;padding:0 14px;background:#fff;border:1.5px solid var(--n950);border-radius:8px;font:400 16px Archivo,sans-serif;outline:2px solid var(--b600);outline-offset:2px"><span>Learn-to-Skate 3</span>{{ chevron }}</div>
+<div style="margin-top:6px;background:#fff;border:1px solid var(--n300);border-radius:8px;box-shadow:0 3px 10px rgba(45,43,43,.16);overflow:hidden">
+<div style="height:48px;display:flex;align-items:center;padding:0 14px;font:400 16px Archivo,sans-serif;border-bottom:1px solid var(--n200)">Learn-to-Skate 1</div>
+<div style="height:48px;display:flex;align-items:center;justify-content:space-between;padding:0 14px;font:600 16px Archivo,sans-serif;background:var(--n100);border-bottom:1px solid var(--n200)"><span>Learn-to-Skate 3</span><span style="color:var(--b600)">✓</span></div>
+<div style="height:48px;display:flex;align-items:center;padding:0 14px;font:400 16px Archivo,sans-serif;color:var(--n500)">Freestyle A — full</div>
+</div>
+</div>
+<div><div style="font:600 13px Archivo,sans-serif;margin-bottom:6px;color:var(--n500)">Group</div><div style="height:48px;display:flex;align-items:center;justify-content:space-between;padding:0 14px;background:var(--n100);border:1.5px solid var(--n300);border-radius:8px;font:400 16px Archivo,sans-serif;color:var(--n500)"><span>Disabled</span>{{ chevron }}</div></div>
+</div>
+</div>
+</div>
+
+<div style="margin-top:40px">
+<div style="font:700 20px/1.2 Archivo,sans-serif;margin:0 0 14px">Card <span style="font:400 12px var(--mono);color:var(--n600)">shadcn Card — the app's main content unit</span></div>
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px">
+<div style="background:#fff;border:1px solid var(--n300);border-radius:12px;padding:16px;box-shadow:0 1px 2px rgba(45,43,43,.14)">
+<div style="font:600 12px Archivo,sans-serif;letter-spacing:.1em;text-transform:uppercase;color:var(--n600);margin-bottom:8px">Default</div>
+<div style="font:700 17px/1.3 Archivo,sans-serif">Tue · Learn-to-Skate 3</div>
+<div style="font:400 14px/1.5 Archivo,sans-serif;color:var(--n700);margin-top:4px">4:30–5:15 PM · Rink 2 · Coach Nadia</div>
+<div style="display:flex;gap:8px;margin-top:12px"><span style="font:700 12px Archivo,sans-serif;padding:4px 10px;border-radius:999px;background:var(--g100);color:var(--g800)">12 enrolled</span></div>
+</div>
+<div style="background:#fff;border:1px solid var(--n600);border-radius:12px;padding:16px;box-shadow:0 3px 10px rgba(45,43,43,.16)">
+<div style="font:600 12px Archivo,sans-serif;letter-spacing:.1em;text-transform:uppercase;color:var(--n600);margin-bottom:8px">Hover / pressable</div>
+<div style="font:700 17px/1.3 Archivo,sans-serif">Tue · Learn-to-Skate 3</div>
+<div style="font:400 14px/1.5 Archivo,sans-serif;color:var(--n700);margin-top:4px">Border darkens, shadow steps to md. No lift, no scale.</div>
+</div>
+<div style="background:#fff;border:1px solid var(--n300);border-radius:12px;padding:16px;box-shadow:0 1px 2px rgba(45,43,43,.14);outline:2px solid var(--b600);outline-offset:2px">
+<div style="font:600 12px Archivo,sans-serif;letter-spacing:.1em;text-transform:uppercase;color:var(--n600);margin-bottom:8px">Focus</div>
+<div style="font:700 17px/1.3 Archivo,sans-serif">Tue · Learn-to-Skate 3</div>
+<div style="font:400 14px/1.5 Archivo,sans-serif;color:var(--n700);margin-top:4px">2px brand ring, 2px offset — the same ring everywhere.</div>
+</div>
+<div style="background:var(--n100);border:1px solid var(--n300);border-radius:12px;padding:16px;opacity:.6">
+<div style="font:600 12px Archivo,sans-serif;letter-spacing:.1em;text-transform:uppercase;color:var(--n600);margin-bottom:8px">Disabled / cancelled</div>
+<div style="font:700 17px/1.3 Archivo,sans-serif;text-decoration:line-through">Tue · Learn-to-Skate 3</div>
+<div style="font:400 14px/1.5 Archivo,sans-serif;color:var(--n700);margin-top:4px">Ice maintenance — no session.</div>
+</div>
+</div>
+</div>
+
+<div style="margin-top:40px">
+<div style="font:700 20px/1.2 Archivo,sans-serif;margin:0 0 14px">Badge <span style="font:400 12px var(--mono);color:var(--n600)">shadcn Badge — status vocabulary</span></div>
+<div style="display:flex;flex-wrap:wrap;gap:10px;align-items:center">
+<span style="font:700 13px Archivo,sans-serif;padding:6px 12px;border-radius:999px;background:var(--g600);color:#fff">Present</span>
+<span style="font:700 13px Archivo,sans-serif;padding:6px 12px;border-radius:999px;background:var(--b600);color:#fff">Absent</span>
+<span style="font:700 13px Archivo,sans-serif;padding:6px 12px;border-radius:999px;background:var(--w200);color:var(--w900)">Late</span>
+<span style="font:700 13px Archivo,sans-serif;padding:6px 12px;border-radius:999px;background:var(--i100);color:var(--i800)">Rescheduled</span>
+<span style="font:700 13px Archivo,sans-serif;padding:6px 12px;border-radius:999px;background:var(--n200);color:var(--n900)">Level 3</span>
+<span style="font:700 13px Archivo,sans-serif;padding:6px 12px;border-radius:999px;background:#fff;border:1.5px solid var(--n400);color:var(--n900)">Waitlist</span>
+<span style="font:700 13px Archivo,sans-serif;padding:6px 12px;border-radius:999px;background:var(--n950);color:#fff">Paid</span>
+<span style="font:700 13px Archivo,sans-serif;padding:6px 12px;border-radius:999px;background:var(--n200);color:var(--n600);opacity:.6">Archived</span>
+</div>
+<p style="font:400 13px/1.55 Archivo,sans-serif;color:var(--n800);margin:12px 0 0;max-width:64ch">Badges are not interactive — no hover or focus state. If a status can be changed, it is a button or a select, not a badge.</p>
+</div>
+
+<div style="margin-top:40px">
+<div style="font:700 20px/1.2 Archivo,sans-serif;margin:0 0 14px">Table row <span style="font:400 12px var(--mono);color:var(--n600)">shadcn Table — desktop admin; stacks to cards under 768px</span></div>
+<div style="overflow-x:auto;background:#fff;border:1px solid var(--n300);border-radius:12px">
+<div style="min-width:640px">
+<div style="display:grid;grid-template-columns:2fr 1.4fr 1fr 1fr 88px;gap:16px;padding:12px 16px;background:var(--n100);border-bottom:2px solid var(--n400);font:600 12px Archivo,sans-serif;letter-spacing:.08em;text-transform:uppercase;color:var(--n700)">
+<span>Skater</span><span>Group</span><span>Attendance</span><span>Fees</span><span>State</span>
+</div>
+<div style="display:grid;grid-template-columns:2fr 1.4fr 1fr 1fr 88px;gap:16px;padding:14px 16px;border-bottom:1px solid var(--n200);align-items:center;font:400 15px Archivo,sans-serif;min-height:56px">
+<span style="font-weight:600">Mila Okonkwo</span><span>Learn-to-Skate 3</span><span>11 / 12</span><span style="color:var(--g700);font-weight:600">Paid</span><span style="font:500 12px var(--mono);color:var(--n600)">default</span>
+</div>
+<div style="display:grid;grid-template-columns:2fr 1.4fr 1fr 1fr 88px;gap:16px;padding:14px 16px;border-bottom:1px solid var(--n200);align-items:center;font:400 15px Archivo,sans-serif;background:var(--n100);min-height:56px">
+<span style="font-weight:600">Jonas Bergström</span><span>Freestyle A</span><span>9 / 12</span><span style="color:var(--w800);font-weight:600">Due</span><span style="font:500 12px var(--mono);color:var(--n600)">hover</span>
+</div>
+<div style="display:grid;grid-template-columns:2fr 1.4fr 1fr 1fr 88px;gap:16px;padding:14px 16px;border-bottom:1px solid var(--n200);align-items:center;font:400 15px Archivo,sans-serif;background:var(--b50);box-shadow:inset 3px 0 0 var(--b600);min-height:56px">
+<span style="font-weight:600">Priya Raman</span><span>Freestyle A</span><span>4 / 12</span><span style="color:var(--b800);font-weight:600">Overdue</span><span style="font:500 12px var(--mono);color:var(--n600)">flagged</span>
+</div>
+<div style="display:grid;grid-template-columns:2fr 1.4fr 1fr 1fr 88px;gap:16px;padding:14px 16px;border-bottom:1px solid var(--n200);align-items:center;font:400 15px Archivo,sans-serif;outline:2px solid var(--b600);outline-offset:-2px;min-height:56px">
+<span style="font-weight:600">Theo Lindqvist</span><span>Learn-to-Skate 1</span><span>12 / 12</span><span style="color:var(--g700);font-weight:600">Paid</span><span style="font:500 12px var(--mono);color:var(--n600)">focus</span>
+</div>
+<div style="display:grid;grid-template-columns:2fr 1.4fr 1fr 1fr 88px;gap:16px;padding:14px 16px;align-items:center;font:400 15px Archivo,sans-serif;opacity:.45;min-height:56px">
+<span style="font-weight:600">Ada Silva</span><span>—</span><span>—</span><span>—</span><span style="font:500 12px var(--mono);color:var(--n600)">disabled</span>
+</div>
+<div style="display:grid;grid-template-columns:2fr 1.4fr 1fr 1fr 88px;gap:16px;padding:14px 16px;align-items:center;border-top:1px solid var(--n200);min-height:56px">
+<div style="height:16px;border-radius:4px;background:var(--n200)"></div><div style="height:16px;border-radius:4px;background:var(--n200)"></div><div style="height:16px;border-radius:4px;background:var(--n200)"></div><div style="height:16px;border-radius:4px;background:var(--n200)"></div><span style="font:500 12px var(--mono);color:var(--n600)">loading</span>
+</div>
+</div>
+</div>
+</div>
+
+<div style="margin-top:40px">
+<div style="font:700 20px/1.2 Archivo,sans-serif;margin:0 0 14px">Tabs <span style="font:400 12px var(--mono);color:var(--n600)">shadcn Tabs — live</span></div>
+<div style="background:#fff;border:1px solid var(--n300);border-radius:12px;overflow:hidden;max-width:560px">
+<div style="display:flex;border-bottom:2px solid var(--n300)">
+<button type="button" onClick="{{ tabTo0 }}" style="{{ tab0Style }}" style-hover="background:#f3f2f2">Attendance</button>
+<button type="button" onClick="{{ tabTo1 }}" style="{{ tab1Style }}" style-hover="background:#f3f2f2">Progress</button>
+<button type="button" onClick="{{ tabTo2 }}" style="{{ tab2Style }}" style-hover="background:#f3f2f2">Fees</button>
+<div style="flex:1;min-width:0;height:48px;display:flex;align-items:center;padding:0 16px;font:700 15px Archivo,sans-serif;color:var(--n400);cursor:not-allowed">Reports</div>
+</div>
+<div style="padding:18px 16px;font:400 15px/1.55 Archivo,sans-serif;color:var(--n800);min-height:96px">{{ tabBody }}</div>
+</div>
+<p style="font:400 13px/1.55 Archivo,sans-serif;color:var(--n800);margin:12px 0 0;max-width:64ch">Active tab: 2px ink underline and 700 weight. Never rely on color alone. Four tabs maximum on mobile; beyond that use a select.</p>
+</div>
+
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:28px;margin-top:40px">
+<div>
+<div style="font:700 20px/1.2 Archivo,sans-serif;margin:0 0 14px">Modal <span style="font:400 12px var(--mono);color:var(--n600)">shadcn Dialog · Sheet on mobile</span></div>
+<div style="position:relative;height:300px;border-radius:12px;overflow:hidden;background:var(--n200);border:1px solid var(--n300)">
+<div style="position:absolute;inset:0;background:rgba(32,30,29,.55)"></div>
+<div style="position:absolute;left:16px;right:16px;bottom:0;background:#fff;border-radius:16px 16px 0 0;padding:20px 18px 18px;box-shadow:0 12px 32px rgba(45,43,43,.22)">
+<div style="width:44px;height:4px;border-radius:999px;background:var(--n300);margin:0 0 14px"></div>
+<div style="font:800 22px/1.2 Archivo,sans-serif;letter-spacing:-.015em">Cancel Tuesday's session?</div>
+<p style="font:400 15px/1.5 Archivo,sans-serif;color:var(--n800);margin:8px 0 18px">All 12 parents will be notified and credits returned automatically.</p>
+<div style="display:flex;gap:10px">
+<div style="flex:1;height:48px;display:flex;align-items:center;justify-content:center;background:var(--b600);color:#fff;border-radius:8px;font:700 15px Archivo,sans-serif">Cancel session</div>
+<div style="flex:1;height:48px;display:flex;align-items:center;justify-content:center;background:#fff;border:1.5px solid var(--n400);border-radius:8px;font:700 15px Archivo,sans-serif">Keep it</div>
+</div>
+</div>
+</div>
+<p style="font:400 13px/1.55 Archivo,sans-serif;color:var(--n800);margin:12px 0 0">Bottom sheet under 768px (thumb reach, drag handle, 16px side inset); centered dialog at 480px wide on desktop. Backdrop ink at 55%. Destructive confirm is left so it sits under the thumb, and its label names the action.</p>
+<button type="button" onClick="{{ openModal }}" style="margin-top:12px;height:44px;padding:0 16px;background:#fff;border:1.5px solid var(--n400);border-radius:8px;font:700 15px Archivo,sans-serif;cursor:pointer" style-hover="background:#f3f2f2;border-color:#7d7979">Open live dialog</button>
+</div>
+<div>
+<div style="font:700 20px/1.2 Archivo,sans-serif;margin:0 0 14px">Toast <span style="font:400 12px var(--mono);color:var(--n600)">shadcn Sonner</span></div>
+<div style="display:flex;flex-direction:column;gap:10px">
+<div style="display:flex;gap:12px;align-items:flex-start;background:var(--n950);color:#fff;border-radius:12px;padding:14px 16px;box-shadow:0 3px 10px rgba(45,43,43,.16)">
+<span style="width:20px;height:20px;border-radius:999px;background:var(--g400);flex:none;margin-top:2px"></span>
+<div style="flex:1;min-width:0"><div style="font:700 15px Archivo,sans-serif">Attendance saved</div><div style="font:400 14px/1.45 Archivo,sans-serif;color:var(--n300)">11 present · 1 absent</div></div>
+<span style="font:700 14px Archivo,sans-serif;color:var(--n300)">Undo</span>
+</div>
+<div style="display:flex;gap:12px;align-items:flex-start;background:var(--n950);color:#fff;border-radius:12px;padding:14px 16px;box-shadow:0 3px 10px rgba(45,43,43,.16)">
+<span style="width:20px;height:20px;border-radius:999px;background:var(--w300);flex:none;margin-top:2px"></span>
+<div style="flex:1;min-width:0"><div style="font:700 15px Archivo,sans-serif">Offline — saved on this device</div><div style="font:400 14px/1.45 Archivo,sans-serif;color:var(--n300)">Will sync when you leave the rink.</div></div>
+</div>
+<div style="display:flex;gap:12px;align-items:flex-start;background:var(--n950);color:#fff;border-radius:12px;padding:14px 16px;box-shadow:0 3px 10px rgba(45,43,43,.16)">
+<span style="width:20px;height:20px;border-radius:999px;background:var(--b500);flex:none;margin-top:2px"></span>
+<div style="flex:1;min-width:0"><div style="font:700 15px Archivo,sans-serif">Couldn't send the invoice</div><div style="font:400 14px/1.45 Archivo,sans-serif;color:var(--n300)">Check the parent's email address.</div></div>
+<span style="font:700 14px Archivo,sans-serif;color:var(--b300)">Retry</span>
+</div>
+</div>
+<p style="font:400 13px/1.55 Archivo,sans-serif;color:var(--n800);margin:12px 0 0">Ink-filled so it stays legible over any screen in sunlight. Bottom, 12px above the nav bar; 4s, 6s with an action. One at a time.</p>
+<button type="button" onClick="{{ fireToast }}" style="margin-top:12px;height:44px;padding:0 16px;background:#fff;border:1.5px solid var(--n400);border-radius:8px;font:700 15px Archivo,sans-serif;cursor:pointer" style-hover="background:#f3f2f2;border-color:#7d7979">Fire a toast</button>
+</div>
+</div>
+</section>
+
+<section style="padding:44px 0 8px;border-bottom:2px solid rgba(32,30,29,.4)">
+<div style="display:flex;align-items:baseline;gap:14px;margin-bottom:22px">
+<span style="font:800 13px/1 var(--mono);color:var(--b600)">05</span>
+<h2 style="font:800 30px/1.05 Archivo,sans-serif;letter-spacing:-.02em;margin:0">Empty states and skeletons</h2>
+</div>
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:24px">
+<div style="background:#fff;border:1px solid var(--n300);border-radius:12px;padding:32px 20px;text-align:left">
+<div style="width:56px;height:56px;border-radius:12px;background:var(--n100);border:1.5px dashed var(--n400);margin-bottom:16px"></div>
+<div style="font:700 19px/1.25 Archivo,sans-serif">No sessions today</div>
+<p style="font:400 15px/1.5 Archivo,sans-serif;color:var(--n700);margin:6px 0 16px;max-width:36ch">Your next session is Thursday at 4:30 PM with Learn-to-Skate 3.</p>
+<div style="height:44px;display:inline-flex;align-items:center;padding:0 16px;background:var(--n950);color:#fff;border-radius:8px;font:700 15px Archivo,sans-serif">See the week</div>
+<div style="font:500 11px var(--mono);color:var(--n600);margin-top:14px">EMPTY · nothing yet, no problem</div>
+</div>
+<div style="background:#fff;border:1px solid var(--n300);border-radius:12px;padding:32px 20px">
+<div style="width:56px;height:56px;border-radius:12px;background:var(--b50);border:1.5px solid var(--b200);margin-bottom:16px"></div>
+<div style="font:700 19px/1.25 Archivo,sans-serif">Couldn't load the roster</div>
+<p style="font:400 15px/1.5 Archivo,sans-serif;color:var(--n700);margin:6px 0 16px;max-width:36ch">The rink's wifi drops a lot. Your last saved roster is still available offline.</p>
+<div style="display:flex;gap:10px;flex-wrap:wrap">
+<div style="height:44px;display:inline-flex;align-items:center;padding:0 16px;background:var(--n950);color:#fff;border-radius:8px;font:700 15px Archivo,sans-serif">Try again</div>
+<div style="height:44px;display:inline-flex;align-items:center;padding:0 16px;background:#fff;border:1.5px solid var(--n400);border-radius:8px;font:700 15px Archivo,sans-serif">Use offline copy</div>
+</div>
+<div style="font:500 11px var(--mono);color:var(--n600);margin-top:14px">ERROR · say what happened, offer a way out</div>
+</div>
+<div style="background:#fff;border:1px solid var(--n300);border-radius:12px;padding:20px">
+<div style="font:500 11px var(--mono);color:var(--n600);margin-bottom:14px">SKELETON · card list</div>
+<div style="display:flex;flex-direction:column;gap:14px">
+<div style="display:flex;gap:12px;align-items:center">
+<div style="width:44px;height:44px;border-radius:999px;flex:none;background:linear-gradient(90deg,#eae7e7 0%,#f8f4f4 40%,#eae7e7 80%);background-size:320px 100%;animation:skshimmer 1.4s linear infinite"></div>
+<div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:8px">
+<div style="height:14px;width:62%;border-radius:4px;background:linear-gradient(90deg,#eae7e7 0%,#f8f4f4 40%,#eae7e7 80%);background-size:320px 100%;animation:skshimmer 1.4s linear infinite"></div>
+<div style="height:12px;width:38%;border-radius:4px;background:linear-gradient(90deg,#eae7e7 0%,#f8f4f4 40%,#eae7e7 80%);background-size:320px 100%;animation:skshimmer 1.4s linear infinite"></div>
+</div>
+</div>
+<div style="display:flex;gap:12px;align-items:center">
+<div style="width:44px;height:44px;border-radius:999px;flex:none;background:linear-gradient(90deg,#eae7e7 0%,#f8f4f4 40%,#eae7e7 80%);background-size:320px 100%;animation:skshimmer 1.4s linear infinite"></div>
+<div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:8px">
+<div style="height:14px;width:52%;border-radius:4px;background:linear-gradient(90deg,#eae7e7 0%,#f8f4f4 40%,#eae7e7 80%);background-size:320px 100%;animation:skshimmer 1.4s linear infinite"></div>
+<div style="height:12px;width:44%;border-radius:4px;background:linear-gradient(90deg,#eae7e7 0%,#f8f4f4 40%,#eae7e7 80%);background-size:320px 100%;animation:skshimmer 1.4s linear infinite"></div>
+</div>
+</div>
+<div style="display:flex;gap:12px;align-items:center">
+<div style="width:44px;height:44px;border-radius:999px;flex:none;background:linear-gradient(90deg,#eae7e7 0%,#f8f4f4 40%,#eae7e7 80%);background-size:320px 100%;animation:skshimmer 1.4s linear infinite"></div>
+<div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:8px">
+<div style="height:14px;width:70%;border-radius:4px;background:linear-gradient(90deg,#eae7e7 0%,#f8f4f4 40%,#eae7e7 80%);background-size:320px 100%;animation:skshimmer 1.4s linear infinite"></div>
+<div style="height:12px;width:30%;border-radius:4px;background:linear-gradient(90deg,#eae7e7 0%,#f8f4f4 40%,#eae7e7 80%);background-size:320px 100%;animation:skshimmer 1.4s linear infinite"></div>
+</div>
+</div>
+</div>
+<p style="font:400 13px/1.5 Archivo,sans-serif;color:var(--n800);margin:14px 0 0">Skeletons mirror the real layout at <code style="font:500 12px var(--mono)">neutral-200</code> with a 1.4s shimmer. Show them only after 300ms, and never more than five rows. No spinners for page loads — spinners are for buttons.</p>
+</div>
+</div>
+</section>
+
+<section style="padding:44px 0 8px;border-bottom:2px solid rgba(32,30,29,.4)">
+<div style="display:flex;align-items:baseline;gap:14px;margin-bottom:22px">
+<span style="font:800 13px/1 var(--mono);color:var(--b600)">06</span>
+<h2 style="font:800 30px/1.05 Archivo,sans-serif;letter-spacing:-.02em;margin:0">Navigation</h2>
+</div>
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:28px">
+<div>
+<div style="font:600 11px var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--n700);margin-bottom:12px">Bottom nav — coach & parent, ≤768px</div>
+<div style="max-width:380px;background:#fff;border:1px solid var(--n300);border-radius:12px;overflow:hidden;box-shadow:0 1px 2px rgba(45,43,43,.14)">
+<div style="height:120px;background:var(--n100);display:flex;align-items:flex-end;padding:14px;font:400 13px Archivo,sans-serif;color:var(--n600)">content area</div>
+<div style="display:grid;grid-template-columns:repeat(4,1fr);border-top:2px solid var(--n300);box-shadow:0 -3px 10px rgba(45,43,43,.08)">
+<div style="height:64px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;background:var(--n100);box-shadow:inset 0 3px 0 var(--n950)">
+<span style="width:22px;height:22px;border-radius:6px;background:var(--n950)"></span>
+<sc-if value="{{ navLabels }}" hint-placeholder-val="{{ true }}"><span style="font:700 11px Archivo,sans-serif;color:var(--n950)">Today</span></sc-if>
+</div>
+<div style="height:64px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px">
+<span style="width:22px;height:22px;border-radius:6px;border:2px solid var(--n600)"></span>
+<sc-if value="{{ navLabels }}" hint-placeholder-val="{{ true }}"><span style="font:500 11px Archivo,sans-serif;color:var(--n700)">Roster</span></sc-if>
+</div>
+<div style="height:64px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;position:relative">
+<span style="width:22px;height:22px;border-radius:6px;border:2px solid var(--n600)"></span>
+<span style="position:absolute;top:10px;right:24px;min-width:18px;height:18px;border-radius:999px;background:var(--b600);color:#fff;font:700 11px/18px Archivo,sans-serif;text-align:center;padding:0 4px">3</span>
+<sc-if value="{{ navLabels }}" hint-placeholder-val="{{ true }}"><span style="font:500 11px Archivo,sans-serif;color:var(--n700)">Messages</span></sc-if>
+</div>
+<div style="height:64px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px">
+<span style="width:22px;height:22px;border-radius:6px;border:2px solid var(--n600)"></span>
+<sc-if value="{{ navLabels }}" hint-placeholder-val="{{ true }}"><span style="font:500 11px Archivo,sans-serif;color:var(--n700)">More</span></sc-if>
+</div>
+</div>
+<div style="height:20px;display:flex;align-items:center;justify-content:center"><span style="width:120px;height:4px;border-radius:999px;background:var(--n300)"></span></div>
+</div>
+<p style="font:400 13px/1.55 Archivo,sans-serif;color:var(--n800);margin:12px 0 0">64px tall plus the safe-area inset, four items maximum, each a full-height tap target. Active state is an ink top bar plus 700 weight, so it survives sunlight and colour-blindness. Icon-only is available for a coach mode that wants bigger targets.</p>
+</div>
+<div>
+<div style="font:600 11px var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--n700);margin-bottom:12px">Sidebar — admin, ≥1024px</div>
+<div style="display:flex;background:#fff;border:1px solid var(--n300);border-radius:12px;overflow:hidden;box-shadow:0 1px 2px rgba(45,43,43,.14)">
+<div style="width:216px;flex:none;background:var(--n950);padding:18px 12px;display:flex;flex-direction:column;gap:2px">
+<div style="font:800 15px Archivo,sans-serif;color:#fff;padding:0 10px 16px;letter-spacing:-.01em">Northgate<span style="color:var(--b500)">.</span></div>
+<div style="height:44px;display:flex;align-items:center;gap:10px;padding:0 10px;border-radius:8px;background:#fff;color:var(--n950);font:700 14px Archivo,sans-serif"><span style="width:18px;height:18px;border-radius:5px;background:var(--n950)"></span>Dashboard</div>
+<div style="height:44px;display:flex;align-items:center;gap:10px;padding:0 10px;border-radius:8px;color:var(--n300);font:500 14px Archivo,sans-serif"><span style="width:18px;height:18px;border-radius:5px;border:2px solid var(--n500)"></span>Skaters</div>
+<div style="height:44px;display:flex;align-items:center;gap:10px;padding:0 10px;border-radius:8px;color:#fff;background:rgba(255,255,255,.1);font:500 14px Archivo,sans-serif"><span style="width:18px;height:18px;border-radius:5px;border:2px solid var(--n400)"></span>Schedule <span style="font:500 11px var(--mono);color:var(--n500);margin-left:auto">hover</span></div>
+<div style="height:44px;display:flex;align-items:center;gap:10px;padding:0 10px;border-radius:8px;color:var(--n300);font:500 14px Archivo,sans-serif"><span style="width:18px;height:18px;border-radius:5px;border:2px solid var(--n500)"></span>Coaches</div>
+<div style="height:44px;display:flex;align-items:center;gap:10px;padding:0 10px;border-radius:8px;color:var(--n300);font:500 14px Archivo,sans-serif"><span style="width:18px;height:18px;border-radius:5px;border:2px solid var(--n500)"></span>Billing<span style="margin-left:auto;min-width:18px;height:18px;border-radius:999px;background:var(--b600);color:#fff;font:700 11px/18px Archivo,sans-serif;text-align:center;padding:0 4px">7</span></div>
+<div style="height:44px;display:flex;align-items:center;gap:10px;padding:0 10px;border-radius:8px;color:var(--n500);font:500 14px Archivo,sans-serif;opacity:.6"><span style="width:18px;height:18px;border-radius:5px;border:2px solid var(--n600)"></span>Reports</div>
+<div style="margin-top:auto;padding-top:16px;border-top:1px solid rgba(255,255,255,.16);display:flex;align-items:center;gap:10px">
+<span style="width:32px;height:32px;border-radius:999px;background:var(--n700)"></span>
+<div style="min-width:0"><div style="font:700 13px Archivo,sans-serif;color:#fff">R. Haldorsen</div><div style="font:400 11px Archivo,sans-serif;color:var(--n400)">Academy admin</div></div>
+</div>
+</div>
+<div style="flex:1;min-width:0;padding:18px;background:var(--n100)">
+<div style="font:800 22px/1.15 Archivo,sans-serif;letter-spacing:-.015em">Today</div>
+<div style="font:400 14px Archivo,sans-serif;color:var(--n700);margin-top:2px">6 sessions · 74 skaters</div>
+<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:14px">
+<div style="background:#fff;border:1px solid var(--n300);border-radius:8px;padding:12px"><div style="font:800 24px Archivo,sans-serif">92%</div><div style="font:500 12px Archivo,sans-serif;color:var(--n700)">Attendance</div></div>
+<div style="background:#fff;border:1px solid var(--n300);border-radius:8px;padding:12px"><div style="font:800 24px Archivo,sans-serif;color:var(--b700)">7</div><div style="font:500 12px Archivo,sans-serif;color:var(--n700)">Fees overdue</div></div>
+</div>
+</div>
+</div>
+<p style="font:400 13px/1.55 Archivo,sans-serif;color:var(--n800);margin:12px 0 0">216px fixed, ink ground so the content area stays the brightest thing on screen. Active item is a white pill; hover is 10% white. Collapses to a 64px icon rail at 1024px and to the bottom nav below 768px.</p>
+</div>
+</div>
+</section>
+
+<section style="padding:44px 0 8px;border-bottom:2px solid rgba(32,30,29,.4)">
+<div style="display:flex;align-items:baseline;gap:14px;margin-bottom:8px">
+<span style="font:800 13px/1 var(--mono);color:var(--b600)">07</span>
+<h2 style="font:800 30px/1.05 Archivo,sans-serif;letter-spacing:-.02em;margin:0">Rink-side rules</h2>
+</div>
+<p style="font:400 15px/1.55 Archivo,sans-serif;color:var(--n800);max-width:64ch;margin:0 0 24px">Gloves, one hand, low winter sun off the ice. These override any other preference in the system.</p>
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:24px;margin-bottom:28px">
+<div>
+<div style="font:600 11px var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--n700);margin-bottom:12px">Attendance row — 72px, whole row is the target</div>
+<div style="max-width:400px;background:#fff;border:1px solid var(--n300);border-radius:12px;overflow:hidden">{{ attendanceRows }}</div>
+<p style="font:400 13px/1.55 Archivo,sans-serif;color:var(--n800);margin:12px 0 0">Tap the row to cycle present → absent → late → unset. Two 56px buttons per row, no gap smaller than 8px, and the state is carried by fill, label and position — never colour alone.</p>
+</div>
+<div>
+<div style="font:600 11px var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--n700);margin-bottom:12px">Non-negotiables</div>
+<ol style="margin:0;padding-left:18px;font:400 14px/1.7 Archivo,sans-serif">
+<li>Every tap target ≥44×44px; coach-facing primary actions ≥56px.</li>
+<li>Body text never below 16px on mobile; no text on a photo without an ink scrim.</li>
+<li>Text contrast ≥4.5:1 against its own background — that rules out <code style="font:500 12px var(--mono)">neutral-500</code> on white for anything but decoration.</li>
+<li>Interactive borders are 1.5px, not hairlines: 1px vanishes in glare.</li>
+<li>No colour-only state. Attendance, fees and level all carry a word or icon.</li>
+<li>Nothing important in the top 88px — that's out of one-handed thumb reach.</li>
+<li>Destructive actions confirm; everything else offers Undo in a toast instead.</li>
+<li>Every write works offline and reconciles later; show the offline toast, not a blocking error.</li>
+</ol>
+</div>
+</div>
+<sc-if value="{{ showCode }}" hint-placeholder-val="{{ true }}">
+<div style="margin-bottom:8px">
+<div style="font:600 11px/1 var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--n700);margin-bottom:8px">shadcn tokens — globals.css</div>
+<pre style="margin:0;background:var(--n950);color:var(--n100);padding:18px;border-radius:8px;overflow:auto;font:400 12.5px/1.65 var(--mono)">{{ codeShadcn }}</pre>
+</div>
+</sc-if>
+</section>
+
+<footer style="padding:32px 0 0;display:flex;flex-wrap:wrap;gap:16px;justify-content:space-between;align-items:baseline">
+<p style="font:400 14px/1.55 Archivo,sans-serif;color:var(--n700);max-width:56ch;margin:0">Next, pick a screen to pressure-test the system: the coach attendance flow is the one most likely to break these rules, and the parent progress view is the one that has to earn trust.</p>
+<span style="font:600 11px var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--n600)">End of sheet</span>
+</footer>
+
+<sc-if value="{{ modalOpen }}">
+<div style="position:fixed;inset:0;z-index:50;display:flex;align-items:flex-end;justify-content:center;background:rgba(32,30,29,.55)" onClick="{{ closeModal }}">
+<div style="width:100%;max-width:480px;background:#fff;border-radius:16px 16px 0 0;padding:20px 18px 24px;box-shadow:0 12px 32px rgba(45,43,43,.22);animation:sktoast .18s ease-out">
+<div style="width:44px;height:4px;border-radius:999px;background:var(--n300);margin:0 0 14px"></div>
+<div style="font:800 22px/1.2 Archivo,sans-serif;letter-spacing:-.015em">Cancel Tuesday's session?</div>
+<p style="font:400 15px/1.5 Archivo,sans-serif;color:var(--n800);margin:8px 0 18px">All 12 parents will be notified and credits returned automatically.</p>
+<div style="display:flex;gap:10px">
+<button type="button" onClick="{{ closeModal }}" style="flex:1;height:48px;background:var(--b600);color:#fff;border:0;border-radius:8px;font:700 15px Archivo,sans-serif;cursor:pointer" style-hover="background:#ae1800">Cancel session</button>
+<button type="button" onClick="{{ closeModal }}" style="flex:1;height:48px;background:#fff;border:1.5px solid var(--n400);border-radius:8px;font:700 15px Archivo,sans-serif;cursor:pointer" style-hover="background:#f3f2f2">Keep it</button>
+</div>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ toastOpen }}">
+<div style="position:fixed;left:16px;right:16px;bottom:24px;z-index:60;display:flex;justify-content:center;pointer-events:none">
+<div style="width:100%;max-width:420px;display:flex;gap:12px;align-items:flex-start;background:#201e1d;color:#fff;border-radius:12px;padding:14px 16px;box-shadow:0 12px 32px rgba(45,43,43,.22);animation:sktoast .2s ease-out">
+<span style="width:20px;height:20px;border-radius:999px;background:var(--g400);flex:none;margin-top:2px"></span>
+<div style="flex:1;min-width:0"><div style="font:700 15px Archivo,sans-serif">Attendance saved</div><div style="font:400 14px/1.45 Archivo,sans-serif;color:var(--n300)">11 present · 1 absent</div></div>
+</div>
+</div>
+</sc-if>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;showCode&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Sheet&quot;},&quot;bottomNavStyle&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;Icons + labels&quot;,&quot;Icons only&quot;],&quot;default&quot;:&quot;Icons + labels&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Navigation&quot;}}">
+const TABS = [
+  ["Attendance", "Tap a skater to mark them present. The whole row is the target — 72px tall, no small controls, works with gloves on."],
+  ["Progress", "Badge milestones and coach notes, written for a parent reading on a phone in the stands."],
+  ["Fees", "Outstanding balance, session credits and a single pay action. Admin-editable, parent read-only."]
+];
+
+const CODE_COLORS = `// tailwind.config.js
+module.exports = {
+  theme: {
+    extend: {
+      colors: {
+        ink: {
+          50:'#faf9f9', 100:'#f3f2f2', 200:'#eae7e7', 300:'#d7d3d3',
+          400:'#bab6b6', 500:'#9b9797', 600:'#7d7979', 700:'#605d5d',
+          800:'#444141', 900:'#2d2b2b', 950:'#201e1d'
+        },
+        brand: {
+          50:'#fff7f5', 100:'#fff2ef', 200:'#ffe0d9', 300:'#ffc4b8',
+          400:'#ff9783', 500:'#ff563c', 600:'#ec3013', 700:'#ae1800',
+          800:'#7c1405', 900:'#4d170e'
+        },
+        success: {
+          50:'#eff8f1', 100:'#d9efdd', 200:'#b4dfbd', 300:'#83c993',
+          400:'#4cae63', 500:'#2f9149', 600:'#22763a', 700:'#1a5c2e',
+          800:'#154524', 900:'#11301a'
+        },
+        warning: {
+          50:'#fff8e8', 100:'#ffedc2', 200:'#ffdb85', 300:'#fbc23f',
+          400:'#e9a500', 500:'#c98a00', 600:'#a37000', 700:'#7e5600',
+          800:'#5d3f00', 900:'#402c00'
+        },
+        info: {
+          50:'#eef5fd', 100:'#d6e8fb', 200:'#aed1f6', 300:'#7bb2ee',
+          400:'#4390e0', 500:'#1f73c7', 600:'#145ca4', 700:'#0f4680',
+          800:'#0c3560', 900:'#0a2643'
+        },
+        // danger shares the brand ramp — one red, two roles
+        danger: ({ theme }) => theme('colors.brand')
+      }
+    }
+  }
+};`;
+
+const CODE_TYPE = `// tailwind.config.js — theme.extend
+fontFamily: {
+  sans: ['Archivo', 'system-ui', 'sans-serif'],
+  mono: ['ui-monospace', 'SFMono-Regular', 'Menlo', 'monospace']
+},
+fontSize: {
+  // [size, { lineHeight, letterSpacing, fontWeight }]
+  h1:      ['1.875rem', { lineHeight: '2.0625rem', letterSpacing: '-0.02em',  fontWeight: '800' }],
+  'h1-md': ['2.5rem',   { lineHeight: '2.625rem',  letterSpacing: '-0.02em',  fontWeight: '800' }],
+  h2:      ['1.5rem',   { lineHeight: '1.75rem',   letterSpacing: '-0.015em', fontWeight: '800' }],
+  'h2-md': ['1.875rem', { lineHeight: '2.125rem',  letterSpacing: '-0.015em', fontWeight: '800' }],
+  h3:      ['1.25rem',  { lineHeight: '1.5625rem', letterSpacing: '-0.01em',  fontWeight: '700' }],
+  h4:      ['1.0625rem',{ lineHeight: '1.375rem',  fontWeight: '700' }],
+  body:    ['1rem',     { lineHeight: '1.5625rem', fontWeight: '400' }],
+  small:   ['0.875rem', { lineHeight: '1.3125rem', fontWeight: '400' }],
+  caption: ['0.75rem',  { lineHeight: '1.0625rem', letterSpacing: '0.1em', fontWeight: '600' }]
+}
+// weights in use: 400 body · 500 nav idle · 600 labels · 700 titles · 800 display`;
+
+const CODE_SPACE = `// tailwind.config.js — theme.extend
+// spacing: Tailwind's default 4px scale, unextended (1=4 … 16=64)
+borderRadius: {
+  none: '0px', sm: '4px', DEFAULT: '6px',
+  md: '8px', lg: '12px', xl: '16px', full: '9999px'
+},
+boxShadow: {
+  sm: '0 1px 2px rgba(45,43,43,0.14)',
+  md: '0 3px 10px rgba(45,43,43,0.16)',
+  lg: '0 12px 32px rgba(45,43,43,0.22)'
+},
+minHeight: { tap: '44px', rink: '56px', row: '72px' },
+screens: { sm: '480px', md: '768px', lg: '1024px', xl: '1280px' }`;
+
+const CODE_SHADCN = `/* globals.css — shadcn/ui variable mapping (light only) */
+:root {
+  --background: 0 3% 95%;        /* ink-100  #f3f2f2 */
+  --foreground: 20 6% 12%;       /* ink-950  #201e1d */
+  --card: 0 0% 100%;
+  --card-foreground: 20 6% 12%;
+  --primary: 20 6% 12%;          /* ink-950 — primary action */
+  --primary-foreground: 0 0% 100%;
+  --secondary: 9 85% 50%;        /* brand-600 #ec3013 */
+  --secondary-foreground: 0 0% 100%;
+  --muted: 0 5% 91%;             /* ink-200 */
+  --muted-foreground: 0 2% 38%;  /* ink-700 */
+  --accent: 0 5% 95%;
+  --accent-foreground: 20 6% 12%;
+  --destructive: 9 85% 50%;      /* brand-600 */
+  --destructive-foreground: 0 0% 100%;
+  --border: 0 4% 72%;            /* ink-400 — 1.5px in practice */
+  --input: 0 4% 72%;
+  --ring: 9 85% 50%;             /* brand-600 focus ring */
+  --radius: 0.5rem;              /* 8px = radius.md */
+}
+/* Button overrides: h-11 (44px) default, h-14 (56px) size="rink",
+   justify-start on block buttons — labels stay flush left. */`;
+
+const ATT = [
+  { id: 1, name: "Mila Okonkwo", meta: "Level 3 · 11/12" },
+  { id: 2, name: "Jonas Bergström", meta: "Level 3 · 9/12" },
+  { id: 3, name: "Priya Raman", meta: "Level 3 · 4/12" }
+];
+
+const STATES = {
+  present: { label: "Present", bg: "#22763a", fg: "#ffffff", mark: "✓" },
+  absent:  { label: "Absent",  bg: "#ec3013", fg: "#ffffff", mark: "✕" },
+  late:    { label: "Late",    bg: "#ffdb85", fg: "#402c00", mark: "!" }
+};
+
+class Component extends DCLogic {
+  state = { tab: 0, modalOpen: false, toastOpen: false, saving: false, field: "", att: { 1: "present", 2: "absent" } };
+
+  spinner(color) {
+    return React.createElement("span", { style: {
+      width: 16, height: 16, flex: "none", borderRadius: "999px",
+      border: "2px solid " + color, borderTopColor: "transparent",
+      animation: "skspin .7s linear infinite", display: "inline-block"
+    } });
+  }
+
+  chevron() {
+    return React.createElement("span", { style: {
+      width: 9, height: 9, flex: "none", marginBottom: 3,
+      borderRight: "2px solid #605d5d", borderBottom: "2px solid #605d5d",
+      transform: "rotate(45deg)", display: "inline-block"
+    } });
+  }
+
+  cycle(id) {
+    const order = [null, "present", "absent", "late"];
+    this.setState(s => {
+      const next = order[(order.indexOf(s.att[id] || null) + 1) % order.length];
+      return { att: Object.assign({}, s.att, { [id]: next }) };
+    });
+  }
+
+  set(id, v) { this.setState(s => ({ att: Object.assign({}, s.att, { [id]: v }) })); }
+
+  rows() {
+    const h = React.createElement;
+    return ATT.map((sk, i) => {
+      const cur = this.state.att[sk.id] || null;
+      const btn = (v) => {
+        const on = cur === v, st = STATES[v];
+        return h("button", { key: v, type: "button",
+          onClick: (e) => { e.stopPropagation(); this.set(sk.id, on ? null : v); },
+          style: {
+            height: 56, minWidth: 56, padding: "0 14px", cursor: "pointer",
+            display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
+            borderRadius: 8, font: "700 15px Archivo, sans-serif",
+            background: on ? st.bg : "#ffffff",
+            color: on ? st.fg : "#444141",
+            border: on ? "1.5px solid " + st.bg : "1.5px solid #bab6b6"
+          } }, h("span", { style: { fontSize: 15 } }, st.mark), v === "late" ? null : st.label);
+      };
+      return h("div", { key: sk.id, onClick: () => this.cycle(sk.id),
+        style: {
+          minHeight: 72, display: "flex", alignItems: "center", gap: 10, padding: "8px 12px",
+          cursor: "pointer", borderBottom: i < ATT.length - 1 ? "1px solid #eae7e7" : "none",
+          background: cur === "absent" ? "#fff7f5" : cur === "present" ? "#eff8f1" : "#ffffff"
+        } },
+        h("span", { style: { width: 40, height: 40, flex: "none", borderRadius: "999px", background: "#eae7e7" } }),
+        h("div", { style: { flex: 1, minWidth: 0 } },
+          h("div", { style: { font: "700 16px Archivo, sans-serif", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" } }, sk.name),
+          h("div", { style: { font: "400 13px Archivo, sans-serif", color: "#605d5d" } }, sk.meta)),
+        h("div", { style: { display: "flex", gap: 8, flex: "none" } }, btn("present"), btn("absent"))
+      );
+    });
+  }
+
+  tabStyle(i) {
+    const on = this.state.tab === i;
+    return "height:48px;padding:0 16px;border:0;background:transparent;cursor:pointer;font:" +
+      (on ? "700" : "500") + " 15px Archivo,sans-serif;color:" + (on ? "#201e1d" : "#605d5d") +
+      ";box-shadow:" + (on ? "inset 0 -2px 0 #201e1d" : "none") + ";white-space:nowrap";
+  }
+
+  renderVals() {
+    return {
+      showCode: this.props.showCode ?? true,
+      navLabels: (this.props.bottomNavStyle ?? "Icons + labels") === "Icons + labels",
+      codeColors: CODE_COLORS, codeType: CODE_TYPE, codeSpace: CODE_SPACE, codeShadcn: CODE_SHADCN,
+      spinnerLight: this.spinner("#ffffff"),
+      spinnerDark: this.spinner("#201e1d"),
+      spinnerBrand: this.spinner("#ae1800"),
+      chevron: this.chevron(),
+      attendanceRows: this.rows(),
+      tab0Style: this.tabStyle(0), tab1Style: this.tabStyle(1), tab2Style: this.tabStyle(2),
+      tabTo0: () => this.setState({ tab: 0 }),
+      tabTo1: () => this.setState({ tab: 1 }),
+      tabTo2: () => this.setState({ tab: 2 }),
+      tabBody: TABS[this.state.tab][1],
+      fieldValue: this.state.field,
+      onField: (e) => this.setState({ field: e.target.value }),
+      modalOpen: this.state.modalOpen,
+      openModal: () => this.setState({ modalOpen: true }),
+      closeModal: () => this.setState({ modalOpen: false }),
+      toastOpen: this.state.toastOpen,
+      fireToast: () => {
+        this.setState({ toastOpen: true });
+        clearTimeout(this._t);
+        this._t = setTimeout(() => this.setState({ toastOpen: false }), 3200);
+      },
+      saving: this.state.saving,
+      saveLabelNode: this.state.saving
+        ? React.createElement(React.Fragment, null, this.spinner("#ffffff"), React.createElement("span", null, "Saving"))
+        : React.createElement("span", null, "Save attendance"),
+      fakeSave: () => {
+        if (this.state.saving) return;
+        this.setState({ saving: true });
+        setTimeout(() => this.setState({ saving: false, toastOpen: true }), 1400);
+        setTimeout(() => this.setState({ toastOpen: false }), 4600);
+      }
+    };
+  }
+
+  componentWillUnmount() { clearTimeout(this._t); }
+}
+</script>
+</body>
+</html>

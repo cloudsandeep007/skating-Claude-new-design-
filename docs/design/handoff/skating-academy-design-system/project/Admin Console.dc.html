@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link rel="stylesheet" href="_ds/modernist-5edd7b4f-fb92-43dc-aa34-0814c1b6c242/styles.css">
+<script src="_ds/modernist-5edd7b4f-fb92-43dc-aa34-0814c1b6c242/_ds_bundle.js"></script>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800&display=swap">
+<style>
+:root{
+--n50:#faf9f9;--n100:#f3f2f2;--n200:#eae7e7;--n300:#d7d3d3;--n400:#bab6b6;--n500:#9b9797;--n600:#7d7979;--n700:#605d5d;--n800:#444141;--n900:#2d2b2b;--n950:#201e1d;
+--b50:#fff7f5;--b100:#fff2ef;--b200:#ffe0d9;--b300:#ffc4b8;--b500:#ff563c;--b600:#ec3013;--b700:#ae1800;--b800:#7c1405;--b900:#4d170e;
+--g50:#eff8f1;--g100:#d9efdd;--g200:#b4dfbd;--g400:#4cae63;--g600:#22763a;--g700:#1a5c2e;--g800:#154524;
+--w50:#fff8e8;--w100:#ffedc2;--w200:#ffdb85;--w300:#fbc23f;--w800:#5d3f00;--w900:#402c00;
+--i50:#eef5fd;--i100:#d6e8fb;--i200:#aed1f6;--i400:#4390e0;--i600:#145ca4;--i800:#0c3560;
+--mono:ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+body{margin:0;background:#f3f2f2;color:#201e1d;font-family:Archivo,system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+a{color:#ae1800}a:hover{color:#7c1405}
+@keyframes skshimmer{0%{background-position:-340px 0}100%{background-position:340px 0}}
+@keyframes skpop{from{transform:translateY(8px);opacity:0}to{transform:translateY(0);opacity:1}}
+</style>
+</helmet>
+
+<div style="padding:40px 44px 8px">
+<div style="display:flex;align-items:baseline;gap:12px;margin-bottom:6px">
+<span style="font:600 11px/1 var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--b700)">Admin console · v0.1</span>
+<span style="font:600 11px/1 var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--n600)">Desktop-first · live navigation</span>
+</div>
+<h1 style="font:800 34px/1.05 Archivo,sans-serif;letter-spacing:-.02em;margin:0 0 8px">Academy Admin</h1>
+<p style="font:400 15px/1.55 Archivo,sans-serif;color:var(--n800);max-width:70ch;margin:0 0 24px">Click the sidebar to move between the four screens; the tabs, filters, bulk select and reminder actions all work. The layout collapses to the mobile arrangement on its own below 900px — the phone frames at the bottom show that state at a fixed width.</p>
+</div>
+
+<div style="padding:0 44px 44px">
+<div style="border:1px solid var(--n400);border-radius:12px;overflow:hidden;box-shadow:0 3px 10px rgba(45,43,43,.16);background:var(--n100)">
+<div style="display:flex;min-height:900px">
+
+<sc-if value="{{ wide }}" hint-placeholder-val="{{ true }}">
+<div style="width:224px;flex:none;background:var(--n950);padding:18px 12px;display:flex;flex-direction:column;gap:2px">
+<div style="padding:0 10px 18px">
+<div style="font:800 16px Archivo,sans-serif;color:#fff;letter-spacing:-.01em">Northgate<span style="color:var(--b500)">.</span></div>
+<div style="font:500 11px Archivo,sans-serif;letter-spacing:.1em;text-transform:uppercase;color:var(--n500);margin-top:3px">Skating Academy</div>
+</div>
+<sc-for list="{{ navItems }}" as="it" hint-placeholder-count="10">
+<button type="button" onClick="{{ it.onClick }}" style="height:44px;display:flex;align-items:center;gap:10px;padding:0 10px;border:0;border-radius:8px;cursor:pointer;text-align:left;width:100%;font:{{ it.weight }} 14px Archivo,sans-serif;background:{{ it.bg }};color:{{ it.fg }}" style-hover="background:rgba(255,255,255,.12)">
+<span style="width:18px;height:18px;flex:none;border-radius:5px;background:{{ it.dotBg }};border:{{ it.dotBorder }}"></span>
+<span style="flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ it.label }}</span>
+<sc-if value="{{ it.badge }}"><span style="min-width:20px;height:20px;border-radius:999px;background:var(--b600);color:#fff;font:700 11px/20px Archivo,sans-serif;text-align:center;padding:0 5px">{{ it.badge }}</span></sc-if>
+</button>
+</sc-for>
+<div style="margin-top:auto;padding-top:16px;border-top:1px solid rgba(255,255,255,.16)">
+<div style="font:400 12px/1.5 Archivo,sans-serif;color:var(--n500);padding:0 10px">Season 2026–27<br>214 active students</div>
+</div>
+</div>
+</sc-if>
+
+<div style="flex:1;min-width:0;display:flex;flex-direction:column;background:var(--n100)">
+
+<div style="flex:none;background:#fff;border-bottom:2px solid var(--n300);padding:12px 20px;display:flex;align-items:center;gap:16px;flex-wrap:wrap">
+<sc-if value="{{ narrow }}">
+<button type="button" style="width:44px;height:44px;flex:none;border:1.5px solid var(--n400);border-radius:8px;background:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center" style-hover="background:#f3f2f2">
+<span style="width:18px;height:2px;background:var(--n950);box-shadow:0 5px 0 var(--n950),0 -5px 0 var(--n950)"></span>
+</button>
+</sc-if>
+<div style="min-width:0">
+<div style="font:800 17px/1.2 Archivo,sans-serif;letter-spacing:-.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Northgate Skating Academy</div>
+<div style="font:500 11px Archivo,sans-serif;letter-spacing:.08em;text-transform:uppercase;color:var(--n600)">{{ screenLabel }}</div>
+</div>
+<div style="flex:1;min-width:160px;max-width:420px;position:relative">
+<input type="text" value="{{ query }}" onChange="{{ onQuery }}" placeholder="Search students, coaches, batches" style="width:100%;height:44px;padding:0 14px 0 38px;background:var(--n100);border:1.5px solid var(--n300);border-radius:8px;font:400 15px Archivo,sans-serif;color:var(--n950);outline-offset:2px" style-focus="border-color:#201e1d;background:#fff;outline:2px solid #ec3013">
+<span style="position:absolute;left:13px;top:14px;width:14px;height:14px;border:2px solid var(--n600);border-radius:999px;pointer-events:none"></span>
+<span style="position:absolute;left:24px;top:27px;width:7px;height:2px;background:var(--n600);transform:rotate(45deg);pointer-events:none"></span>
+</div>
+<div style="display:flex;align-items:center;gap:10px;margin-left:auto">
+<button type="button" style="position:relative;width:44px;height:44px;border:1.5px solid var(--n300);border-radius:8px;background:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center" style-hover="background:#f3f2f2;border-color:#7d7979">
+<span style="width:16px;height:16px;border:2px solid var(--n800);border-radius:5px 5px 2px 2px"></span>
+<span style="position:absolute;top:-4px;right:-4px;min-width:20px;height:20px;border-radius:999px;background:var(--b600);color:#fff;font:700 11px/20px Archivo,sans-serif;text-align:center;padding:0 5px">5</span>
+</button>
+<div style="display:flex;align-items:center;gap:9px;height:44px;padding:0 10px 0 4px;border-radius:8px;cursor:pointer" style-hover="background:#f3f2f2">
+<span style="width:36px;height:36px;flex:none;border-radius:999px;background:var(--n950);color:#fff;font:700 13px/36px Archivo,sans-serif;text-align:center">RH</span>
+<sc-if value="{{ wide }}" hint-placeholder-val="{{ true }}">
+<div style="min-width:0"><div style="font:700 13px Archivo,sans-serif;white-space:nowrap">Rhea Haldorsen</div><div style="font:400 11px Archivo,sans-serif;color:var(--n700)">Owner</div></div>
+</sc-if>
+</div>
+</div>
+</div>
+
+<div style="flex:1;min-width:0;overflow:auto;padding:24px 20px 40px">
+
+<sc-if value="{{ isDashboard }}" hint-placeholder-val="{{ true }}">
+<div>
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:16px">
+<div style="background:#fff;border:1px solid var(--n300);border-radius:12px;padding:16px;box-shadow:0 1px 2px rgba(45,43,43,.14)">
+<div style="font:600 11px Archivo,sans-serif;letter-spacing:.1em;text-transform:uppercase;color:var(--n700)">Active students</div>
+<div style="font:800 34px/1.05 Archivo,sans-serif;letter-spacing:-.02em;margin:8px 0 6px">214</div>
+<div style="display:flex;align-items:center;gap:6px"><span style="font:700 13px Archivo,sans-serif;color:var(--g700)">▲ 8</span><span style="font:400 13px Archivo,sans-serif;color:var(--n700)">vs last month</span></div>
+</div>
+<div style="background:#fff;border:1px solid var(--n300);border-radius:12px;padding:16px;box-shadow:0 1px 2px rgba(45,43,43,.14)">
+<div style="font:600 11px Archivo,sans-serif;letter-spacing:.1em;text-transform:uppercase;color:var(--n700)">Today's attendance</div>
+<div style="font:800 34px/1.05 Archivo,sans-serif;letter-spacing:-.02em;margin:8px 0 6px">92%</div>
+<div style="display:flex;align-items:center;gap:6px"><span style="font:700 13px Archivo,sans-serif;color:var(--g700)">▲ 3 pts</span><span style="font:400 13px Archivo,sans-serif;color:var(--n700)">vs last month</span></div>
+</div>
+<div style="background:#fff;border:1px solid var(--n300);border-radius:12px;padding:16px;box-shadow:0 1px 2px rgba(45,43,43,.14)">
+<div style="font:600 11px Archivo,sans-serif;letter-spacing:.1em;text-transform:uppercase;color:var(--n700)">Fees collected · Sep</div>
+<div style="font:800 34px/1.05 Archivo,sans-serif;letter-spacing:-.02em;margin:8px 0 6px">₹4,86,500</div>
+<div style="display:flex;align-items:center;gap:6px"><span style="font:700 13px Archivo,sans-serif;color:var(--g700)">▲ 12%</span><span style="font:400 13px Archivo,sans-serif;color:var(--n700)">vs ₹4,34,000</span></div>
+</div>
+<div style="background:#fff;border:1px solid var(--b300);border-radius:12px;padding:16px;box-shadow:0 1px 2px rgba(45,43,43,.14)">
+<div style="font:600 11px Archivo,sans-serif;letter-spacing:.1em;text-transform:uppercase;color:var(--b800)">Outstanding dues</div>
+<div style="font:800 34px/1.05 Archivo,sans-serif;letter-spacing:-.02em;margin:8px 0 6px;color:var(--b700)">₹1,12,000</div>
+<div style="display:flex;align-items:center;gap:6px"><span style="font:700 13px Archivo,sans-serif;color:var(--g700)">▼ 6%</span><span style="font:400 13px Archivo,sans-serif;color:var(--n700)">21 students</span></div>
+</div>
+</div>
+
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:16px;margin-top:16px">
+
+<div style="background:#fff;border:1px solid var(--n300);border-radius:12px;padding:16px;box-shadow:0 1px 2px rgba(45,43,43,.14)">
+<div style="display:flex;align-items:baseline;justify-content:space-between;gap:12px">
+<span style="font:700 17px Archivo,sans-serif">Attendance trend</span>
+<span style="font:600 11px Archivo,sans-serif;letter-spacing:.08em;text-transform:uppercase;color:var(--n700)">Apr–Sep</span>
+</div>
+<svg viewBox="0 0 520 200" style="width:100%;height:auto;margin-top:14px;display:block" data-om-raster>
+<line x1="34" y1="10" x2="510" y2="10" stroke="#eae7e7" stroke-width="1"></line>
+<line x1="34" y1="55" x2="510" y2="55" stroke="#eae7e7" stroke-width="1"></line>
+<line x1="34" y1="100" x2="510" y2="100" stroke="#eae7e7" stroke-width="1"></line>
+<line x1="34" y1="145" x2="510" y2="145" stroke="#eae7e7" stroke-width="1"></line>
+<line x1="34" y1="10" x2="34" y2="145" stroke="#d7d3d3" stroke-width="2"></line>
+<line x1="34" y1="145" x2="510" y2="145" stroke="#201e1d" stroke-width="2"></line>
+<text x="6" y="14" font-family="Archivo" font-size="10" font-weight="600" fill="#7d7979">100</text>
+<text x="8" y="59" font-family="Archivo" font-size="10" font-weight="600" fill="#7d7979">90</text>
+<text x="8" y="104" font-family="Archivo" font-size="10" font-weight="600" fill="#7d7979">80</text>
+<text x="8" y="149" font-family="Archivo" font-size="10" font-weight="600" fill="#7d7979">70</text>
+<polyline points="70,82 158,68.5 246,100 334,68.5 422,50.5 500,46" fill="none" stroke="#ec3013" stroke-width="3"></polyline>
+<circle cx="70" cy="82" r="5" fill="#fff" stroke="#ec3013" stroke-width="3"></circle>
+<circle cx="158" cy="68.5" r="5" fill="#fff" stroke="#ec3013" stroke-width="3"></circle>
+<circle cx="246" cy="100" r="5" fill="#fff" stroke="#ec3013" stroke-width="3"></circle>
+<circle cx="334" cy="68.5" r="5" fill="#fff" stroke="#ec3013" stroke-width="3"></circle>
+<circle cx="422" cy="50.5" r="5" fill="#fff" stroke="#ec3013" stroke-width="3"></circle>
+<circle cx="500" cy="46" r="6" fill="#ec3013"></circle>
+<text x="470" y="34" font-family="Archivo" font-size="12" font-weight="800" fill="#201e1d">92%</text>
+<text x="58" y="164" font-family="Archivo" font-size="11" font-weight="600" fill="#605d5d">Apr</text>
+<text x="146" y="164" font-family="Archivo" font-size="11" font-weight="600" fill="#605d5d">May</text>
+<text x="236" y="164" font-family="Archivo" font-size="11" font-weight="600" fill="#605d5d">Jun</text>
+<text x="324" y="164" font-family="Archivo" font-size="11" font-weight="600" fill="#605d5d">Jul</text>
+<text x="410" y="164" font-family="Archivo" font-size="11" font-weight="600" fill="#605d5d">Aug</text>
+<text x="488" y="164" font-family="Archivo" font-size="11" font-weight="600" fill="#605d5d">Sep</text>
+<text x="34" y="188" font-family="Archivo" font-size="11" fill="#605d5d">Jun dip — rink resurfacing closed two weeks of evening batches.</text>
+</svg>
+</div>
+
+<div style="background:#fff;border:1px solid var(--n300);border-radius:12px;padding:16px;box-shadow:0 1px 2px rgba(45,43,43,.14)">
+<div style="display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap">
+<span style="font:700 17px Archivo,sans-serif">Revenue collected vs expected</span>
+<div style="display:flex;gap:12px;align-items:center">
+<span style="display:flex;align-items:center;gap:5px;font:600 11px Archivo,sans-serif;color:var(--n800)"><span style="width:10px;height:10px;background:var(--n950)"></span>Collected</span>
+<span style="display:flex;align-items:center;gap:5px;font:600 11px Archivo,sans-serif;color:var(--n800)"><span style="width:10px;height:10px;background:var(--n300)"></span>Expected</span>
+</div>
+</div>
+<div style="display:grid;grid-template-columns:repeat(6,1fr);gap:10px;align-items:end;height:180px;margin-top:16px;border-bottom:2px solid var(--n950);padding-bottom:2px">
+<sc-for list="{{ revenue }}" as="r" hint-placeholder-count="6">
+<div style="display:flex;gap:3px;align-items:end;height:100%">
+<div style="flex:1;background:var(--n950);border-radius:4px 4px 0 0;height:{{ r.collectedH }}"></div>
+<div style="flex:1;background:var(--n300);border-radius:4px 4px 0 0;height:{{ r.expectedH }}"></div>
+</div>
+</sc-for>
+</div>
+<div style="display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin-top:6px">
+<sc-for list="{{ revenue }}" as="r" hint-placeholder-count="6">
+<div style="text-align:center"><div style="font:600 11px Archivo,sans-serif;color:var(--n700)">{{ r.month }}</div><div style="font:700 11px Archivo,sans-serif;color:var(--n950)">{{ r.collectedLabel }}</div></div>
+</sc-for>
+</div>
+<div style="font:400 12px/1.5 Archivo,sans-serif;color:var(--n700);margin-top:10px">Figures in ₹ lakh. September is still collecting — ₹1.12L outstanding.</div>
+</div>
+
+<div style="background:#fff;border:1px solid var(--n300);border-radius:12px;padding:16px;box-shadow:0 1px 2px rgba(45,43,43,.14)">
+<div style="display:flex;align-items:baseline;justify-content:space-between;gap:12px">
+<span style="font:700 17px Archivo,sans-serif">Students per batch</span>
+<span style="font:600 11px Archivo,sans-serif;letter-spacing:.08em;text-transform:uppercase;color:var(--n700)">8 batches</span>
+</div>
+<div style="display:flex;flex-direction:column;gap:9px;margin-top:14px">
+<sc-for list="{{ batches }}" as="b" hint-placeholder-count="8">
+<div style="display:grid;grid-template-columns:132px 1fr 34px;gap:10px;align-items:center">
+<span style="font:500 13px Archivo,sans-serif;color:var(--n900);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ b.name }}</span>
+<div style="height:18px;background:var(--n200);border-radius:4px;overflow:hidden"><div style="height:100%;border-radius:4px;background:{{ b.fill }};width:{{ b.w }}"></div></div>
+<span style="font:700 13px Archivo,sans-serif;text-align:right">{{ b.count }}</span>
+</div>
+</sc-for>
+</div>
+</div>
+
+<div style="background:#fff;border:1px solid var(--n300);border-radius:12px;padding:16px;box-shadow:0 1px 2px rgba(45,43,43,.14)">
+<div style="display:flex;align-items:baseline;justify-content:space-between;gap:12px">
+<span style="font:700 17px Archivo,sans-serif">Skill level distribution</span>
+<span style="font:600 11px Archivo,sans-serif;letter-spacing:.08em;text-transform:uppercase;color:var(--n700)">Levels 1–6</span>
+</div>
+<div style="display:grid;grid-template-columns:repeat(6,1fr);gap:12px;align-items:end;height:180px;margin-top:16px;border-bottom:2px solid var(--n950);padding-bottom:2px">
+<sc-for list="{{ levels }}" as="l" hint-placeholder-count="6">
+<div style="display:flex;flex-direction:column;justify-content:flex-end;height:100%">
+<span style="font:800 14px Archivo,sans-serif;text-align:center;margin-bottom:4px">{{ l.count }}</span>
+<div style="background:{{ l.fill }};border-radius:4px 4px 0 0;height:{{ l.h }}"></div>
+</div>
+</sc-for>
+</div>
+<div style="display:grid;grid-template-columns:repeat(6,1fr);gap:12px;margin-top:6px">
+<sc-for list="{{ levels }}" as="l" hint-placeholder-count="6">
+<div style="text-align:center;font:600 11px Archivo,sans-serif;color:var(--n700)">{{ l.label }}</div>
+</sc-for>
+</div>
+<div style="font:400 12px/1.5 Archivo,sans-serif;color:var(--n700);margin-top:10px">Level 4 is where students stall — crossovers and backward skating gate the jump to 5.</div>
+</div>
+
+</div>
+
+<div style="margin-top:24px;background:var(--n950);border-radius:12px;overflow:hidden;box-shadow:0 12px 32px rgba(45,43,43,.22)">
+<div style="background:var(--b600);padding:14px 20px;display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+<span style="font:800 20px/1.15 Archivo,sans-serif;letter-spacing:-.015em;color:#fff">Needs attention</span>
+<span style="font:700 12px Archivo,sans-serif;letter-spacing:.08em;text-transform:uppercase;background:#fff;color:var(--b800);padding:5px 10px;border-radius:999px">6 students</span>
+<span style="font:400 14px Archivo,sans-serif;color:#fff;margin-left:auto">Under 60% attendance in the last 30 days</span>
+</div>
+<div>
+<sc-for list="{{ attention }}" as="a" hint-placeholder-count="6">
+<div style="display:flex;align-items:center;gap:14px;padding:14px 20px;border-bottom:1px solid rgba(255,255,255,.12);flex-wrap:wrap">
+<span style="width:44px;height:44px;flex:none;border-radius:999px;background:rgba(255,255,255,.12);color:#fff;font:700 15px/44px Archivo,sans-serif;text-align:center">{{ a.init }}</span>
+<div style="min-width:160px;flex:1">
+<div style="font:700 17px/1.25 Archivo,sans-serif;color:#fff">{{ a.name }}</div>
+<div style="font:400 13px Archivo,sans-serif;color:var(--n400);margin-top:2px">{{ a.batch }} · Level {{ a.level }} · missed {{ a.missed }}</div>
+</div>
+<div style="width:180px;flex:none">
+<div style="display:flex;align-items:baseline;gap:8px"><span style="font:800 22px/1 Archivo,sans-serif;color:{{ a.pctColor }}">{{ a.pct }}%</span><span style="font:400 12px Archivo,sans-serif;color:var(--n400)">attendance</span></div>
+<div style="height:8px;border-radius:999px;background:rgba(255,255,255,.16);margin-top:6px;overflow:hidden"><div style="height:100%;border-radius:999px;background:{{ a.pctColor }};width:{{ a.pctW }}"></div></div>
+</div>
+<div style="min-width:170px;flex:none">
+<div style="font:600 13px Archivo,sans-serif;color:#fff">{{ a.parent }}</div>
+<div style="font:400 13px/1.4 var(--mono);color:var(--n400)">{{ a.phone }}</div>
+</div>
+<button type="button" onClick="{{ a.onCall }}" style="height:44px;flex:none;padding:0 18px;border:0;border-radius:8px;background:#fff;color:var(--n950);font:700 15px Archivo,sans-serif;cursor:pointer;display:flex;align-items:center;gap:8px" style-hover="background:#ffe0d9">
+<span style="width:14px;height:14px;border:2px solid var(--n950);border-radius:4px 8px 4px 4px"></span>Call
+</button>
+</div>
+</sc-for>
+</div>
+<div style="padding:14px 20px;display:flex;align-items:center;gap:14px;flex-wrap:wrap">
+<button type="button" style="height:44px;padding:0 18px;border:1.5px solid rgba(255,255,255,.4);border-radius:8px;background:transparent;color:#fff;font:700 15px Archivo,sans-serif;cursor:pointer" style-hover="background:rgba(255,255,255,.12)">Message all 6 parents</button>
+<span style="font:400 13px/1.5 Archivo,sans-serif;color:var(--n400)">Three of these six also have overdue fees — check the Fees screen before calling.</span>
+</div>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isStudents }}">
+<div>
+<div style="display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:16px">
+<div>
+<div style="font:800 26px/1.1 Archivo,sans-serif;letter-spacing:-.02em">Students</div>
+<div style="font:400 14px Archivo,sans-serif;color:var(--n700);margin-top:4px">214 active · 9 on waitlist · 12 archived</div>
+</div>
+<div style="display:flex;gap:10px;flex-wrap:wrap">
+<button type="button" style="height:44px;padding:0 16px;border:1.5px solid var(--n400);border-radius:8px;background:#fff;font:700 15px Archivo,sans-serif;cursor:pointer" style-hover="background:#f3f2f2;border-color:#7d7979">Export CSV</button>
+<button type="button" style="height:44px;padding:0 16px;border:0;border-radius:8px;background:var(--n950);color:#fff;font:700 15px Archivo,sans-serif;cursor:pointer;display:flex;align-items:center;gap:8px" style-hover="background:#444141"><span style="font:700 18px Archivo,sans-serif">+</span>Add student</button>
+</div>
+</div>
+
+<div style="background:#fff;border:1px solid var(--n300);border-radius:12px;overflow:hidden;box-shadow:0 1px 2px rgba(45,43,43,.14)">
+<div style="padding:14px 16px;border-bottom:1px solid var(--n200);display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+<div style="flex:1;min-width:180px;max-width:300px;position:relative">
+<input type="text" value="{{ studentQuery }}" onChange="{{ onStudentQuery }}" placeholder="Search by name or parent" style="width:100%;height:44px;padding:0 14px;background:#fff;border:1.5px solid var(--n400);border-radius:8px;font:400 15px Archivo,sans-serif;outline-offset:2px" style-focus="border-color:#201e1d;outline:2px solid #ec3013">
+</div>
+<select value="{{ batchFilter }}" onChange="{{ onBatchFilter }}" style="height:44px;padding:0 12px;background:#fff;border:1.5px solid var(--n400);border-radius:8px;font:600 14px Archivo,sans-serif;color:var(--n950);cursor:pointer;outline-offset:2px">
+<option value="all">All batches</option>
+<option value="LTS-1 Morning">LTS-1 Morning</option>
+<option value="LTS-2 Morning">LTS-2 Morning</option>
+<option value="LTS-3 Evening">LTS-3 Evening</option>
+<option value="Freestyle A">Freestyle A</option>
+<option value="Freestyle B">Freestyle B</option>
+<option value="Hockey Basics">Hockey Basics</option>
+<option value="Pre-Comp Squad">Pre-Comp Squad</option>
+</select>
+<select value="{{ feeFilter }}" onChange="{{ onFeeFilter }}" style="height:44px;padding:0 12px;background:#fff;border:1.5px solid var(--n400);border-radius:8px;font:600 14px Archivo,sans-serif;color:var(--n950);cursor:pointer;outline-offset:2px">
+<option value="all">Any fee status</option>
+<option value="Paid">Paid</option>
+<option value="Pending">Pending</option>
+<option value="Overdue">Overdue</option>
+</select>
+<button type="button" onClick="{{ toggleSort }}" style="height:44px;padding:0 14px;border:1.5px solid var(--n400);border-radius:8px;background:#fff;font:700 14px Archivo,sans-serif;cursor:pointer;display:flex;align-items:center;gap:8px" style-hover="background:#f3f2f2;border-color:#7d7979">{{ sortLabel }}</button>
+<sc-if value="{{ filtersActive }}"><button type="button" onClick="{{ clearFilters }}" style="height:44px;padding:0 12px;border:0;background:transparent;color:var(--b700);font:700 14px Archivo,sans-serif;cursor:pointer;border-radius:8px" style-hover="background:#fff2ef">Clear</button></sc-if>
+</div>
+
+<sc-if value="{{ anySelected }}">
+<div style="padding:12px 16px;background:var(--n950);display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+<span style="font:700 15px Archivo,sans-serif;color:#fff">{{ selectedCount }} selected</span>
+<button type="button" style="height:40px;padding:0 14px;border:1.5px solid rgba(255,255,255,.4);border-radius:8px;background:transparent;color:#fff;font:700 14px Archivo,sans-serif;cursor:pointer" style-hover="background:rgba(255,255,255,.12)">Move batch</button>
+<button type="button" style="height:40px;padding:0 14px;border:1.5px solid rgba(255,255,255,.4);border-radius:8px;background:transparent;color:#fff;font:700 14px Archivo,sans-serif;cursor:pointer" style-hover="background:rgba(255,255,255,.12)">Send fee reminder</button>
+<button type="button" style="height:40px;padding:0 14px;border:1.5px solid rgba(255,255,255,.4);border-radius:8px;background:transparent;color:#fff;font:700 14px Archivo,sans-serif;cursor:pointer" style-hover="background:rgba(255,255,255,.12)">Mark attendance</button>
+<button type="button" style="height:40px;padding:0 14px;border:0;border-radius:8px;background:var(--b600);color:#fff;font:700 14px Archivo,sans-serif;cursor:pointer" style-hover="background:#ae1800">Archive</button>
+<button type="button" onClick="{{ clearSelection }}" style="height:40px;margin-left:auto;padding:0 12px;border:0;background:transparent;color:var(--n400);font:700 14px Archivo,sans-serif;cursor:pointer">Cancel</button>
+</div>
+</sc-if>
+
+<div style="overflow-x:auto">
+<div style="min-width:900px">
+<div style="display:grid;grid-template-columns:44px 1.9fr 1.2fr 74px 1fr 1fr 1fr;gap:14px;padding:11px 16px;background:var(--n100);border-bottom:2px solid var(--n400);font:600 11px Archivo,sans-serif;letter-spacing:.08em;text-transform:uppercase;color:var(--n700);align-items:center">
+<span style="display:flex;align-items:center;justify-content:center"><span onClick="{{ toggleAll }}" style="width:20px;height:20px;border-radius:4px;cursor:pointer;background:{{ allBoxBg }};border:1.5px solid {{ allBoxBorder }};color:#fff;font:700 13px/17px Archivo,sans-serif;text-align:center">{{ allBoxMark }}</span></span>
+<span>Student</span><span>Batch</span><span>Level</span><span>Attendance</span><span>Fee status</span><span>Last active</span>
+</div>
+<sc-for list="{{ visibleStudents }}" as="s" hint-placeholder-count="10">
+<div onClick="{{ s.onOpen }}" style="display:grid;grid-template-columns:44px 1.9fr 1.2fr 74px 1fr 1fr 1fr;gap:14px;padding:12px 16px;border-bottom:1px solid var(--n200);align-items:center;min-height:64px;cursor:pointer;background:{{ s.rowBg }}" style-hover="background:#f3f2f2">
+<span style="display:flex;align-items:center;justify-content:center"><span onClick="{{ s.onSelect }}" style="width:20px;height:20px;border-radius:4px;cursor:pointer;background:{{ s.boxBg }};border:1.5px solid {{ s.boxBorder }};color:#fff;font:700 13px/17px Archivo,sans-serif;text-align:center">{{ s.boxMark }}</span></span>
+<div style="display:flex;align-items:center;gap:10px;min-width:0">
+<span style="width:36px;height:36px;flex:none;border-radius:999px;background:var(--n200);color:var(--n800);font:700 13px/36px Archivo,sans-serif;text-align:center">{{ s.init }}</span>
+<div style="min-width:0"><div style="font:700 15px/1.25 Archivo,sans-serif;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ s.name }}</div><div style="font:400 12px Archivo,sans-serif;color:var(--n700);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ s.parent }}</div></div>
+</div>
+<span style="font:400 14px Archivo,sans-serif;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ s.batch }}</span>
+<span style="font:700 14px Archivo,sans-serif">L{{ s.level }}</span>
+<div style="min-width:0">
+<div style="font:700 14px Archivo,sans-serif;color:{{ s.pctColor }}">{{ s.pct }}%</div>
+<div style="height:6px;border-radius:999px;background:var(--n200);margin-top:4px;overflow:hidden"><div style="height:100%;border-radius:999px;background:{{ s.pctColor }};width:{{ s.pctW }}"></div></div>
+</div>
+<span><span style="font:700 12px Archivo,sans-serif;padding:5px 10px;border-radius:999px;white-space:nowrap;background:{{ s.feeBg }};color:{{ s.feeFg }}">{{ s.fee }}</span></span>
+<span style="font:400 13px Archivo,sans-serif;color:var(--n700)">{{ s.lastActive }}</span>
+</div>
+</sc-for>
+</div>
+</div>
+
+<div style="padding:12px 16px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;border-top:1px solid var(--n200)">
+<span style="font:400 13px Archivo,sans-serif;color:var(--n700)">{{ pageLabel }}</span>
+<div style="display:flex;gap:8px;margin-left:auto">
+<button type="button" style="height:40px;min-width:40px;padding:0 12px;border:1.5px solid var(--n300);border-radius:8px;background:#fff;font:700 14px Archivo,sans-serif;color:var(--n500);cursor:not-allowed">Prev</button>
+<button type="button" style="height:40px;min-width:40px;border:0;border-radius:8px;background:var(--n950);color:#fff;font:700 14px Archivo,sans-serif;cursor:pointer">1</button>
+<button type="button" style="height:40px;min-width:40px;border:1.5px solid var(--n400);border-radius:8px;background:#fff;font:700 14px Archivo,sans-serif;cursor:pointer" style-hover="background:#f3f2f2">2</button>
+<button type="button" style="height:40px;min-width:40px;border:1.5px solid var(--n400);border-radius:8px;background:#fff;font:700 14px Archivo,sans-serif;cursor:pointer" style-hover="background:#f3f2f2">3</button>
+<span style="height:40px;line-height:40px;font:700 14px Archivo,sans-serif;color:var(--n600)">…</span>
+<button type="button" style="height:40px;min-width:40px;border:1.5px solid var(--n400);border-radius:8px;background:#fff;font:700 14px Archivo,sans-serif;cursor:pointer" style-hover="background:#f3f2f2">22</button>
+<button type="button" style="height:40px;padding:0 14px;border:1.5px solid var(--n400);border-radius:8px;background:#fff;font:700 14px Archivo,sans-serif;cursor:pointer" style-hover="background:#f3f2f2">Next</button>
+</div>
+</div>
+</div>
+
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:16px;margin-top:24px">
+<div>
+<div style="font:600 11px var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--n700);margin-bottom:8px">Frame · empty state (filters return nothing)</div>
+<div style="background:#fff;border:1px solid var(--n300);border-radius:12px;padding:40px 24px;box-shadow:0 1px 2px rgba(45,43,43,.14)">
+<div style="width:56px;height:56px;border-radius:12px;background:var(--n100);border:1.5px dashed var(--n400);margin-bottom:16px"></div>
+<div style="font:700 19px/1.25 Archivo,sans-serif">No students match those filters</div>
+<p style="font:400 15px/1.5 Archivo,sans-serif;color:var(--n700);margin:6px 0 18px;max-width:42ch">Nobody in Freestyle B has an overdue fee this month. Try widening the batch filter or clearing the fee status.</p>
+<div style="display:flex;gap:10px;flex-wrap:wrap">
+<button type="button" onClick="{{ clearFilters }}" style="height:44px;padding:0 16px;border:0;border-radius:8px;background:var(--n950);color:#fff;font:700 15px Archivo,sans-serif;cursor:pointer" style-hover="background:#444141">Clear filters</button>
+<button type="button" style="height:44px;padding:0 16px;border:1.5px solid var(--n400);border-radius:8px;background:#fff;font:700 15px Archivo,sans-serif;cursor:pointer" style-hover="background:#f3f2f2">Add student</button>
+</div>
+</div>
+</div>
+<div>
+<div style="font:600 11px var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--n700);margin-bottom:8px">Frame · loading skeleton</div>
+<div style="background:#fff;border:1px solid var(--n300);border-radius:12px;overflow:hidden;box-shadow:0 1px 2px rgba(45,43,43,.14)">
+<div style="display:grid;grid-template-columns:44px 1.9fr 1fr 1fr;gap:14px;padding:11px 16px;background:var(--n100);border-bottom:2px solid var(--n400);font:600 11px Archivo,sans-serif;letter-spacing:.08em;text-transform:uppercase;color:var(--n700)"><span></span><span>Student</span><span>Attendance</span><span>Fee status</span></div>
+<sc-for list="{{ skeletonRows }}" as="k" hint-placeholder-count="5">
+<div style="display:grid;grid-template-columns:44px 1.9fr 1fr 1fr;gap:14px;padding:12px 16px;border-bottom:1px solid var(--n200);align-items:center;min-height:64px">
+<div style="width:20px;height:20px;border-radius:4px;background:linear-gradient(90deg,#eae7e7 0%,#f8f4f4 40%,#eae7e7 80%);background-size:340px 100%;animation:skshimmer 1.4s linear infinite"></div>
+<div style="display:flex;align-items:center;gap:10px">
+<div style="width:36px;height:36px;flex:none;border-radius:999px;background:linear-gradient(90deg,#eae7e7 0%,#f8f4f4 40%,#eae7e7 80%);background-size:340px 100%;animation:skshimmer 1.4s linear infinite"></div>
+<div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:7px">
+<div style="height:13px;border-radius:4px;background:linear-gradient(90deg,#eae7e7 0%,#f8f4f4 40%,#eae7e7 80%);background-size:340px 100%;animation:skshimmer 1.4s linear infinite;width:{{ k.w1 }}"></div>
+<div style="height:11px;border-radius:4px;background:linear-gradient(90deg,#eae7e7 0%,#f8f4f4 40%,#eae7e7 80%);background-size:340px 100%;animation:skshimmer 1.4s linear infinite;width:{{ k.w2 }}"></div>
+</div>
+</div>
+<div style="height:13px;border-radius:4px;background:linear-gradient(90deg,#eae7e7 0%,#f8f4f4 40%,#eae7e7 80%);background-size:340px 100%;animation:skshimmer 1.4s linear infinite;width:56%"></div>
+<div style="height:24px;width:72px;border-radius:999px;background:linear-gradient(90deg,#eae7e7 0%,#f8f4f4 40%,#eae7e7 80%);background-size:340px 100%;animation:skshimmer 1.4s linear infinite"></div>
+</div>
+</sc-for>
+<div style="padding:12px 16px;font:400 13px Archivo,sans-serif;color:var(--n600)">Five rows maximum, shown only after 300ms.</div>
+</div>
+</div>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isDetail }}">
+<div>
+<button type="button" onClick="{{ goStudents }}" style="height:40px;padding:0 12px 0 8px;border:0;background:transparent;font:700 14px Archivo,sans-serif;color:var(--n800);cursor:pointer;border-radius:8px;display:flex;align-items:center;gap:8px;margin-bottom:12px" style-hover="background:#eae7e7">← All students</button>
+
+<div style="background:#fff;border:1px solid var(--n300);border-radius:12px;box-shadow:0 1px 2px rgba(45,43,43,.14);overflow:hidden">
+<div style="padding:20px;display:flex;gap:18px;flex-wrap:wrap;align-items:flex-start">
+<span style="width:72px;height:72px;flex:none;border-radius:999px;background:var(--n950);color:#fff;font:800 24px/72px Archivo,sans-serif;text-align:center">AI</span>
+<div style="flex:1;min-width:220px">
+<div style="font:800 28px/1.1 Archivo,sans-serif;letter-spacing:-.02em">Ananya Iyer</div>
+<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px">
+<span style="font:700 12px Archivo,sans-serif;padding:5px 10px;border-radius:999px;background:var(--n200);color:var(--n900)">LTS-3 Evening</span>
+<span style="font:700 12px Archivo,sans-serif;padding:5px 10px;border-radius:999px;background:var(--n950);color:#fff">Level 3</span>
+<span style="font:700 12px Archivo,sans-serif;padding:5px 10px;border-radius:999px;background:var(--g100);color:var(--g800)">Fees paid</span>
+<span style="font:700 12px Archivo,sans-serif;padding:5px 10px;border-radius:999px;background:var(--g600);color:#fff">100% attendance</span>
+</div>
+<div style="font:400 14px/1.5 Archivo,sans-serif;color:var(--n700);margin-top:10px">Joined 12 Jan 2025 · age 9 · Coach Meera Sundaram · ₹6,500 / month</div>
+</div>
+<div style="flex:none;min-width:220px;background:var(--n100);border-radius:8px;padding:14px">
+<div style="font:600 11px Archivo,sans-serif;letter-spacing:.1em;text-transform:uppercase;color:var(--n700)">Parent contact</div>
+<div style="font:700 16px Archivo,sans-serif;margin-top:6px">Lakshmi Iyer</div>
+<div style="font:400 14px/1.5 var(--mono);color:var(--n800)">+91 98450 23117</div>
+<div style="font:400 13px/1.5 Archivo,sans-serif;color:var(--n700)">lakshmi.iyer@gmail.com</div>
+<div style="display:flex;gap:8px;margin-top:12px">
+<button type="button" style="height:44px;flex:1;border:0;border-radius:8px;background:var(--n950);color:#fff;font:700 14px Archivo,sans-serif;cursor:pointer" style-hover="background:#444141">Call</button>
+<button type="button" style="height:44px;flex:1;border:1.5px solid var(--n400);border-radius:8px;background:#fff;font:700 14px Archivo,sans-serif;cursor:pointer" style-hover="background:#f3f2f2">Message</button>
+</div>
+</div>
+</div>
+<div style="display:flex;border-top:1px solid var(--n200);border-bottom:2px solid var(--n300);overflow-x:auto">
+<sc-for list="{{ detailTabs }}" as="t" hint-placeholder-count="5">
+<button type="button" onClick="{{ t.onClick }}" style="height:52px;flex:none;padding:0 18px;border:0;background:transparent;cursor:pointer;white-space:nowrap;font:{{ t.weight }} 15px Archivo,sans-serif;color:{{ t.color }};box-shadow:{{ t.underline }}" style-hover="background:#f3f2f2">{{ t.label }}</button>
+</sc-for>
+</div>
+
+<sc-if value="{{ detailIsProgress }}" hint-placeholder-val="{{ true }}">
+<div style="padding:20px">
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px">
+<div style="background:var(--n950);border-radius:12px;padding:18px;color:#fff">
+<div style="font:600 11px Archivo,sans-serif;letter-spacing:.1em;text-transform:uppercase;color:var(--n400)">Progression to Level 4</div>
+<div style="display:flex;align-items:baseline;gap:10px;margin-top:8px">
+<span style="font:800 40px/1 Archivo,sans-serif;letter-spacing:-.03em">60%</span>
+<span style="font:600 15px Archivo,sans-serif;color:var(--n300)">3 of 5 skills</span>
+</div>
+<div style="height:12px;border-radius:999px;background:rgba(255,255,255,.16);margin-top:14px;overflow:hidden"><div style="height:100%;width:60%;border-radius:999px;background:var(--b500)"></div></div>
+<div style="display:flex;align-items:center;gap:0;margin-top:18px">
+<span style="width:24px;height:24px;flex:none;border-radius:999px;background:#fff;color:var(--n950);font:800 11px/24px Archivo,sans-serif;text-align:center">1</span>
+<span style="flex:1;height:3px;background:#fff"></span>
+<span style="width:24px;height:24px;flex:none;border-radius:999px;background:#fff;color:var(--n950);font:800 11px/24px Archivo,sans-serif;text-align:center">2</span>
+<span style="flex:1;height:3px;background:#fff"></span>
+<span style="width:32px;height:32px;flex:none;border-radius:999px;background:var(--b600);color:#fff;font:800 14px/32px Archivo,sans-serif;text-align:center;box-shadow:0 0 0 4px rgba(236,48,19,.3)">3</span>
+<span style="flex:1;height:3px;background:linear-gradient(90deg,#fff 0 60%,rgba(255,255,255,.2) 60%)"></span>
+<span style="width:24px;height:24px;flex:none;border-radius:999px;border:2px solid rgba(255,255,255,.32);color:var(--n400);font:800 11px/20px Archivo,sans-serif;text-align:center">4</span>
+<span style="flex:1;height:3px;background:rgba(255,255,255,.2)"></span>
+<span style="width:24px;height:24px;flex:none;border-radius:999px;border:2px solid rgba(255,255,255,.32);color:var(--n400);font:800 11px/20px Archivo,sans-serif;text-align:center">5</span>
+<span style="flex:1;height:3px;background:rgba(255,255,255,.2)"></span>
+<span style="width:24px;height:24px;flex:none;border-radius:999px;border:2px solid rgba(255,255,255,.32);color:var(--n400);font:800 11px/20px Archivo,sans-serif;text-align:center">6</span>
+</div>
+<div style="font:400 14px/1.5 Archivo,sans-serif;color:var(--n300);margin-top:14px">On this pace Ananya tests for Level 4 in early November.</div>
+</div>
+<div style="background:var(--n100);border:1px solid var(--n300);border-radius:12px;padding:18px">
+<div style="font:600 11px Archivo,sans-serif;letter-spacing:.1em;text-transform:uppercase;color:var(--n700)">Since joining</div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:12px">
+<div><div style="font:800 26px/1 Archivo,sans-serif">13</div><div style="font:400 13px Archivo,sans-serif;color:var(--n700)">skills achieved</div></div>
+<div><div style="font:800 26px/1 Archivo,sans-serif">20 mo</div><div style="font:400 13px Archivo,sans-serif;color:var(--n700)">at the academy</div></div>
+<div><div style="font:800 26px/1 Archivo,sans-serif">98%</div><div style="font:400 13px Archivo,sans-serif;color:var(--n700)">lifetime attendance</div></div>
+<div><div style="font:800 26px/1 Archivo,sans-serif;color:var(--g700)">2</div><div style="font:400 13px Archivo,sans-serif;color:var(--n700)">levels cleared</div></div>
+</div>
+</div>
+</div>
+
+<sc-for list="{{ skillGroups }}" as="grp" hint-placeholder-count="3">
+<div style="margin-top:22px">
+<div style="display:flex;align-items:center;gap:12px;padding-bottom:10px;border-bottom:2px solid var(--n300);flex-wrap:wrap">
+<span style="font:700 18px Archivo,sans-serif;letter-spacing:-.01em">{{ grp.title }}</span>
+<span style="font:700 11px Archivo,sans-serif;letter-spacing:.08em;text-transform:uppercase;padding:5px 10px;border-radius:999px;background:{{ grp.pillBg }};color:{{ grp.pillFg }}">{{ grp.pill }}</span>
+<span style="font:400 13px Archivo,sans-serif;color:var(--n700);margin-left:auto">{{ grp.note }}</span>
+</div>
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:10px;margin-top:12px">
+<sc-for list="{{ grp.skills }}" as="sk">
+<div style="background:{{ sk.cardBg }};border:{{ sk.cardBorder }};border-radius:12px;padding:14px;display:flex;gap:12px;align-items:flex-start">
+<span style="width:30px;height:30px;flex:none;border-radius:999px;text-align:center;font:700 15px/29px Archivo,sans-serif;background:{{ sk.iconBg }};color:{{ sk.iconFg }};border:{{ sk.iconBorder }}">{{ sk.mark }}</span>
+<div style="flex:1;min-width:0">
+<div style="font:700 16px/1.25 Archivo,sans-serif;color:{{ sk.titleColor }}">{{ sk.name }}</div>
+<div style="font:400 13px/1.45 Archivo,sans-serif;color:var(--n700);margin-top:2px">{{ sk.note }}</div>
+</div>
+<span style="font:700 11px Archivo,sans-serif;letter-spacing:.08em;text-transform:uppercase;padding:5px 9px;border-radius:999px;flex:none;background:{{ sk.badgeBg }};color:{{ sk.badgeFg }}">{{ sk.badge }}</span>
+</div>
+</sc-for>
+</div>
+</div>
+</sc-for>
+
+<div style="margin-top:26px">
+<div style="font:700 18px Archivo,sans-serif;letter-spacing:-.01em;padding-bottom:10px;border-bottom:2px solid var(--n300)">Coach updates</div>
+<div style="display:flex;flex-direction:column;gap:0;margin-top:4px">
+<sc-for list="{{ updates }}" as="u" hint-placeholder-count="4">
+<div style="display:flex;gap:14px;padding:16px 0;border-bottom:1px solid var(--n200)">
+<div style="width:132px;flex:none">
+<div style="font:700 13px Archivo,sans-serif">{{ u.date }}</div>
+<div style="font:400 13px Archivo,sans-serif;color:var(--n700)">{{ u.coach }}</div>
+</div>
+<span style="width:10px;height:10px;flex:none;border-radius:999px;margin-top:5px;background:{{ u.dot }}"></span>
+<div style="flex:1;min-width:0">
+<div style="font:700 15px/1.3 Archivo,sans-serif">{{ u.title }}</div>
+<p style="font:400 14px/1.55 Archivo,sans-serif;color:var(--n800);margin:4px 0 0">{{ u.body }}</p>
+</div>
+</div>
+</sc-for>
+</div>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ detailIsOther }}">
+<div style="padding:48px 20px;text-align:left">
+<div style="font:700 19px Archivo,sans-serif">{{ detailTabName }} tab</div>
+<p style="font:400 15px/1.55 Archivo,sans-serif;color:var(--n700);margin:6px 0 0;max-width:48ch">Not designed in this round — the Progress tab is the one specified. Say the word and I'll build this one out next.</p>
+</div>
+</sc-if>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isFees }}">
+<div>
+<div style="display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:16px">
+<div>
+<div style="font:800 26px/1.1 Archivo,sans-serif;letter-spacing:-.02em">Fees</div>
+<div style="font:400 14px Archivo,sans-serif;color:var(--n700);margin-top:4px">September 2026 · billed on the 1st · ₹5,98,500 expected</div>
+</div>
+<div style="display:flex;gap:10px;flex-wrap:wrap">
+<select value="{{ feeStatusFilter }}" onChange="{{ onFeeStatusFilter }}" style="height:44px;padding:0 12px;background:#fff;border:1.5px solid var(--n400);border-radius:8px;font:600 14px Archivo,sans-serif;cursor:pointer">
+<option value="all">All statuses</option>
+<option value="Pending">Pending</option>
+<option value="Overdue">Overdue</option>
+<option value="Paid">Paid</option>
+</select>
+<select value="{{ feeMonthFilter }}" onChange="{{ onFeeMonthFilter }}" style="height:44px;padding:0 12px;background:#fff;border:1.5px solid var(--n400);border-radius:8px;font:600 14px Archivo,sans-serif;cursor:pointer">
+<option value="Sep 2026">September 2026</option>
+<option value="Aug 2026">August 2026</option>
+<option value="Jul 2026">July 2026</option>
+</select>
+<button type="button" style="height:44px;padding:0 16px;border:0;border-radius:8px;background:var(--n950);color:#fff;font:700 15px Archivo,sans-serif;cursor:pointer" style-hover="background:#444141">Record payment</button>
+</div>
+</div>
+
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:16px">
+<div style="background:#fff;border:1px solid var(--g200);border-radius:12px;padding:18px;box-shadow:0 1px 2px rgba(45,43,43,.14)">
+<div style="font:600 11px Archivo,sans-serif;letter-spacing:.1em;text-transform:uppercase;color:var(--g800)">Collected</div>
+<div style="font:800 32px/1.05 Archivo,sans-serif;letter-spacing:-.02em;margin:8px 0 8px">₹4,86,500</div>
+<div style="height:8px;border-radius:999px;background:var(--g100);overflow:hidden"><div style="height:100%;width:81%;border-radius:999px;background:var(--g600)"></div></div>
+<div style="font:400 13px Archivo,sans-serif;color:var(--n700);margin-top:8px">81% of expected · 193 students</div>
+</div>
+<div style="background:#fff;border:1px solid var(--w200);border-radius:12px;padding:18px;box-shadow:0 1px 2px rgba(45,43,43,.14)">
+<div style="font:600 11px Archivo,sans-serif;letter-spacing:.1em;text-transform:uppercase;color:var(--w900)">Pending</div>
+<div style="font:800 32px/1.05 Archivo,sans-serif;letter-spacing:-.02em;margin:8px 0 8px">₹68,000</div>
+<div style="height:8px;border-radius:999px;background:var(--w100);overflow:hidden"><div style="height:100%;width:11%;border-radius:999px;background:var(--w300)"></div></div>
+<div style="font:400 13px Archivo,sans-serif;color:var(--n700);margin-top:8px">14 students · due within 18 days</div>
+</div>
+<div style="background:#fff;border:1.5px solid var(--b600);border-radius:12px;padding:18px;box-shadow:0 3px 10px rgba(45,43,43,.16)">
+<div style="font:600 11px Archivo,sans-serif;letter-spacing:.1em;text-transform:uppercase;color:var(--b800)">Overdue</div>
+<div style="font:800 32px/1.05 Archivo,sans-serif;letter-spacing:-.02em;margin:8px 0 8px;color:var(--b700)">₹44,000</div>
+<div style="height:8px;border-radius:999px;background:var(--b100);overflow:hidden"><div style="height:100%;width:7%;border-radius:999px;background:var(--b600)"></div></div>
+<div style="font:400 13px Archivo,sans-serif;color:var(--n700);margin-top:8px">7 students · oldest 18 days late</div>
+</div>
+</div>
+
+<div style="background:#fff;border:1px solid var(--n300);border-radius:12px;overflow:hidden;box-shadow:0 1px 2px rgba(45,43,43,.14);margin-top:16px">
+<div style="padding:14px 16px;border-bottom:1px solid var(--n200);display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+<span style="font:700 17px Archivo,sans-serif">{{ feeTableTitle }}</span>
+<span style="font:400 13px Archivo,sans-serif;color:var(--n700)">{{ feeTableCount }}</span>
+<button type="button" onClick="{{ remindAll }}" style="height:44px;margin-left:auto;padding:0 16px;border:0;border-radius:8px;background:var(--b600);color:#fff;font:700 15px Archivo,sans-serif;cursor:pointer" style-hover="background:#ae1800">Remind all overdue</button>
+</div>
+<div style="overflow-x:auto">
+<div style="min-width:820px">
+<div style="display:grid;grid-template-columns:2fr 1.3fr 1fr 1fr 1fr 140px;gap:14px;padding:11px 16px;background:var(--n100);border-bottom:2px solid var(--n400);font:600 11px Archivo,sans-serif;letter-spacing:.08em;text-transform:uppercase;color:var(--n700)">
+<span>Student</span><span>Batch</span><span>Amount due</span><span>Due date</span><span>Status</span><span></span>
+</div>
+<sc-for list="{{ feeRows }}" as="f" hint-placeholder-count="8">
+<div style="display:grid;grid-template-columns:2fr 1.3fr 1fr 1fr 1fr 140px;gap:14px;padding:12px 16px;border-bottom:1px solid var(--n200);align-items:center;min-height:64px;background:{{ f.rowBg }}">
+<div style="display:flex;align-items:center;gap:10px;min-width:0">
+<span style="width:36px;height:36px;flex:none;border-radius:999px;background:var(--n200);color:var(--n800);font:700 13px/36px Archivo,sans-serif;text-align:center">{{ f.init }}</span>
+<div style="min-width:0"><div style="font:700 15px/1.25 Archivo,sans-serif;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ f.name }}</div><div style="font:400 12px Archivo,sans-serif;color:var(--n700);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ f.parent }}</div></div>
+</div>
+<span style="font:400 14px Archivo,sans-serif;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ f.batch }}</span>
+<span style="font:700 16px Archivo,sans-serif">{{ f.amount }}</span>
+<div><div style="font:400 14px Archivo,sans-serif">{{ f.due }}</div><div style="font:600 12px Archivo,sans-serif;color:{{ f.lateColor }}">{{ f.late }}</div></div>
+<span><span style="font:700 12px Archivo,sans-serif;padding:5px 10px;border-radius:999px;white-space:nowrap;background:{{ f.badgeBg }};color:{{ f.badgeFg }}">{{ f.status }}</span></span>
+<button type="button" onClick="{{ f.onRemind }}" style="height:44px;padding:0 14px;border-radius:8px;font:700 14px Archivo,sans-serif;cursor:{{ f.btnCursor }};white-space:nowrap;background:{{ f.btnBg }};color:{{ f.btnFg }};border:{{ f.btnBorder }}">{{ f.btnLabel }}</button>
+</div>
+</sc-for>
+</div>
+</div>
+<div style="padding:12px 16px;font:400 13px Archivo,sans-serif;color:var(--n700);border-top:1px solid var(--n200)">Reminders go to the parent by WhatsApp and email; a second reminder is allowed after 72 hours.</div>
+</div>
+</div>
+</sc-if>
+
+</div>
+
+<sc-if value="{{ narrow }}">
+<div style="flex:none;display:grid;grid-template-columns:repeat(5,1fr);background:#fff;border-top:2px solid var(--n300);box-shadow:0 -3px 10px rgba(45,43,43,.08)">
+<sc-for list="{{ mobileNav }}" as="m" hint-placeholder-count="5">
+<button type="button" onClick="{{ m.onClick }}" style="height:64px;border:0;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;background:{{ m.bg }};box-shadow:{{ m.top }}">
+
+</x-dc>
+</body>
+</html>

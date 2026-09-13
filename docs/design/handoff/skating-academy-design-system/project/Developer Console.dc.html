@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link rel="stylesheet" href="_ds/modernist-5edd7b4f-fb92-43dc-aa34-0814c1b6c242/styles.css">
+<script src="_ds/modernist-5edd7b4f-fb92-43dc-aa34-0814c1b6c242/_ds_bundle.js"></script>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800&display=swap">
+<style>
+:root{
+--n100:#f3f2f2;--n200:#eae7e7;--n300:#d7d3d3;--n400:#bab6b6;--n500:#9b9797;--n600:#7d7979;--n700:#605d5d;--n800:#444141;--n900:#2d2b2b;--n950:#201e1d;
+--b200:#ffe0d9;--b300:#ffc4b8;--b500:#ff563c;--b600:#ec3013;--b700:#ae1800;--b800:#7c1405;--b900:#4d170e;
+--g200:#b4dfbd;--g400:#4cae63;--g600:#22763a;--g800:#154524;--g900:#11301a;
+--w200:#ffdb85;--w300:#fbc23f;--w800:#5d3f00;--w900:#402c00;
+--i200:#aed1f6;--i300:#7bb2ee;--i400:#4390e0;--i800:#0c3560;--i900:#0a2643;
+--srf:#2a2726;--srf2:#34302f;--line:rgba(255,255,255,.12);--line2:rgba(255,255,255,.22);
+--mono:ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+body{margin:0;background:#f3f2f2;color:#201e1d;font-family:Archivo,system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+a{color:#ae1800}a:hover{color:#7c1405}
+@keyframes skpop{from{transform:translateY(6px);opacity:0}to{transform:translateY(0);opacity:1}}
+@keyframes skspin{to{transform:rotate(360deg)}}
+</style>
+</helmet>
+
+<div style="padding:40px 44px 20px">
+<div style="display:flex;align-items:baseline;gap:12px;margin-bottom:6px">
+<span style="font:600 11px/1 var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--b700)">Developer console · v0.1</span>
+<span style="font:600 11px/1 var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--n600)">Internal super-admin · not for academy users</span>
+</div>
+<h1 style="font:800 34px/1.05 Archivo,sans-serif;letter-spacing:-.02em;margin:0 0 8px">Developer Console</h1>
+<p style="font:400 15px/1.55 Archivo,sans-serif;color:var(--n800);max-width:74ch;margin:0 0 4px">Same Archivo type and 4px spacing scale as the academy admin, inverted onto an ink ground with denser rows, monospace for every id, timestamp and trace, and a full-width environment banner. Nav, filters, expandable traces, flag toggles, job triggers and the impersonate modal all work.</p>
+</div>
+
+<div style="padding:0 44px 44px">
+<div style="position:relative;border-radius:12px;overflow:hidden;box-shadow:0 12px 32px rgba(45,43,43,.22);background:var(--n950);color:var(--n100)">
+
+<div style="display:flex;align-items:center;gap:14px;padding:0 16px;height:40px;background:{{ envBg }};color:{{ envFg }};flex-wrap:wrap">
+<span style="font:800 12px var(--mono);letter-spacing:.22em">{{ envLabel }}</span>
+<span style="width:1px;height:18px;background:{{ envRule }}"></span>
+<span style="font:600 12px var(--mono);letter-spacing:.04em">{{ envHost }}</span>
+<span style="font:600 12px var(--mono);letter-spacing:.04em;opacity:.8">build {{ envBuild }}</span>
+<button type="button" onClick="{{ toggleEnv }}" style="margin-left:auto;height:26px;padding:0 10px;border:1.5px solid {{ envRule }};border-radius:6px;background:transparent;color:{{ envFg }};font:700 11px var(--mono);letter-spacing:.1em;cursor:pointer" style-hover="background:rgba(255,255,255,.16)">SWITCH ENV</button>
+</div>
+
+<div style="display:flex;min-height:920px">
+
+<div style="width:212px;flex:none;background:#161413;border-right:1px solid var(--line);padding:14px 10px;display:flex;flex-direction:column;gap:2px">
+<div style="padding:0 8px 14px">
+<div style="font:800 14px Archivo,sans-serif;letter-spacing:-.01em">Rinkops<span style="color:var(--b500)">/</span>dev</div>
+<div style="font:500 10px var(--mono);letter-spacing:.14em;color:var(--n600);margin-top:3px">SUPER ADMIN</div>
+</div>
+<sc-for list="{{ navItems }}" as="it" hint-placeholder-count="5">
+<button type="button" onClick="{{ it.onClick }}" style="height:38px;display:flex;align-items:center;gap:9px;padding:0 9px;border:0;border-radius:6px;cursor:pointer;text-align:left;width:100%;font:{{ it.weight }} 13px Archivo,sans-serif;background:{{ it.bg }};color:{{ it.fg }}" style-hover="background:rgba(255,255,255,.1)">
+<span style="width:6px;height:6px;flex:none;border-radius:2px;background:{{ it.dot }}"></span>
+<span style="flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ it.label }}</span>
+<sc-if value="{{ it.badge }}"><span style="font:700 10px var(--mono);padding:2px 6px;border-radius:999px;background:{{ it.badgeBg }};color:#fff">{{ it.badge }}</span></sc-if>
+</button>
+</sc-for>
+<div style="margin-top:auto;padding:12px 8px 0;border-top:1px solid var(--line)">
+<div style="font:500 10px/1.7 var(--mono);color:var(--n600)">region ap-south-1<br>pg 15.4 · redis 7.2<br>uptime 47d 06:12</div>
+</div>
+</div>
+
+<div style="flex:1;min-width:0;display:flex;flex-direction:column">
+
+<div style="flex:none;min-height:56px;border-bottom:1px solid var(--line);background:var(--srf);display:flex;align-items:center;gap:14px;padding:8px 16px;flex-wrap:wrap">
+<span style="font:700 15px Archivo,sans-serif;letter-spacing:-.01em">{{ screenTitle }}</span>
+<span style="font:500 11px var(--mono);color:var(--n500)">{{ screenMeta }}</span>
+<div style="flex:1;min-width:0;max-width:320px;margin-left:auto">
+<input type="text" value="{{ query }}" onChange="{{ onQuery }}" placeholder="jump to academy, user id, trace id" style="width:100%;height:34px;padding:0 10px;background:#161413;border:1px solid var(--line2);border-radius:6px;font:500 12px var(--mono);color:var(--n100);outline-offset:2px" style-focus="border-color:#ec3013;outline:2px solid rgba(236,48,19,.5)">
+</div>
+<span style="font:600 11px var(--mono);color:var(--w300);padding:4px 8px;border-radius:6px;background:rgba(251,194,63,.14);border:1px solid rgba(251,194,63,.4)">3 alerts</span>
+<span style="width:32px;height:32px;flex:none;border-radius:999px;background:var(--b600);color:#fff;font:700 11px/32px var(--mono);text-align:center">DV</span>
+</div>
+
+<div style="flex:1;min-width:0;overflow:auto;padding:16px">
+
+<sc-if value="{{ isOverview }}" hint-placeholder-val="{{ true }}">
+<div>
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(196px,1fr));gap:10px">
+<sc-for list="{{ statCards }}" as="c" hint-placeholder-count="6">
+<div style="background:var(--srf);border:1px solid {{ c.border }};border-radius:8px;padding:12px">
+<div style="font:600 10px var(--mono);letter-spacing:.14em;color:{{ c.labelColor }}">{{ c.label }}</div>
+<div style="font:800 28px/1.1 Archivo,sans-serif;letter-spacing:-.02em;margin:6px 0 4px;color:{{ c.valueColor }}">{{ c.value }}</div>
+<div style="display:flex;align-items:baseline;gap:6px"><span style="font:700 11px var(--mono);color:{{ c.trendColor }}">{{ c.trend }}</span><span style="font:400 11px var(--mono);color:var(--n500)">{{ c.sub }}</span></div>
+</div>
+</sc-for>
+</div>
+
+<div style="background:var(--srf);border:1px solid var(--line);border-radius:8px;padding:14px;margin-top:10px">
+<div style="display:flex;align-items:baseline;gap:14px;flex-wrap:wrap">
+<span style="font:700 15px Archivo,sans-serif">API requests and errors</span>
+<span style="font:500 11px var(--mono);color:var(--n500)">last 24h · 1h buckets · UTC+05:30</span>
+<div style="display:flex;gap:12px;margin-left:auto">
+<span style="display:flex;align-items:center;gap:5px;font:600 11px var(--mono);color:var(--n300)"><span style="width:10px;height:10px;background:var(--i400)"></span>requests</span>
+<span style="display:flex;align-items:center;gap:5px;font:600 11px var(--mono);color:var(--n300)"><span style="width:10px;height:10px;background:var(--b600)"></span>5xx errors</span>
+</div>
+</div>
+<svg viewBox="0 0 960 260" style="width:100%;height:auto;margin-top:12px;display:block" data-om-raster>
+<line x1="46" y1="16" x2="948" y2="16" stroke="rgba(255,255,255,.08)" stroke-width="1"></line>
+<line x1="46" y1="66" x2="948" y2="66" stroke="rgba(255,255,255,.08)" stroke-width="1"></line>
+<line x1="46" y1="116" x2="948" y2="116" stroke="rgba(255,255,255,.08)" stroke-width="1"></line>
+<line x1="46" y1="166" x2="948" y2="166" stroke="rgba(255,255,255,.08)" stroke-width="1"></line>
+<line x1="46" y1="216" x2="948" y2="216" stroke="rgba(255,255,255,.35)" stroke-width="1.5"></line>
+<text x="6" y="20" font-family="ui-monospace,Menlo,monospace" font-size="10" fill="#9b9797">40k</text>
+<text x="6" y="70" font-family="ui-monospace,Menlo,monospace" font-size="10" fill="#9b9797">30k</text>
+<text x="6" y="120" font-family="ui-monospace,Menlo,monospace" font-size="10" fill="#9b9797">20k</text>
+<text x="6" y="170" font-family="ui-monospace,Menlo,monospace" font-size="10" fill="#9b9797">10k</text>
+<text x="14" y="220" font-family="ui-monospace,Menlo,monospace" font-size="10" fill="#9b9797">0</text>
+<polyline points="60,196 97,201 134,204 171,199 208,186 245,152 282,121 319,104 356,96 393,101 430,112 467,118 504,109 541,92 578,74 615,58 652,44 689,52 726,66 763,71 800,86 837,124 874,161 911,184" fill="none" stroke="#4390e0" stroke-width="2.5"></polyline>
+<rect x="56" y="214" width="8" height="2" fill="#ec3013"></rect><rect x="93" y="213" width="8" height="3" fill="#ec3013"></rect><rect x="130" y="214" width="8" height="2" fill="#ec3013"></rect><rect x="167" y="212" width="8" height="4" fill="#ec3013"></rect><rect x="204" y="211" width="8" height="5" fill="#ec3013"></rect><rect x="241" y="209" width="8" height="7" fill="#ec3013"></rect><rect x="278" y="206" width="8" height="10" fill="#ec3013"></rect><rect x="315" y="208" width="8" height="8" fill="#ec3013"></rect><rect x="352" y="210" width="8" height="6" fill="#ec3013"></rect><rect x="389" y="207" width="8" height="9" fill="#ec3013"></rect><rect x="426" y="204" width="8" height="12" fill="#ec3013"></rect><rect x="463" y="209" width="8" height="7" fill="#ec3013"></rect><rect x="500" y="211" width="8" height="5" fill="#ec3013"></rect><rect x="537" y="210" width="8" height="6" fill="#ec3013"></rect><rect x="574" y="206" width="8" height="10" fill="#ec3013"></rect><rect x="611" y="181" width="8" height="35" fill="#ec3013"></rect><rect x="648" y="150" width="8" height="66" fill="#ec3013"></rect><rect x="685" y="168" width="8" height="48" fill="#ec3013"></rect><rect x="722" y="200" width="8" height="16" fill="#ec3013"></rect><rect x="759" y="208" width="8" height="8" fill="#ec3013"></rect><rect x="796" y="210" width="8" height="6" fill="#ec3013"></rect><rect x="833" y="212" width="8" height="4" fill="#ec3013"></rect><rect x="870" y="213" width="8" height="3" fill="#ec3013"></rect><rect x="907" y="214" width="8" height="2" fill="#ec3013"></rect>
+<line x1="652" y1="16" x2="652" y2="216" stroke="rgba(236,48,19,.45)" stroke-width="1" stroke-dasharray="3 3"></line>
+<text x="600" y="12" font-family="ui-monospace,Menlo,monospace" font-size="10" font-weight="700" fill="#ff563c">18:00 spike · 1,412 5xx</text>
+<text x="52" y="238" font-family="ui-monospace,Menlo,monospace" font-size="10" fill="#7d7979">00:00</text>
+<text x="272" y="238" font-family="ui-monospace,Menlo,monospace" font-size="10" fill="#7d7979">06:00</text>
+<text x="494" y="238" font-family="ui-monospace,Menlo,monospace" font-size="10" fill="#7d7979">12:00</text>
+<text x="716" y="238" font-family="ui-monospace,Menlo,monospace" font-size="10" fill="#7d7979">18:00</text>
+<text x="900" y="238" font-family="ui-monospace,Menlo,monospace" font-size="10" fill="#7d7979">23:00</text>
+<text x="46" y="256" font-family="ui-monospace,Menlo,monospace" font-size="10" fill="#9b9797">p95 latency 240ms · error rate 0.41% · peak 38.4k req/h at 17:00</text>
+</svg>
+</div>
+
+<div style="background:var(--srf);border:1px solid var(--line);border-radius:8px;margin-top:10px;overflow:hidden">
+<div style="padding:12px 14px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+<span style="font:700 15px Archivo,sans-serif">Recent errors</span>
+<span style="font:500 11px var(--mono);color:var(--n500)">1,847 in last 24h · 6 shown</span>
+<button type="button" onClick="{{ goErrors }}" style="margin-left:auto;height:32px;padding:0 12px;border:1px solid var(--line2);border-radius:6px;background:transparent;color:var(--n100);font:700 11px var(--mono);letter-spacing:.08em;cursor:pointer" style-hover="background:rgba(255,255,255,.1)">OPEN ERROR LOG</button>
+</div>
+<div style="overflow-x:auto"><div style="min-width:880px">
+<div style="display:grid;grid-template-columns:150px 68px 1.1fr 1.1fr 2.4fr;gap:12px;padding:8px 14px;background:#161413;border-bottom:1px solid var(--line);font:600 10px var(--mono);letter-spacing:.12em;color:var(--n500)">
+<span>TIMESTAMP</span><span>SEV</span><span>ACADEMY</span><span>USER</span><span>MESSAGE</span>
+</div>
+<sc-for list="{{ recentErrors }}" as="e" hint-placeholder-count="6">
+<div style="display:grid;grid-template-columns:150px 68px 1.1fr 1.1fr 2.4fr;gap:12px;padding:9px 14px;border-bottom:1px solid rgba(255,255,255,.07);align-items:center">
+<span style="font:500 11px var(--mono);color:var(--n400)">{{ e.ts }}</span>
+<span><span style="font:700 10px var(--mono);letter-spacing:.08em;padding:3px 6px;border-radius:4px;background:{{ e.sevBg }};color:{{ e.sevFg }}">{{ e.sev }}</span></span>
+<span style="font:500 12px Archivo,sans-serif;color:var(--n200);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ e.academy }}</span>
+<span style="font:500 11px var(--mono);color:var(--n400);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ e.user }}</span>
+<span style="font:500 11px/1.45 var(--mono);color:var(--n200);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ e.msg }}</span>
+</div>
+</sc-for>
+</div></div>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isAcademies }}">
+<div>
+<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px">
+<span style="font:500 11px var(--mono);color:var(--n400)">28 academies · 3 suspended · 1 trial expiring</span>
+<div style="display:flex;gap:8px;margin-left:auto">
+<button type="button" style="height:34px;padding:0 12px;border:1px solid var(--line2);border-radius:6px;background:transparent;color:var(--n100);font:700 11px var(--mono);letter-spacing:.08em;cursor:pointer" style-hover="background:rgba(255,255,255,.1)">EXPORT</button>
+<button type="button" style="height:34px;padding:0 12px;border:0;border-radius:6px;background:var(--n100);color:var(--n950);font:700 11px var(--mono);letter-spacing:.08em;cursor:pointer" style-hover="background:#bab6b6">+ NEW ACADEMY</button>
+</div>
+</div>
+<div style="background:var(--srf);border:1px solid var(--line);border-radius:8px;overflow:hidden">
+<div style="overflow-x:auto"><div style="min-width:1080px">
+<div style="display:grid;grid-template-columns:1.7fr 92px 78px 84px 96px 96px 108px 210px;gap:10px;padding:8px 14px;background:#161413;border-bottom:1px solid var(--line);font:600 10px var(--mono);letter-spacing:.12em;color:var(--n500)">
+<span>ACADEMY</span><span>PLAN</span><span>STUDENTS</span><span>ACTIVE 7D</span><span>STORAGE</span><span>STATUS</span><span>CREATED</span><span>ACTIONS</span>
+</div>
+<sc-for list="{{ academies }}" as="a" hint-placeholder-count="8">
+<div style="display:grid;grid-template-columns:1.7fr 92px 78px 84px 96px 96px 108px 210px;gap:10px;padding:9px 14px;border-bottom:1px solid rgba(255,255,255,.07);align-items:center;background:{{ a.rowBg }}">
+<div style="min-width:0">
+<div style="font:700 13px/1.25 Archivo,sans-serif;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:{{ a.nameColor }}">{{ a.name }}</div>
+<div style="font:500 10px var(--mono);color:var(--n500);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ a.id }} · {{ a.city }}</div>
+</div>
+<span><span style="font:700 10px var(--mono);letter-spacing:.06em;padding:3px 7px;border-radius:4px;background:{{ a.planBg }};color:{{ a.planFg }}">{{ a.plan }}</span></span>
+<span style="font:600 12px var(--mono);color:var(--n200)">{{ a.students }}</span>
+<span style="font:600 12px var(--mono);color:var(--n200)">{{ a.active }}</span>
+<div style="min-width:0">
+<div style="font:600 11px var(--mono);color:{{ a.storeColor }}">{{ a.storage }}</div>
+<div style="height:4px;border-radius:999px;background:rgba(255,255,255,.14);margin-top:3px;overflow:hidden"><div style="height:100%;border-radius:999px;background:{{ a.storeColor }};width:{{ a.storeW }}"></div></div>
+</div>
+<span><span style="font:700 10px var(--mono);letter-spacing:.06em;padding:3px 7px;border-radius:4px;background:{{ a.statusBg }};color:{{ a.statusFg }}">{{ a.status }}</span></span>
+<span style="font:500 11px var(--mono);color:var(--n400)">{{ a.created }}</span>
+<div style="display:flex;gap:5px;flex-wrap:wrap">
+<button type="button" style="height:28px;padding:0 8px;border:1px solid var(--line2);border-radius:5px;background:transparent;color:var(--n200);font:700 10px var(--mono);letter-spacing:.06em;cursor:pointer" style-hover="background:rgba(255,255,255,.12)">VIEW</button>
+<button type="button" onClick="{{ a.onImpersonate }}" style="height:28px;padding:0 8px;border:1px solid rgba(251,194,63,.5);border-radius:5px;background:rgba(251,194,63,.12);color:var(--w300);font:700 10px var(--mono);letter-spacing:.06em;cursor:pointer" style-hover="background:rgba(251,194,63,.24)">IMPERSONATE</button>
+<button type="button" style="height:28px;padding:0 8px;border:1px solid rgba(236,48,19,.5);border-radius:5px;background:rgba(236,48,19,.12);color:var(--b500);font:700 10px var(--mono);letter-spacing:.06em;cursor:pointer" style-hover="background:rgba(236,48,19,.26)">{{ a.suspendLabel }}</button>
+<button type="button" onClick="{{ goFlags }}" style="height:28px;padding:0 8px;border:1px solid var(--line2);border-radius:5px;background:transparent;color:var(--n200);font:700 10px var(--mono);letter-spacing:.06em;cursor:pointer" style-hover="background:rgba(255,255,255,.12)">FLAGS</button>
+</div>
+</div>
+</sc-for>
+</div></div>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isErrors }}">
+<div>
+<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:10px">
+<sc-for list="{{ sevFilters }}" as="s" hint-placeholder-count="4">
+<button type="button" onClick="{{ s.onClick }}" style="height:32px;padding:0 11px;border:1px solid {{ s.border }};border-radius:6px;background:{{ s.bg }};color:{{ s.fg }};font:700 10px var(--mono);letter-spacing:.1em;cursor:pointer">{{ s.label }}</button>
+</sc-for>
+<select value="{{ academyFilter }}" onChange="{{ onAcademyFilter }}" style="height:32px;padding:0 8px;border:1px solid var(--line2);border-radius:6px;background:#161413;color:var(--n100);font:600 11px var(--mono);cursor:pointer">
+<option value="all">all academies</option>
+<option value="Northgate Skating Academy">Northgate Skating Academy</option>
+<option value="Iceberg Ice Sports, Pune">Iceberg Ice Sports, Pune</option>
+<option value="Frost Blades, Gurugram">Frost Blades, Gurugram</option>
+<option value="Chennai Ice Club">Chennai Ice Club</option>
+</select>
+<select value="{{ rangeFilter }}" onChange="{{ onRangeFilter }}" style="height:32px;padding:0 8px;border:1px solid var(--line2);border-radius:6px;background:#161413;color:var(--n100);font:600 11px var(--mono);cursor:pointer">
+<option value="24h">last 24 hours</option>
+<option value="7d">last 7 days</option>
+<option value="30d">last 30 days</option>
+</select>
+<span style="font:500 11px var(--mono);color:var(--n500);margin-left:auto">{{ errCountLabel }}</span>
+</div>
+<div style="background:var(--srf);border:1px solid var(--line);border-radius:8px;overflow:hidden">
+<div style="display:grid;grid-template-columns:20px 150px 68px 1.1fr 1fr 1.9fr 1fr 96px;gap:10px;padding:8px 14px;background:#161413;border-bottom:1px solid var(--line);font:600 10px var(--mono);letter-spacing:.12em;color:var(--n500)">
+<span></span><span>TIMESTAMP</span><span>SEV</span><span>ACADEMY</span><span>USER</span><span>MESSAGE</span><span>ROUTE</span><span></span>
+</div>
+<sc-for list="{{ errorRows }}" as="e" hint-placeholder-count="6">
+<div>
+<div onClick="{{ e.onToggle }}" style="display:grid;grid-template-columns:20px 150px 68px 1.1fr 1fr 1.9fr 1fr 96px;gap:10px;padding:9px 14px;border-bottom:1px solid rgba(255,255,255,.07);align-items:center;cursor:pointer;background:{{ e.rowBg }}" style-hover="background:rgba(255,255,255,.06)">
+<span style="font:700 11px var(--mono);color:var(--n400)">{{ e.caret }}</span>
+<span style="font:500 11px var(--mono);color:var(--n400)">{{ e.ts }}</span>
+<span><span style="font:700 10px var(--mono);letter-spacing:.08em;padding:3px 6px;border-radius:4px;background:{{ e.sevBg }};color:{{ e.sevFg }}">{{ e.sev }}</span></span>
+<span style="font:500 12px Archivo,sans-serif;color:var(--n200);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ e.academy }}</span>
+<span style="font:500 11px var(--mono);color:var(--n400);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ e.user }}</span>
+<span style="font:500 11px var(--mono);color:{{ e.msgColor }};min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ e.msg }}</span>
+<span style="font:500 11px var(--mono);color:var(--i300);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ e.route }}</span>
+<button type="button" onClick="{{ e.onResolve }}" style="height:26px;padding:0 7px;border:1px solid {{ e.resBorder }};border-radius:5px;background:{{ e.resBg }};color:{{ e.resFg }};font:700 9px var(--mono);letter-spacing:.06em;cursor:pointer">{{ e.resLabel }}</button>
+</div>
+<sc-if value="{{ e.open }}">
+<div style="padding:12px 14px 14px 44px;background:#161413;border-bottom:1px solid var(--line);animation:skpop .14s ease-out">
+<div style="display:flex;gap:14px;flex-wrap:wrap;margin-bottom:10px">
+<span style="font:500 10px var(--mono);color:var(--n500)">trace <span style="color:var(--n200)">{{ e.trace }}</span></span>
+<span style="font:500 10px var(--mono);color:var(--n500)">occurrences <span style="color:var(--n200)">{{ e.count }}</span></span>
+<span style="font:500 10px var(--mono);color:var(--n500)">release <span style="color:var(--n200)">{{ e.release }}</span></span>
+<span style="font:500 10px var(--mono);color:var(--n500)">device <span style="color:var(--n200)">{{ e.device }}</span></span>
+</div>
+<pre style="margin:0;padding:12px;background:#0d0c0b;border:1px solid var(--line);border-radius:6px;overflow:auto;font:400 11px/1.7 var(--mono);color:var(--n200)">{{ e.stack }}</pre>
+</div>
+</sc-if>
+</div>
+</sc-for>
+<div style="padding:10px 14px;font:500 11px var(--mono);color:var(--n500)">Resolving marks every occurrence of the fingerprint and notifies #rinkops-alerts.</div>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isFlags }}">
+<div>
+<div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:10px">
+<span style="font:500 11px var(--mono);color:var(--n400)">7 flags · 2 global on · 1 global off · 4 per-academy</span>
+<div style="display:flex;gap:14px;margin-left:auto;flex-wrap:wrap">
+<span style="display:flex;align-items:center;gap:6px;font:600 10px var(--mono);letter-spacing:.08em;color:var(--n400)"><span style="width:22px;height:13px;border-radius:999px;background:var(--g600);position:relative"><span style="position:absolute;right:1.5px;top:1.5px;width:10px;height:10px;border-radius:999px;background:#fff"></span></span>ON</span>
+<span style="display:flex;align-items:center;gap:6px;font:600 10px var(--mono);letter-spacing:.08em;color:var(--n400)"><span style="width:22px;height:13px;border-radius:999px;background:rgba(255,255,255,.2);position:relative"><span style="position:absolute;left:1.5px;top:1.5px;width:10px;height:10px;border-radius:999px;background:var(--n400)"></span></span>OFF</span>
+<span style="display:flex;align-items:center;gap:6px;font:600 10px var(--mono);letter-spacing:.08em;color:var(--n400)"><span style="width:22px;height:13px;border-radius:999px;background:rgba(251,194,63,.35);border:1px solid var(--w300)"></span>INHERITED</span>
+</div>
+</div>
+<div style="background:var(--srf);border:1px solid var(--line);border-radius:8px;overflow:hidden">
+<div style="overflow-x:auto"><div style="min-width:1000px">
+<div style="display:grid;grid-template-columns:2.1fr 108px repeat(4,1fr);gap:10px;padding:9px 14px;background:#161413;border-bottom:1px solid var(--line);font:600 10px var(--mono);letter-spacing:.12em;color:var(--n500)">
+<span>FLAG</span><span>GLOBAL</span><span>NORTHGATE</span><span>ICEBERG PUNE</span><span>FROST BLADES</span><span>CHENNAI ICE</span>
+</div>
+<sc-for list="{{ flags }}" as="f" hint-placeholder-count="7">
+<div style="display:grid;grid-template-columns:2.1fr 108px repeat(4,1fr);gap:10px;padding:11px 14px;border-bottom:1px solid rgba(255,255,255,.07);align-items:center">
+<div style="min-width:0">
+<div style="font:600 12px var(--mono);color:var(--n100);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ f.key }}</div>
+<div style="font:400 11px/1.4 Archivo,sans-serif;color:var(--n500)">{{ f.desc }}</div>
+</div>
+<div style="display:flex;align-items:center;gap:7px">
+<span onClick="{{ f.onGlobal }}" style="width:34px;height:19px;flex:none;border-radius:999px;cursor:pointer;position:relative;background:{{ f.gTrack }};border:{{ f.gBorder }}"><span style="position:absolute;top:2px;left:{{ f.gKnobX }};width:13px;height:13px;border-radius:999px;background:{{ f.gKnob }}"></span></span>
+<span style="font:700 9px var(--mono);letter-spacing:.08em;color:{{ f.gLabelColor }}">{{ f.gLabel }}</span>
+</div>
+<sc-for list="{{ f.cells }}" as="c">
+<div style="display:flex;align-items:center;gap:7px">
+<span onClick="{{ c.onToggle }}" style="width:34px;height:19px;flex:none;border-radius:999px;cursor:{{ c.cursor }};position:relative;background:{{ c.track }};border:{{ c.border }};opacity:{{ c.opacity }}"><span style="position:absolute;top:2px;left:{{ c.knobX }};width:13px;height:13px;border-radius:999px;background:{{ c.knob }}"></span></span>
+<span style="font:700 9px var(--mono);letter-spacing:.06em;color:{{ c.labelColor }}">{{ c.label }}</span>
+</div>
+</sc-for>
+</div>
+</sc-for>
+</div></div>
+<div style="padding:10px 14px;font:500 11px var(--mono);color:var(--n500);border-top:1px solid var(--line)">Per-academy overrides beat global. A global flip writes an audit entry per affected academy.</div>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isJobs }}">
+<div>
+<div style="background:var(--srf);border:1px solid var(--line);border-radius:8px;overflow:hidden">
+<div style="padding:12px 14px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+<span style="font:700 15px Archivo,sans-serif">Background jobs</span>
+<span style="font:500 11px var(--mono);color:var(--n500)">9 scheduled · 2 failing · worker pool 4/4 healthy</span>
+</div>
+<div style="overflow-x:auto"><div style="min-width:1000px">
+<div style="display:grid;grid-template-columns:1.9fr 108px 1.1fr 1.1fr 82px 110px;gap:10px;padding:8px 14px;background:#161413;border-bottom:1px solid var(--line);font:600 10px var(--mono);letter-spacing:.12em;color:var(--n500)">
+<span>JOB</span><span>STATUS</span><span>LAST RUN</span><span>NEXT RUN</span><span>DURATION</span><span></span>
+</div>
+<sc-for list="{{ jobs }}" as="j" hint-placeholder-count="9">
+<div style="display:grid;grid-template-columns:1.9fr 108px 1.1fr 1.1fr 82px 110px;gap:10px;padding:10px 14px;border-bottom:1px solid rgba(255,255,255,.07);align-items:center;background:{{ j.rowBg }}">
+<div style="min-width:0">
+<div style="font:600 12px var(--mono);color:var(--n100);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ j.name }}</div>
+<div style="font:400 11px Archivo,sans-serif;color:var(--n500);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ j.schedule }}{{ j.error }}</div>
+</div>
+<span><span style="font:700 10px var(--mono);letter-spacing:.06em;padding:3px 7px;border-radius:4px;background:{{ j.stBg }};color:{{ j.stFg }}">{{ j.status }}</span></span>
+<span style="font:500 11px var(--mono);color:var(--n300)">{{ j.last }}</span>
+<span style="font:500 11px var(--mono);color:var(--n400)">{{ j.next }}</span>
+<span style="font:500 11px var(--mono);color:var(--n300)">{{ j.dur }}</span>
+<button type="button" onClick="{{ j.onRun }}" style="height:28px;padding:0 9px;border:1px solid {{ j.runBorder }};border-radius:5px;background:{{ j.runBg }};color:{{ j.runFg }};font:700 10px var(--mono);letter-spacing:.06em;cursor:pointer;display:flex;align-items:center;gap:6px" style-hover="background:rgba(255,255,255,.14)">{{ j.runLabel }}</button>
+</div>
+</sc-for>
+</div></div>
+</div>
+
+<div style="background:var(--srf);border:1px solid var(--line);border-radius:8px;overflow:hidden;margin-top:10px">
+<div style="padding:12px 14px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+<span style="font:700 15px Archivo,sans-serif">Audit log</span>
+<span style="font:500 11px var(--mono);color:var(--n500)">admin actions · retained 400 days · immutable</span>
+<button type="button" style="margin-left:auto;height:32px;padding:0 12px;border:1px solid var(--line2);border-radius:6px;background:transparent;color:var(--n100);font:700 11px var(--mono);letter-spacing:.08em;cursor:pointer" style-hover="background:rgba(255,255,255,.1)">EXPORT CSV</button>
+</div>
+<div style="overflow-x:auto"><div style="min-width:1000px">
+<div style="display:grid;grid-template-columns:150px 1.1fr 1.2fr 1.3fr 1.5fr;gap:10px;padding:8px 14px;background:#161413;border-bottom:1px solid var(--line);font:600 10px var(--mono);letter-spacing:.12em;color:var(--n500)">
+<span>WHEN</span><span>WHO</span><span>ACTION</span><span>ACADEMY</span><span>DETAIL</span>
+</div>
+<sc-for list="{{ audit }}" as="a" hint-placeholder-count="8">
+<div style="display:grid;grid-template-columns:150px 1.1fr 1.2fr 1.3fr 1.5fr;gap:10px;padding:9px 14px;border-bottom:1px solid rgba(255,255,255,.07);align-items:center">
+<span style="font:500 11px var(--mono);color:var(--n400)">{{ a.ts }}</span>
+<span style="font:500 11px var(--mono);color:var(--n200);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ a.who }}</span>
+<span><span style="font:700 10px var(--mono);letter-spacing:.06em;padding:3px 7px;border-radius:4px;background:{{ a.actBg }};color:{{ a.actFg }}">{{ a.action }}</span></span>
+<span style="font:500 12px Archivo,sans-serif;color:var(--n200);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ a.academy }}</span>
+<span style="font:500 11px var(--mono);color:var(--n400);min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ a.detail }}</span>
+</div>
+</sc-for>
+</div></div>
+</div>
+</div>
+</sc-if>
+
+</div>
+</div>
+</div>
+
+<sc-if value="{{ impersonateTarget }}">
+<div style="position:absolute;inset:0;z-index:60;background:rgba(13,12,11,.72);display:flex;align-items:center;justify-content:center;padding:24px" onClick="{{ closeImpersonate }}">
+<div style="width:100%;max-width:520px;background:var(--srf);border:1px solid rgba(251,194,63,.5);border-radius:8px;box-shadow:0 12px 32px rgba(0,0,0,.5);overflow:hidden;animation:skpop .16s ease-out">
+<div style="background:var(--w300);color:var(--w900);padding:9px 16px;font:800 11px var(--mono);letter-spacing:.18em">ELEVATED ACTION · LOGGED</div>
+<div style="padding:18px 16px">
+<div style="font:800 22px/1.2 Archivo,sans-serif;letter-spacing:-.015em;color:var(--n100)">Impersonate an owner at {{ impersonateTarget }}?</div>
+<p style="font:400 14px/1.55 Archivo,sans-serif;color:var(--n300);margin:10px 0 14px">You will see the academy admin exactly as <span style="font:600 13px var(--mono);color:var(--n100)">{{ impersonateUser }}</span> sees it, with write access. Every request you make is attributed to your account, not theirs.</p>
+<div style="background:#161413;border:1px solid var(--line);border-radius:6px;padding:12px;font:500 11px/1.9 var(--mono);color:var(--n300)">
+<div>audit.actor <span style="color:var(--n100)">dev@rinkops.io</span></div>
+<div>audit.action <span style="color:var(--w300)">IMPERSONATE_START</span></div>
+<div>audit.academy <span style="color:var(--n100)">{{ impersonateId }}</span></div>
+<div>session.ttl <span style="color:var(--n100)">30 minutes · auto-revoked</span></div>
+<div>notify <span style="color:var(--n100)">academy owner + #rinkops-audit</span></div>
+</div>
+<div style="display:flex;gap:10px;margin-top:16px;flex-wrap:wrap">
+<button type="button" onClick="{{ confirmImpersonate }}" style="flex:1;min-width:160px;height:44px;border:0;border-radius:6px;background:var(--w300);color:var(--w900);font:700 14px Archivo,sans-serif;cursor:pointer" style-hover="background:#ffdb85">Start impersonation</button>
+<button type="button" onClick="{{ closeImpersonate }}" style="flex:1;min-width:120px;height:44px;border:1px solid var(--line2);border-radius:6px;background:transparent;color:var(--n100);font:700 14px Archivo,sans-serif;cursor:pointer" style-hover="background:rgba(255,255,255,.1)">Cancel</button>
+</div>
+</div>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ toast }}">
+<div style="position:absolute;left:16px;bottom:16px;z-index:70;display:flex;gap:10px;align-items:center;background:#0d0c0b;border:1px solid var(--line2);border-radius:6px;padding:11px 14px;box-shadow:0 12px 32px rgba(0,0,0,.5);animation:skpop .16s ease-out">
+<span style="width:8px;height:8px;border-radius:999px;background:var(--g400);flex:none"></span>
+<span style="font:600 11px var(--mono);color:var(--n100)">{{ toast }}</span>
+</div>
+</sc-if>
+
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1440}}">
+const SEV = {
+  FATAL: { bg: "#ec3013", fg: "#ffffff" },
+  ERROR: { bg: "rgba(236,48,19,.2)", fg: "#ff563c" },
+  WARN:  { bg: "rgba(251,194,63,.18)", fg: "#fbc23f" },
+  INFO:  { bg: "rgba(67,144,224,.18)", fg: "#7bb2ee" }
+};
+
+const ERRORS = [
+  { id: "e1", ts: "2026-09-13 18:04:11", sev: "FATAL", academy: "Iceberg Ice Sports, Pune", user: "owner@iceberg.in · usr_8f21c", msg: "PoolTimeout: connection pool exhausted (size=20, waiting=64)", route: "POST /api/attendance/bulk", trace: "trc_7f31a9e2", count: "1,412 in 22 min", release: "v2.14.3", device: "server", resolved: false,
+    stack: "PoolTimeout: connection pool exhausted (size=20, waiting=64)\n    at Pool.acquire (/srv/api/node_modules/pg-pool/index.js:214:17)\n    at async AttendanceRepo.bulkUpsert (/srv/api/src/repo/attendance.ts:88:22)\n    at async AttendanceService.markBatch (/srv/api/src/svc/attendance.ts:141:5)\n    at async POST /api/attendance/bulk (/srv/api/src/routes/attendance.ts:37:9)\n  caused by: 64 concurrent bulk writes from batch LTS-3 Evening (n=18 coaches)\n  context: { academy_id: 'acd_0193f', batch_id: 'bch_44a1', rows: 18 }" },
+  { id: "e2", ts: "2026-09-13 18:03:47", sev: "ERROR", academy: "Northgate Skating Academy", user: "meera.s@northgate.in · usr_3ba09", msg: "TypeError: Cannot read properties of undefined (reading 'level')", route: "GET /api/students/:id/progress", trace: "trc_5c08b117", count: "37 in 6 h", release: "v2.14.3", device: "iOS 26.0 · Safari", resolved: false,
+    stack: "TypeError: Cannot read properties of undefined (reading 'level')\n    at mapSkillGroups (/srv/api/src/svc/progress.ts:62:31)\n    at Array.map (<anonymous>)\n    at ProgressService.forStudent (/srv/api/src/svc/progress.ts:58:24)\n    at GET /api/students/:id/progress (/srv/api/src/routes/students.ts:104:11)\n  note: student stu_71c4d has skills recorded against a deleted curriculum level (lvl_legacy_2)" },
+  { id: "e3", ts: "2026-09-13 17:58:02", sev: "WARN", academy: "Frost Blades, Gurugram", user: "system · job_fee_reminders", msg: "WhatsApp template rejected: fee_reminder_v3 not approved in locale hi_IN", route: "JOB fee_reminders", trace: "trc_91de4402", count: "8 in 24 h", release: "v2.14.2", device: "worker-02", resolved: false,
+    stack: "TemplateRejected: fee_reminder_v3 not approved in locale hi_IN\n    at WhatsAppClient.send (/srv/api/src/lib/whatsapp.ts:77:13)\n    at FeeReminderJob.notify (/srv/api/src/jobs/feeReminders.ts:52:20)\n    at FeeReminderJob.run (/srv/api/src/jobs/feeReminders.ts:23:7)\n  fallback: 8 reminders delivered by email instead" },
+  { id: "e4", ts: "2026-09-13 16:22:19", sev: "ERROR", academy: "Chennai Ice Club", user: "admin@chennaiice.com · usr_1d77f", msg: "StorageQuotaExceeded: 5.0 GB plan limit reached on upload", route: "POST /api/media/upload", trace: "trc_2a77c581", count: "14 in 3 d", release: "v2.14.3", device: "Android 16 · Chrome", resolved: true,
+    stack: "StorageQuotaExceeded: 5.0 GB plan limit reached on upload\n    at QuotaGuard.check (/srv/api/src/lib/quota.ts:31:11)\n    at MediaService.store (/srv/api/src/svc/media.ts:66:5)\n    at POST /api/media/upload (/srv/api/src/routes/media.ts:28:9)\n  resolution: plan upgraded to Pro on 2026-09-13 by dev@rinkops.io" },
+  { id: "e5", ts: "2026-09-13 14:09:55", sev: "ERROR", academy: "Iceberg Ice Sports, Pune", user: "coach.rahul@iceberg.in · usr_9e034", msg: "OfflineSyncConflict: attendance row modified by two devices", route: "PATCH /api/attendance/:id", trace: "trc_6b1902fd", count: "52 in 7 d", release: "v2.14.1", device: "Android 15 · app 2.14.1", resolved: false,
+    stack: "OfflineSyncConflict: attendance row modified by two devices\n    at ConflictResolver.merge (/srv/api/src/lib/sync.ts:118:15)\n    at AttendanceService.patch (/srv/api/src/svc/attendance.ts:203:26)\n    at PATCH /api/attendance/:id (/srv/api/src/routes/attendance.ts:71:9)\n  local: { status: 'present', at: '2026-09-13T14:02:11+05:30', device: 'dev_a31' }\n  remote: { status: 'absent', at: '2026-09-13T14:04:38+05:30', device: 'dev_c07' }" },
+  { id: "e6", ts: "2026-09-13 11:47:30", sev: "INFO", academy: "Northgate Skating Academy", user: "dev@rinkops.io", msg: "Feature flag progress_ring_v2 enabled for 1 academy", route: "PATCH /admin/flags", trace: "trc_44a0d719", count: "1", release: "v2.14.3", device: "dev console", resolved: true,
+    stack: "FlagChange: progress_ring_v2\n    scope: academy acd_0193f (Northgate Skating Academy)\n    from: inherit(false) -> true\n    actor: dev@rinkops.io\n    at: 2026-09-13T11:47:30+05:30" }
+];
+
+const ACADEMIES = [
+  { id: "acd_0193f", name: "Northgate Skating Academy", city: "Bengaluru", plan: "PRO", students: 214, active: 188, storage: "3.2 / 20 GB", storeW: "16%", status: "ACTIVE", created: "2025-01-08" },
+  { id: "acd_02b71", name: "Iceberg Ice Sports, Pune", city: "Pune", plan: "PRO", students: 341, active: 297, storage: "17.8 / 20 GB", storeW: "89%", status: "ACTIVE", created: "2024-07-22", warn: true },
+  { id: "acd_04c19", name: "Frost Blades, Gurugram", city: "Gurugram", plan: "GROWTH", students: 126, active: 94, storage: "6.1 / 10 GB", storeW: "61%", status: "ACTIVE", created: "2025-03-14" },
+  { id: "acd_05f83", name: "Chennai Ice Club", city: "Chennai", plan: "STARTER", students: 58, active: 41, storage: "5.0 / 5 GB", storeW: "100%", status: "AT LIMIT", created: "2025-11-02", warn: true },
+  { id: "acd_07a44", name: "Himalayan Ice Academy", city: "Dehradun", plan: "GROWTH", students: 97, active: 72, storage: "4.4 / 10 GB", storeW: "44%", status: "ACTIVE", created: "2026-02-19" },
+  { id: "acd_08d12", name: "Kolkata Blades Club", city: "Kolkata", plan: "STARTER", students: 33, active: 12, storage: "0.9 / 5 GB", storeW: "18%", status: "TRIAL", created: "2026-08-30" },
+  { id: "acd_09e57", name: "Skate Hyderabad", city: "Hyderabad", plan: "GROWTH", students: 0, active: 0, storage: "2.1 / 10 GB", storeW: "21%", status: "SUSPENDED", created: "2025-06-11", bad: true },
+  { id: "acd_11b03", name: "Mumbai Ice Arena", city: "Mumbai", plan: "PRO", students: 268, active: 231, storage: "11.4 / 20 GB", storeW: "57%", status: "ACTIVE", created: "2024-09-05" }
+];
+
+const FLAGS = [
+  { key: "progress_ring_v2", desc: "New parent progress ring and level track", global: false, cells: [true, null, null, null] },
+  { key: "offline_attendance", desc: "Queue attendance writes on the device", global: true, cells: [null, null, null, null] },
+  { key: "whatsapp_reminders", desc: "Fee reminders over WhatsApp Business", global: false, cells: [true, true, null, false] },
+  { key: "bulk_import_v3", desc: "CSV roster import with column mapping", global: false, cells: [null, true, null, null] },
+  { key: "coach_payouts", desc: "Per-session coach payout ledger", global: false, cells: [false, false, true, false] },
+  { key: "rink_ipad_mode", desc: "Tablet layout for rink-side attendance", global: true, cells: [null, null, null, null] },
+  { key: "parent_video_upload", desc: "Parents upload practice clips (storage heavy)", global: false, cells: [null, null, null, null] }
+];
+
+const JOBS = [
+  { id: "j1", name: "attendance_rollup", schedule: "every 15 min", status: "OK", last: "18:15:02 · 1m ago", next: "18:30:00", dur: "4.2s" },
+  { id: "j2", name: "fee_reminders", schedule: "daily 09:00 IST", status: "FAILED", last: "09:00:07 · 9h ago", next: "retry 18:30", dur: "12.8s", bad: true, error: " · WhatsApp template rejected (hi_IN)" },
+  { id: "j3", name: "progress_recalc", schedule: "daily 02:00 IST", status: "OK", last: "02:00:04 · 16h ago", next: "tomorrow 02:00", dur: "3m 41s" },
+  { id: "j4", name: "invoice_generate", schedule: "monthly 1st 00:30", status: "OK", last: "01 Sep 00:30", next: "01 Oct 00:30", dur: "1m 09s" },
+  { id: "j5", name: "storage_reclaim", schedule: "weekly Sun 03:00", status: "FAILED", last: "Sun 03:00:11", next: "Sun 03:00", dur: "48.0s", bad: true, error: " · S3 lifecycle rule denied: AccessDenied" },
+  { id: "j6", name: "db_backup_full", schedule: "daily 01:00 IST", status: "OK", last: "01:00:02 · 17h ago", next: "tomorrow 01:00", dur: "6m 22s" },
+  { id: "j7", name: "search_reindex", schedule: "every 6 h", status: "RUNNING", last: "18:00:00 · 16m ago", next: "queued", dur: "16m 04s", run: true },
+  { id: "j8", name: "inactive_user_sweep", schedule: "weekly Mon 04:00", status: "OK", last: "Mon 04:00:03", next: "Mon 04:00", dur: "22.4s" },
+  { id: "j9", name: "webhook_retry_queue", schedule: "every 5 min", status: "DEGRADED", last: "18:15:00 · 1m ago", next: "18:20:00", dur: "9.8s", warn: true, error: " · 34 payloads past 3 retries" }
+];
+
+const AUDIT = [
+  { ts: "2026-09-13 17:52:14", who: "dev@rinkops.io", action: "PLAN_CHANGE", academy: "Chennai Ice Club", detail: "STARTER → PRO · storage 5 → 20 GB", kind: "warn" },
+  { ts: "2026-09-13 16:40:09", who: "dev@rinkops.io", action: "IMPERSONATE_END", academy: "Iceberg Ice Sports, Pune", detail: "session 28m · 41 requests · 3 writes", kind: "warn" },
+  { ts: "2026-09-13 16:12:33", who: "dev@rinkops.io", action: "IMPERSONATE_START", academy: "Iceberg Ice Sports, Pune", detail: "as owner@iceberg.in · reason: pool timeout triage", kind: "warn" },
+  { ts: "2026-09-13 11:47:30", who: "dev@rinkops.io", action: "FLAG_ENABLE", academy: "Northgate Skating Academy", detail: "progress_ring_v2 · inherit → true", kind: "info" },
+  { ts: "2026-09-13 09:31:58", who: "priya@rinkops.io", action: "JOB_RUN", academy: "—  all academies", detail: "fee_reminders manual retry · failed", kind: "bad" },
+  { ts: "2026-09-12 22:14:02", who: "dev@rinkops.io", action: "SUSPEND", academy: "Skate Hyderabad", detail: "non-payment 61 days · 0 students migrated", kind: "bad" },
+  { ts: "2026-09-12 15:08:47", who: "priya@rinkops.io", action: "FLAG_DISABLE", academy: "Chennai Ice Club", detail: "whatsapp_reminders · true → false", kind: "info" },
+  { ts: "2026-09-12 10:02:11", who: "dev@rinkops.io", action: "DATA_EXPORT", academy: "Frost Blades, Gurugram", detail: "students.csv · 126 rows · GDPR request", kind: "info" }
+];
+
+const SCREENS = {
+  overview:  { title: "Overview", meta: "28 academies · 1,847 errors 24h · 2 jobs failing" },
+  academies: { title: "Academies", meta: "28 tenants · ap-south-1" },
+  errors:    { title: "Error log", meta: "sentry-compatible · fingerprinted" },
+  flags:     { title: "Feature flags", meta: "7 flags · overrides beat global" },
+  jobs:      { title: "Jobs and audit", meta: "9 jobs · audit retained 400 days" }
+};
+
+class Component extends DCLogic {
+  state = {
+    screen: "overview", env: "production", query: "",
+    open: {}, resolved: { e4: true, e6: true },
+    sev: "ALL", academyFilter: "all", range: "24h",
+    flags: null, impersonate: null, toast: null, running: {}
+  };
+
+  toast(msg) {
+    this.setState({ toast: msg });
+    clearTimeout(this._t);
+    this._t = setTimeout(() => this.setState({ toast: null }), 2600);
+  }
+
+  flagState() {
+    if (this.state.flags) return this.state.flags;
+    const f = {};
+    FLAGS.forEach(fl => { f[fl.key] = { global: fl.global, cells: fl.cells.slice() }; });
+    return f;
+  }
+
+  setFlags(mut) {
+    const f = this.flagState();
+    const copy = {};
+    Object.keys(f).forEach(k => { copy[k] = { global: f[k].global, cells: f[k].cells.slice() }; });
+    mut(copy);
+    this.setState({ flags: copy });
+  }
+
+  navVals() {
+    const items = [
+      ["overview", "Overview", null, null],
+      ["academies", "Academies", "28", "rgba(255,255,255,.18)"],
+      ["errors", "Error log", "1.8k", "#ec3013"],
+      ["flags", "Feature flags", null, null],
+      ["jobs", "Jobs and audit", "2", "#ec3013"]
+    ];
+    return items.map(([key, label, badge, badgeBg]) => {
+      const on = this.state.screen === key;
+      return {
+        label, badge, badgeBg,
+        weight: on ? "700" : "500",
+        bg: on ? "#ec3013" : "transparent",
+        fg: on ? "#ffffff" : "#d7d3d3",
+        dot: on ? "#ffffff" : "#7d7979",
+        onClick: () => this.setState({ screen: key })
+      };
+    });
+  }
+
+  statVals() {
+    const s = (label, value, trend, sub, tone) => ({
+      label, value, trend, sub,
+      border: tone === "bad" ? "rgba(236,48,19,.55)" : tone === "warn" ? "rgba(251,194,63,.45)" : "rgba(255,255,255,.12)",
+      labelColor: tone === "bad" ? "#ff563c" : tone === "warn" ? "#fbc23f" : "#9b9797",
+      valueColor: tone === "bad" ? "#ff563c" : "#f3f2f2",
+      trendColor: tone === "bad" ? "#ff563c" : tone === "warn" ? "#fbc23f" : "#4cae63"
+    });
+    return [
+      s("TOTAL ACADEMIES", "28", "+3", "this quarter"),
+      s("ACTIVE USERS 7D", "1,137", "+6.2%", "of 1,412 seats"),
+      s("DATABASE SIZE", "84.2 GB", "+1.1 GB", "pg 15.4 · 62% of vol"),
+      s("STORAGE USED", "51.9 GB", "+4.3 GB", "s3 · 2 tenants near cap", "warn"),
+      s("ERRORS 24H", "1,847", "+912%", "1,412 from one spike", "bad"),
+      s("FAILED JOBS", "2", "2 failing", "fee_reminders · storage_reclaim", "bad")
+    ];
+  }
+
+  errorVals(list) {
+    return list.map(e => {
+      const open = !!this.state.open[e.id];
+      const res = this.state.resolved[e.id];
+      const sv = SEV[e.sev];
+      return Object.assign({}, e, {
+        open, caret: open ? "▾" : "▸",
+        sevBg: sv.bg, sevFg: sv.fg,
+        msgColor: e.sev === "FATAL" ? "#ff563c" : "#eae7e7",
+        rowBg: res ? "rgba(34,118,58,.1)" : open ? "rgba(255,255,255,.05)" : "transparent",
+        resLabel: res ? "RESOLVED" : "RESOLVE",
+        resBg: res ? "rgba(34,118,58,.25)" : "transparent",
+        resFg: res ? "#4cae63" : "#d7d3d3",
+        resBorder: res ? "1px solid rgba(76,174,99,.5)" : "1px solid rgba(255,255,255,.22)",
+        onToggle: () => this.setState(s => ({ open: Object.assign({}, s.open, { [e.id]: !s.open[e.id] }) })),
+        onResolve: (ev) => {
+          ev.stopPropagation();
+          this.setState(s => ({ resolved: Object.assign({}, s.resolved, { [e.id]: !s.resolved[e.id] }) }));
+          this.toast((this.state.resolved[e.id] ? "Reopened " : "Resolved ") + e.trace);
+        }
+      });
+    });
+  }
+
+  renderVals() {
+    const sc = SCREENS[this.state.screen];
+    const prod = this.state.env === "production";
+    const fl = this.flagState();
+
+    let errs = ERRORS;
+    if (this.state.sev !== "ALL") errs = errs.filter(e => e.sev === this.state.sev);
+    if (this.state.academyFilter !== "all") errs = errs.filter(e => e.academy === this.state.academyFilter);
+
+    const academies = ACADEMIES.map(a => ({
+      id: a.id, name: a.name, city: a.city, plan: a.plan, students: a.students, active: a.active,
+      storage: a.storage, storeW: a.storeW, status: a.status, created: a.created,
+      nameColor: a.bad ? "#9b9797" : "#f3f2f2",
+      rowBg: a.bad ? "rgba(236,48,19,.07)" : a.warn ? "rgba(251,194,63,.06)" : "transparent",
+      planBg: a.plan === "PRO" ? "#f3f2f2" : a.plan === "GROWTH" ? "rgba(255,255,255,.16)" : "rgba(255,255,255,.08)",
+      planFg: a.plan === "PRO" ? "#201e1d" : "#d7d3d3",
+      storeColor: parseInt(a.storeW) >= 85 ? "#ff563c" : parseInt(a.storeW) >= 60 ? "#fbc23f" : "#4390e0",
+      statusBg: a.status === "SUSPENDED" ? "#ec3013" : a.status === "AT LIMIT" ? "rgba(251,194,63,.22)" : a.status === "TRIAL" ? "rgba(67,144,224,.2)" : "rgba(34,118,58,.25)",
+      statusFg: a.status === "SUSPENDED" ? "#ffffff" : a.status === "AT LIMIT" ? "#fbc23f" : a.status === "TRIAL" ? "#7bb2ee" : "#4cae63",
+      suspendLabel: a.status === "SUSPENDED" ? "RESTORE" : "SUSPEND",
+      onImpersonate: () => this.setState({ impersonate: a })
+    }));
+
+    const sevFilters = ["ALL", "FATAL", "ERROR", "WARN", "INFO"].map(lbl => {
+      const on = this.state.sev === lbl;
+      return {
+        label: lbl, onClick: () => this.setState({ sev: lbl }),
+        bg: on ? "#f3f2f2" : "transparent",
+        fg: on ? "#201e1d" : "#d7d3d3",
+        border: on ? "#f3f2f2" : "rgba(255,255,255,.22)"
+      };
+    });
+
+    const flags = FLAGS.map(f => {
+      const st = fl[f.key];
+      const gOn = st.global;
+      return {
+        key: f.key, desc: f.desc,
+        gTrack: gOn ? "#22763a" : "rgba(255,255,255,.2)",
+        gBorder: gOn ? "1px solid #22763a" : "1px solid rgba(255,255,255,.2)",
+        gKnob: gOn ? "#ffffff" : "#bab6b6",
+        gKnobX: gOn ? "18px" : "2px",
+        gLabel: gOn ? "ON" : "OFF",
+        gLabelColor: gOn ? "#4cae63" : "#7d7979",
+        onGlobal: () => { this.setFlags(c => { c[f.key].global = !c[f.key].global; }); this.toast("Global " + f.key + " → " + (!gOn ? "on" : "off")); },
+        cells: st.cells.map((v, i) => {
+          const eff = v === null ? gOn : v;
+          const inherit = v === null;
+          return {
+            track: eff ? (inherit ? "rgba(251,194,63,.35)" : "#22763a") : (inherit ? "rgba(255,255,255,.12)" : "rgba(255,255,255,.2)"),
+            border: inherit ? "1px solid rgba(251,194,63,.6)" : (eff ? "1px solid #22763a" : "1px solid rgba(255,255,255,.2)"),
+            knob: eff ? "#ffffff" : "#9b9797",
+            knobX: eff ? "18px" : "2px",
+            opacity: inherit ? "0.85" : "1",
+            cursor: "pointer",
+            label: inherit ? "INHERIT" : (eff ? "ON" : "OFF"),
+            labelColor: inherit ? "#fbc23f" : (eff ? "#4cae63" : "#7d7979"),
+            onToggle: () => this.setFlags(c => {
+              const cur = c[f.key].cells[i];
+              c[f.key].cells[i] = cur === null ? !gOn : (cur ? false : null);
+            })
+          };
+        })
+      };
+    });
+
+    const jobs = JOBS.map(j => {
+      const running = !!this.state.running[j.id] || j.run;
+      const st = running ? "RUNNING" : j.status;
+      return {
+        name: j.name, schedule: j.schedule, error: j.error || "",
+        status: st, last: j.last, next: j.next, dur: j.dur,
+        rowBg: j.bad ? "rgba(236,48,19,.07)" : j.warn ? "rgba(251,194,63,.06)" : "transparent",
+        stBg: st === "FAILED" ? "#ec3013" : st === "DEGRADED" ? "rgba(251,194,63,.22)" : st === "RUNNING" ? "rgba(67,144,224,.22)" : "rgba(34,118,58,.25)",
+        stFg: st === "FAILED" ? "#ffffff" : st === "DEGRADED" ? "#fbc23f" : st === "RUNNING" ? "#7bb2ee" : "#4cae63",
+        runLabel: running ? "RUNNING…" : j.bad ? "RETRY NOW" : "RUN NOW",
+        runBg: j.bad ? "rgba(236,48,19,.14)" : "transparent",
+        runFg: j.bad ? "#ff563c" : "#eae7e7",
+        runBorder: j.bad ? "1px solid rgba(236,48,19,.5)" : "1px solid rgba(255,255,255,.22)",
+        onRun: () => {
+          this.setState(s => ({ running: Object.assign({}, s.running, { [j.id]: true }) }));
+          this.toast("Queued " + j.name + " · worker-01");
+          setTimeout(() => this.setState(s => {
+            const r = Object.assign({}, s.running); delete r[j.id]; return { running: r };
+          }), 2400);
+        }
+      };
+    });
+
+    const audit = AUDIT.map(a => ({
+      ts: a.ts, who: a.who, action: a.action, academy: a.academy, detail: a.detail,
+      actBg: a.kind === "bad" ? "#ec3013" : a.kind === "warn" ? "rgba(251,194,63,.22)" : "rgba(255,255,255,.12)",
+      actFg: a.kind === "bad" ? "#ffffff" : a.kind === "warn" ? "#fbc23f" : "#d7d3d3"
+    }));
+
+    const imp = this.state.impersonate;
+
+    return {
+      navItems: this.navVals(),
+      screenTitle: sc.title, screenMeta: sc.meta,
+      isOverview: this.state.screen === "overview",
+      isAcademies: this.state.screen === "academies",
+      isErrors: this.state.screen === "errors",
+      isFlags: this.state.screen === "flags",
+      isJobs: this.state.screen === "jobs",
+      goErrors: () => this.setState({ screen: "errors" }),
+      goFlags: () => this.setState({ screen: "flags" }),
+
+      envLabel: prod ? "● PRODUCTION" : "● STAGING",
+      envBg: prod ? "#ec3013" : "#fbc23f",
+      envFg: prod ? "#ffffff" : "#402c00",
+      envRule: prod ? "rgba(255,255,255,.55)" : "rgba(64,44,0,.45)",
+      envHost: prod ? "api.rinkops.io" : "staging.rinkops.io",
+      envBuild: prod ? "v2.14.3 · 8f31c0a" : "v2.15.0-rc2 · 1de99b7",
+      toggleEnv: () => this.setState(s => ({ env: s.env === "production" ? "staging" : "production" })),
+
+      query: this.state.query,
+      onQuery: (e) => this.setState({ query: e.target.value }),
+
+      statCards: this.statVals(),
+      recentErrors: this.errorVals(ERRORS),
+      errorRows: this.errorVals(errs),
+      errCountLabel: errs.length + " of " + ERRORS.length + " groups · " + this.state.range,
+      sevFilters,
+      academyFilter: this.state.academyFilter,
+      onAcademyFilter: (e) => this.setState({ academyFilter: e.target.value }),
+      rangeFilter: this.state.range,
+      onRangeFilter: (e) => this.setState({ range: e.target.value }),
+
+      academies, flags, jobs, audit,
+
+      impersonateTarget: imp ? imp.name : null,
+      impersonateId: imp ? imp.id : "",
+      impersonateUser: imp ? "owner@" + imp.id.replace("acd_", "") + ".rinkops.io" : "",
+      closeImpersonate: () => this.setState({ impersonate: null }),
+      confirmImpersonate: () => {
+        const n = imp ? imp.name : "";
+        this.setState({ impersonate: null });
+        this.toast("IMPERSONATE_START logged · " + n);
+      },
+      toast: this.state.toast
+    };
+  }
+
+  componentWillUnmount() { clearTimeout(this._t); }
+}
+</script>
+</body>
+</html>

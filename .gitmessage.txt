@@ -1,0 +1,11 @@
+# <type>: <short summary>  (feat, fix, chore, docs, refactor, test)
+#
+# Why this change:
+#
+# Docs checklist — did this session need to update any of these?
+#   [ ] docs/ARCHITECTURE.md   (structure / data flow / dependencies changed)
+#   [ ] docs/DECISIONS.md      (a real choice was made)
+#   [ ] docs/CHANGELOG.md      (always, in plain language)
+#   [ ] docs/DATA-MODEL.md     (table / column / index / RLS changed)
+#   [ ] docs/RUNBOOK.md        (an operational procedure changed)
+#   [ ] docs/features/<x>.md   (a feature was touched)

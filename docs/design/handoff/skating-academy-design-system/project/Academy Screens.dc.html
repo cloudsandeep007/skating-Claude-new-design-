@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link rel="stylesheet" href="_ds/modernist-5edd7b4f-fb92-43dc-aa34-0814c1b6c242/styles.css">
+<script src="_ds/modernist-5edd7b4f-fb92-43dc-aa34-0814c1b6c242/_ds_bundle.js"></script>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800&display=swap">
+<style>
+:root{
+--n50:#faf9f9;--n100:#f3f2f2;--n200:#eae7e7;--n300:#d7d3d3;--n400:#bab6b6;--n500:#9b9797;--n600:#7d7979;--n700:#605d5d;--n800:#444141;--n900:#2d2b2b;--n950:#201e1d;
+--b50:#fff7f5;--b100:#fff2ef;--b200:#ffe0d9;--b300:#ffc4b8;--b500:#ff563c;--b600:#ec3013;--b700:#ae1800;--b800:#7c1405;--b900:#4d170e;
+--g50:#eff8f1;--g100:#d9efdd;--g200:#b4dfbd;--g400:#4cae63;--g600:#22763a;--g700:#1a5c2e;--g800:#154524;
+--w100:#ffedc2;--w200:#ffdb85;--w800:#5d3f00;--w900:#402c00;
+--i50:#eef5fd;--i100:#d6e8fb;--i800:#0c3560;
+--mono:ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+body{margin:0;background:#f3f2f2;color:#201e1d;font-family:Archivo,system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+a{color:#ae1800}a:hover{color:#7c1405}
+@keyframes skpop{from{transform:scale(.88);opacity:.4}to{transform:scale(1);opacity:1}}
+</style>
+</helmet>
+
+<div style="padding:40px 44px 64px">
+<div style="display:flex;align-items:baseline;gap:12px;margin-bottom:6px">
+<span style="font:600 11px/1 var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--b700)">Screens · v0.1</span>
+<span style="font:600 11px/1 var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--n600)">Built on the academy design system</span>
+</div>
+<h1 style="font:800 34px/1.05 Archivo,sans-serif;letter-spacing:-.02em;margin:0 0 28px">Coach attendance · Parent progress</h1>
+
+<div style="display:flex;flex-wrap:wrap;gap:56px;align-items:flex-start">
+
+<div style="flex:none">
+<div style="display:flex;align-items:baseline;gap:10px;margin-bottom:14px">
+<span style="font:700 11px/1 var(--mono);letter-spacing:.1em;text-transform:uppercase;background:var(--n950);color:#fff;padding:4px 8px;border-radius:4px">01</span>
+<span style="font:700 15px Archivo,sans-serif">Coach — Mark attendance</span>
+<span style="font:400 13px Archivo,sans-serif;color:var(--n700)">live · tap the rows</span>
+</div>
+<x-import component-from-global-scope="IOSDevice" from="./ios-frame.jsx" hint-size="402px,874px">
+<div style="height:100%;display:flex;flex-direction:column;background:var(--n100);font-family:Archivo,system-ui,sans-serif">
+
+<div style="flex:none;background:var(--n950);color:#fff;padding:58px 16px 16px">
+<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px">
+<div style="min-width:0">
+<div style="font:600 12px Archivo,sans-serif;letter-spacing:.1em;text-transform:uppercase;color:var(--n400)">Tue 15 Sep · 4:30 PM · Rink 2</div>
+<div style="font:800 24px/1.15 Archivo,sans-serif;letter-spacing:-.015em;margin-top:4px">Learn-to-Skate 3</div>
+</div>
+<div style="width:44px;height:44px;flex:none;border-radius:8px;border:1.5px solid rgba(255,255,255,.28);display:flex;align-items:center;justify-content:center">
+<span style="width:18px;height:2px;background:#fff;box-shadow:0 5px 0 #fff,0 -5px 0 #fff"></span>
+</div>
+</div>
+<div style="display:flex;align-items:baseline;gap:8px;margin-top:16px">
+<span style="font:800 26px/1 Archivo,sans-serif">{{ markedCount }}</span>
+<span style="font:600 15px Archivo,sans-serif;color:var(--n400)">of 15 marked</span>
+<span style="margin-left:auto;font:700 13px Archivo,sans-serif;color:var(--g400)">{{ presentCount }} present</span>
+<span style="font:700 13px Archivo,sans-serif;color:var(--b500)">{{ absentCount }} absent</span>
+</div>
+<div style="height:8px;border-radius:999px;background:rgba(255,255,255,.18);margin-top:8px;overflow:hidden">
+<div style="height:100%;border-radius:999px;background:#fff;width:{{ markedPct }}"></div>
+</div>
+</div>
+
+<div style="flex:1;min-height:0;overflow:auto;background:#fff">
+<sc-for list="{{ students }}" as="s" hint-placeholder-count="15">
+<div onClick="{{ s.onRow }}" style="min-height:72px;display:flex;align-items:center;gap:10px;padding:8px 12px;border-bottom:1px solid var(--n200);cursor:pointer;background:{{ s.bg }}">
+<span style="width:40px;height:40px;flex:none;border-radius:999px;display:flex;align-items:center;justify-content:center;font:700 14px Archivo,sans-serif;background:{{ s.avBg }};color:{{ s.avFg }}">{{ s.initials }}</span>
+<div style="flex:1;min-width:0">
+<div style="font:700 16px/1.25 Archivo,sans-serif;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ s.name }}</div>
+<div style="font:400 13px/1.4 Archivo,sans-serif;color:{{ s.metaColor }}">{{ s.meta }}</div>
+</div>
+<div style="display:flex;gap:8px;flex:none">
+<button type="button" onClick="{{ s.onPresent }}" style="width:56px;height:56px;border-radius:8px;display:flex;align-items:center;justify-content:center;font:700 20px Archivo,sans-serif;cursor:pointer;background:{{ s.pBg }};color:{{ s.pFg }};border:{{ s.pBorder }}">✓</button>
+<button type="button" onClick="{{ s.onAbsent }}" style="width:56px;height:56px;border-radius:8px;display:flex;align-items:center;justify-content:center;font:700 20px Archivo,sans-serif;cursor:pointer;background:{{ s.aBg }};color:{{ s.aFg }};border:{{ s.aBorder }}">✕</button>
+</div>
+</div>
+</sc-for>
+<div style="height:112px"></div>
+</div>
+
+<div style="flex:none;padding:12px 16px 16px;background:#fff;border-top:2px solid var(--n300);box-shadow:0 -3px 10px rgba(45,43,43,.08)">
+<button type="button" onClick="{{ onConfirm }}" style="width:100%;height:56px;display:flex;align-items:center;gap:10px;padding:0 18px;border-radius:8px;font:700 17px Archivo,sans-serif;cursor:pointer;border:0;background:{{ confirmBg }};color:#fff">
+<span>{{ confirmLabel }}</span>
+<span style="margin-left:auto;font:600 14px Archivo,sans-serif;opacity:.75">{{ markedCount }}/15</span>
+</button>
+<div style="font:400 13px/1.4 Archivo,sans-serif;color:var(--n700);margin-top:8px">{{ confirmHint }}</div>
+</div>
+
+<sc-if value="{{ savedToast }}">
+<div style="position:absolute;left:16px;right:16px;bottom:104px;display:flex;gap:12px;align-items:flex-start;background:#201e1d;color:#fff;border-radius:12px;padding:14px 16px;box-shadow:0 12px 32px rgba(45,43,43,.28);animation:skpop .18s ease-out">
+<span style="width:20px;height:20px;border-radius:999px;background:var(--g400);flex:none;margin-top:2px"></span>
+<div style="flex:1;min-width:0"><div style="font:700 15px Archivo,sans-serif">Attendance saved</div><div style="font:400 14px/1.45 Archivo,sans-serif;color:var(--n300)">Synced to the academy.</div></div>
+<span style="font:700 14px Archivo,sans-serif;color:var(--n300)">Undo</span>
+</div>
+</sc-if>
+
+</div>
+</x-import>
+<p style="max-width:402px;font:400 13px/1.6 Archivo,sans-serif;color:var(--n800);margin:14px 0 0">Whole row cycles unset → present → absent; the two 56px buttons set a state directly. Marked rows tint and the count in the ink header updates, so a coach never has to scroll back to check. Confirm stays ink until all 15 are marked, then goes brand red.</p>
+</div>
+
+<div style="flex:none">
+<div style="display:flex;align-items:baseline;gap:10px;margin-bottom:14px">
+<span style="font:700 11px/1 var(--mono);letter-spacing:.1em;text-transform:uppercase;background:var(--n950);color:#fff;padding:4px 8px;border-radius:4px">02</span>
+<span style="font:700 15px Archivo,sans-serif">Parent — Child progress</span>
+</div>
+<x-import component-from-global-scope="IOSDevice" from="./ios-frame.jsx" hint-size="402px,874px">
+<div style="height:100%;display:flex;flex-direction:column;background:var(--n100);font-family:Archivo,system-ui,sans-serif">
+
+<div style="flex:1;min-height:0;overflow:auto">
+
+<div style="background:var(--n950);color:#fff;padding:58px 16px 24px">
+<div style="display:flex;align-items:center;gap:12px">
+<span style="width:44px;height:44px;flex:none;border-radius:999px;background:var(--b600);display:flex;align-items:center;justify-content:center;font:800 16px Archivo,sans-serif">AI</span>
+<div style="min-width:0;flex:1">
+<div style="font:800 20px/1.2 Archivo,sans-serif;letter-spacing:-.01em">Ananya Iyer</div>
+<div style="font:400 13px Archivo,sans-serif;color:var(--n400)">Northgate Skating Academy · age 9</div>
+</div>
+</div>
+
+<div style="display:flex;align-items:center;gap:18px;margin-top:24px">
+<div style="width:132px;height:132px;flex:none;border-radius:999px;background:conic-gradient(var(--b500) 0deg 216deg, rgba(255,255,255,.16) 216deg 360deg);display:flex;align-items:center;justify-content:center">
+<div style="width:104px;height:104px;border-radius:999px;background:var(--n950);display:flex;flex-direction:column;align-items:center;justify-content:center">
+<span style="font:600 11px Archivo,sans-serif;letter-spacing:.12em;text-transform:uppercase;color:var(--n400)">Level</span>
+<span style="font:800 44px/1 Archivo,sans-serif;letter-spacing:-.03em">3</span>
+<span style="font:600 11px Archivo,sans-serif;color:var(--n400)">of 6</span>
+</div>
+</div>
+<div style="min-width:0">
+<div style="font:600 12px Archivo,sans-serif;letter-spacing:.1em;text-transform:uppercase;color:var(--b300)">Basic skills</div>
+<div style="font:800 22px/1.15 Archivo,sans-serif;letter-spacing:-.015em;margin-top:4px">3 of 5 skills<br>achieved</div>
+<div style="font:400 14px/1.45 Archivo,sans-serif;color:var(--n300);margin-top:8px">Two more and Ananya moves up to Level 4 — Intermediate.</div>
+</div>
+</div>
+
+<div style="display:flex;align-items:center;gap:0;margin-top:24px">
+<span style="width:26px;height:26px;flex:none;border-radius:999px;background:#fff;color:var(--n950);font:800 12px/26px Archivo,sans-serif;text-align:center">1</span>
+<span style="flex:1;height:3px;background:#fff"></span>
+<span style="width:26px;height:26px;flex:none;border-radius:999px;background:#fff;color:var(--n950);font:800 12px/26px Archivo,sans-serif;text-align:center">2</span>
+<span style="flex:1;height:3px;background:#fff"></span>
+<span style="width:34px;height:34px;flex:none;border-radius:999px;background:var(--b600);color:#fff;font:800 15px/34px Archivo,sans-serif;text-align:center;box-shadow:0 0 0 4px rgba(236,48,19,.28)">3</span>
+<span style="flex:1;height:3px;background:linear-gradient(90deg,#fff 0%,#fff 60%,rgba(255,255,255,.2) 60%)"></span>
+<span style="width:26px;height:26px;flex:none;border-radius:999px;background:transparent;border:2px solid rgba(255,255,255,.32);color:var(--n400);font:800 12px/22px Archivo,sans-serif;text-align:center">4</span>
+<span style="flex:1;height:3px;background:rgba(255,255,255,.2)"></span>
+<span style="width:26px;height:26px;flex:none;border-radius:999px;background:transparent;border:2px solid rgba(255,255,255,.32);color:var(--n400);font:800 12px/22px Archivo,sans-serif;text-align:center">5</span>
+<span style="flex:1;height:3px;background:rgba(255,255,255,.2)"></span>
+<span style="width:26px;height:26px;flex:none;border-radius:999px;background:transparent;border:2px solid rgba(255,255,255,.32);color:var(--n400);font:800 12px/22px Archivo,sans-serif;text-align:center">6</span>
+</div>
+</div>
+
+<div style="padding:20px 16px 8px">
+<div style="display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:12px">
+<span style="font:700 19px Archivo,sans-serif;letter-spacing:-.01em">Level 3 skills</span>
+<span style="font:600 12px Archivo,sans-serif;letter-spacing:.08em;text-transform:uppercase;color:var(--n700)">3 achieved</span>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:10px">
+
+<div style="background:#fff;border:1px solid var(--g200);border-radius:12px;padding:14px 14px 14px 12px;display:flex;gap:12px;align-items:flex-start;box-shadow:0 1px 2px rgba(45,43,43,.14)">
+<span style="width:32px;height:32px;flex:none;border-radius:999px;background:var(--g600);color:#fff;font:700 16px/32px Archivo,sans-serif;text-align:center">✓</span>
+<div style="flex:1;min-width:0">
+<div style="font:700 17px/1.25 Archivo,sans-serif">Forward skating</div>
+<div style="font:400 13px/1.45 Archivo,sans-serif;color:var(--n700);margin-top:2px">Achieved 14 Jun · ten laps without a wall touch</div>
+</div>
+<span style="font:700 11px Archivo,sans-serif;letter-spacing:.08em;text-transform:uppercase;color:var(--g800);background:var(--g100);padding:5px 9px;border-radius:999px;flex:none">Done</span>
+</div>
+
+<div style="background:#fff;border:1px solid var(--g200);border-radius:12px;padding:14px 14px 14px 12px;display:flex;gap:12px;align-items:flex-start;box-shadow:0 1px 2px rgba(45,43,43,.14)">
+<span style="width:32px;height:32px;flex:none;border-radius:999px;background:var(--g600);color:#fff;font:700 16px/32px Archivo,sans-serif;text-align:center">✓</span>
+<div style="flex:1;min-width:0">
+<div style="font:700 17px/1.25 Archivo,sans-serif">Stopping</div>
+<div style="font:400 13px/1.45 Archivo,sans-serif;color:var(--n700);margin-top:2px">Achieved 26 Jul · clean snowplough from speed</div>
+</div>
+<span style="font:700 11px Archivo,sans-serif;letter-spacing:.08em;text-transform:uppercase;color:var(--g800);background:var(--g100);padding:5px 9px;border-radius:999px;flex:none">Done</span>
+</div>
+
+<div style="background:#fff;border:1px solid var(--g200);border-radius:12px;padding:14px 14px 14px 12px;display:flex;gap:12px;align-items:flex-start;box-shadow:0 1px 2px rgba(45,43,43,.14)">
+<span style="width:32px;height:32px;flex:none;border-radius:999px;background:var(--g600);color:#fff;font:700 16px/32px Archivo,sans-serif;text-align:center">✓</span>
+<div style="flex:1;min-width:0">
+<div style="font:700 17px/1.25 Archivo,sans-serif">One-foot balance</div>
+<div style="font:400 13px/1.45 Archivo,sans-serif;color:var(--n700);margin-top:2px">Achieved 5 Sep · six seconds, both feet</div>
+</div>
+<span style="font:700 11px Archivo,sans-serif;letter-spacing:.08em;text-transform:uppercase;color:var(--g800);background:var(--g100);padding:5px 9px;border-radius:999px;flex:none">Done</span>
+</div>
+
+<div style="background:#fff;border:1.5px solid var(--b600);border-radius:12px;padding:14px;box-shadow:0 3px 10px rgba(45,43,43,.16)">
+<div style="display:flex;gap:12px;align-items:flex-start">
+<span style="width:32px;height:32px;flex:none;border-radius:999px;background:var(--b100);border:1.5px solid var(--b600);color:var(--b700);font:800 14px/29px Archivo,sans-serif;text-align:center">◍</span>
+<div style="flex:1;min-width:0">
+<div style="font:700 17px/1.25 Archivo,sans-serif">Forward crossovers</div>
+<div style="font:400 13px/1.45 Archivo,sans-serif;color:var(--n700);margin-top:2px">Working on it since 5 Sep · both directions</div>
+</div>
+<span style="font:700 11px Archivo,sans-serif;letter-spacing:.08em;text-transform:uppercase;color:#fff;background:var(--b600);padding:5px 9px;border-radius:999px;flex:none">Learning</span>
+</div>
+<div style="display:flex;gap:6px;margin-top:14px">
+<span style="flex:1;height:8px;border-radius:999px;background:var(--b600)"></span>
+<span style="flex:1;height:8px;border-radius:999px;background:var(--b600)"></span>
+<span style="flex:1;height:8px;border-radius:999px;background:var(--n200)"></span>
+<span style="flex:1;height:8px;border-radius:999px;background:var(--n200)"></span>
+</div>
+<div style="font:600 13px Archivo,sans-serif;color:var(--b800);margin-top:8px">2 of 4 sessions practised</div>
+</div>
+
+<div style="background:var(--n50);border:1px solid var(--n300);border-radius:12px;padding:14px 14px 14px 12px;display:flex;gap:12px;align-items:flex-start">
+<span style="width:32px;height:32px;flex:none;border-radius:999px;background:#fff;border:1.5px dashed var(--n400);color:var(--n600);font:700 15px/29px Archivo,sans-serif;text-align:center">·</span>
+<div style="flex:1;min-width:0">
+<div style="font:700 17px/1.25 Archivo,sans-serif;color:var(--n800)">Backward skating</div>
+<div style="font:400 13px/1.45 Archivo,sans-serif;color:var(--n700);margin-top:2px">Starts once crossovers are steady</div>
+</div>
+<span style="font:700 11px Archivo,sans-serif;letter-spacing:.08em;text-transform:uppercase;color:var(--n700);background:var(--n200);padding:5px 9px;border-radius:999px;flex:none">Next up</span>
+</div>
+
+</div>
+
+<div style="background:#fff;border:1px solid var(--n300);border-radius:12px;padding:14px;margin-top:16px;display:flex;gap:12px;align-items:flex-start">
+<span style="width:40px;height:40px;flex:none;border-radius:999px;background:var(--n200);display:flex;align-items:center;justify-content:center;font:700 14px Archivo,sans-serif;color:var(--n800)">MS</span>
+<div style="flex:1;min-width:0">
+<div style="font:600 12px Archivo,sans-serif;letter-spacing:.1em;text-transform:uppercase;color:var(--n600)">Last update · 12 Sep 2026</div>
+<div style="font:700 16px/1.3 Archivo,sans-serif;margin-top:3px">Coach Meera Sundaram</div>
+<p style="font:400 14px/1.5 Archivo,sans-serif;color:var(--n800);margin:6px 0 0">“One-foot balance is solid now — she held six seconds on both feet. Crossovers to the left are close; right side needs another two weeks.”</p>
+</div>
+</div>
+
+<div style="height:24px"></div>
+</div>
+</div>
+
+<div style="flex:none;display:grid;grid-template-columns:repeat(4,1fr);border-top:2px solid var(--n300);background:#fff;box-shadow:0 -3px 10px rgba(45,43,43,.08)">
+<div style="height:64px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px">
+<span style="width:22px;height:22px;border-radius:6px;border:2px solid var(--n600)"></span>
+<span style="font:500 11px Archivo,sans-serif;color:var(--n700)">Today</span>
+</div>
+<div style="height:64px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;background:var(--n100);box-shadow:inset 0 3px 0 var(--n950)">
+<span style="width:22px;height:22px;border-radius:6px;background:var(--n950)"></span>
+<span style="font:700 11px Archivo,sans-serif;color:var(--n950)">Progress</span>
+</div>
+<div style="height:64px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;position:relative">
+<span style="width:22px;height:22px;border-radius:6px;border:2px solid var(--n600)"></span>
+<span style="position:absolute;top:10px;right:26px;min-width:18px;height:18px;border-radius:999px;background:var(--b600);color:#fff;font:700 11px/18px Archivo,sans-serif;text-align:center;padding:0 4px">2</span>
+<span style="font:500 11px Archivo,sans-serif;color:var(--n700)">Messages</span>
+</div>
+<div style="height:64px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px">
+<span style="width:22px;height:22px;border-radius:6px;border:2px solid var(--n600)"></span>
+<span style="font:500 11px Archivo,sans-serif;color:var(--n700)">More</span>
+</div>
+</div>
+
+</div>
+</x-import>
+<p style="max-width:402px;font:400 13px/1.6 Archivo,sans-serif;color:var(--n800);margin:14px 0 0">The ring and the 1–6 level track carry the reward; the skill list is the detail underneath it. Achieved skills keep their date and what the coach actually saw, which is what makes it read as progress rather than a checklist. Red marks only the one skill in play.</p>
+</div>
+
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{}">
+const ROSTER = [
+  { id: 1,  name: "Aarav Mehta",       meta: "Level 3 · 11/12 sessions", init: "AM" },
+  { id: 2,  name: "Ananya Iyer",       meta: "Level 3 · 12/12 sessions", init: "AI" },
+  { id: 3,  name: "Vihaan Reddy",      meta: "Level 3 · 10/12 sessions", init: "VR" },
+  { id: 4,  name: "Diya Nair",         meta: "Level 3 · 12/12 sessions", init: "DN" },
+  { id: 5,  name: "Kabir Malhotra",    meta: "Level 3 · 9/12 sessions",  init: "KM" },
+  { id: 6,  name: "Saanvi Joshi",      meta: "Level 3 · 11/12 sessions", init: "SJ" },
+  { id: 7,  name: "Ishaan Rao",        meta: "Level 3 · 8/12 sessions",  init: "IR" },
+  { id: 8,  name: "Myra Kapoor",       meta: "Level 3 · 12/12 sessions", init: "MK" },
+  { id: 9,  name: "Advait Deshpande",  meta: "Level 3 · 10/12 sessions", init: "AD" },
+  { id: 10, name: "Reyansh Gupta",     meta: "Level 3 · 7/12 sessions",  init: "RG" },
+  { id: 11, name: "Anika Bhatt",       meta: "Level 3 · 11/12 sessions", init: "AB" },
+  { id: 12, name: "Arjun Pillai",      meta: "Level 3 · 12/12 sessions", init: "AP" },
+  { id: 13, name: "Navya Sharma",      meta: "Level 3 · 9/12 sessions",  init: "NS" },
+  { id: 14, name: "Rudra Chatterjee",  meta: "Level 3 · 10/12 sessions", init: "RC" },
+  { id: 15, name: "Tara Menon",        meta: "Level 3 · 12/12 sessions", init: "TM" }
+];
+
+const INITIAL = { 1: "present", 2: "present", 3: "present", 4: "absent", 5: "present", 6: "present", 7: "present", 8: "present" };
+
+class Component extends DCLogic {
+  state = { marks: Object.assign({}, INITIAL), toast: false };
+
+  set(id, v) {
+    this.setState(s => {
+      const m = Object.assign({}, s.marks);
+      if (m[id] === v) { delete m[id]; } else { m[id] = v; }
+      return { marks: m };
+    });
+  }
+
+  cycle(id) {
+    const order = [undefined, "present", "absent"];
+    this.setState(s => {
+      const m = Object.assign({}, s.marks);
+      const next = order[(order.indexOf(s.marks[id]) + 1) % order.length];
+      if (next === undefined) { delete m[id]; } else { m[id] = next; }
+      return { marks: m };
+    });
+  }
+
+  renderVals() {
+    const marks = this.state.marks;
+    const ids = Object.keys(marks);
+    const present = ids.filter(k => marks[k] === "present").length;
+    const absent = ids.filter(k => marks[k] === "absent").length;
+    const marked = present + absent;
+    const all = marked === ROSTER.length;
+
+    const students = ROSTER.map(s => {
+      const m = marks[s.id];
+      return {
+        id: s.id, name: s.name, initials: s.init,
+        meta: m === "present" ? "Marked present" : m === "absent" ? "Marked absent" : s.meta,
+        metaColor: m === "present" ? "#1a5c2e" : m === "absent" ? "#7c1405" : "#605d5d",
+        bg: m === "present" ? "#eff8f1" : m === "absent" ? "#fff7f5" : "#ffffff",
+        avBg: m === "present" ? "#d9efdd" : m === "absent" ? "#ffe0d9" : "#eae7e7",
+        avFg: m === "present" ? "#154524" : m === "absent" ? "#7c1405" : "#444141",
+        pBg: m === "present" ? "#22763a" : "#ffffff",
+        pFg: m === "present" ? "#ffffff" : "#444141",
+        pBorder: m === "present" ? "1.5px solid #22763a" : "1.5px solid #bab6b6",
+        aBg: m === "absent" ? "#ec3013" : "#ffffff",
+        aFg: m === "absent" ? "#ffffff" : "#444141",
+        aBorder: m === "absent" ? "1.5px solid #ec3013" : "1.5px solid #bab6b6",
+        onRow: () => this.cycle(s.id),
+        onPresent: (e) => { e.stopPropagation(); this.set(s.id, "present"); },
+        onAbsent: (e) => { e.stopPropagation(); this.set(s.id, "absent"); }
+      };
+    });
+
+    return {
+      students,
+      markedCount: marked, presentCount: present, absentCount: absent,
+      markedPct: Math.round((marked / ROSTER.length) * 100) + "%",
+      confirmBg: all ? "#ec3013" : "#201e1d",
+      confirmLabel: all ? "Confirm attendance" : "Confirm anyway",
+      confirmHint: all
+        ? "All 15 marked. One tap and the parents are notified."
+        : (ROSTER.length - marked) + " unmarked will be left blank for you to finish later.",
+      savedToast: this.state.toast,
+      onConfirm: () => {
+        this.setState({ toast: true });
+        clearTimeout(this._t);
+        this._t = setTimeout(() => this.setState({ toast: false }), 3000);
+      }
+    };
+  }
+
+  componentWillUnmount() { clearTimeout(this._t); }
+}
+</script>
+</body>
+</html>

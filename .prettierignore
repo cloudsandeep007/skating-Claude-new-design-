@@ -1,0 +1,7 @@
+dist
+node_modules
+playwright-report
+test-results
+
+# Design handoff bundle and planning docs — not source code, never auto-formatted.
+docs
