@@ -5,6 +5,42 @@ non-technical person can follow it. Newest first.
 
 ---
 
+## 2026-09-14 — Students and coaches screens for the academy admin
+
+The first real day-to-day screens. Under **Skaters**, the admin now sees
+the full roster as a table — each skater's photo initials, parent, batch,
+level, attendance percentage (colour-coded, with a bar), fee status, and
+when they were last at the rink — ten at a time with Prev/Next, a search
+box, and batch/status filters. Clicking a skater opens their profile:
+contact details, emergency contact, medical notes, their coach and
+parent's phone/email, with tabs for Attendance, Progress, Fees and Notes
+that are placeholders until those features are built. From there the
+admin can edit the skater or **archive** them (which hides them from the
+active list but keeps everything on file — nothing is ever deleted, and
+they can be restored with one click).
+
+Adding a skater is a single form: their details, an optional photo, an
+emergency contact, and their parent — either picked from parents already
+in the system or a brand-new one, in which case the app creates the
+parent's login and emails them an invite to set a password.
+
+Under **Coaches**, the admin sees each coach with how many batches and
+skaters they cover, can invite a new coach (same invite-email flow), edit
+their details, and deactivate/reactivate them.
+
+The whole admin area now follows the design handoff in `docs/design/`:
+the dark left sidebar with a white highlight on the current section,
+the Archivo typeface, the red-accent focus rings and status pill colours,
+and the rounded card style. Coach screens had no mockup, so they copy the
+student screens' look.
+
+**Two things need doing on the Supabase side before every part of this
+works** — both are in RUNBOOK.md: run the new `0002_storage.sql`
+migration (for photo uploads) and deploy the `invite-user` function (for
+sending invites). Everything else — browsing, searching, editing,
+archiving, linking an existing parent — works right now against the
+seeded data and was checked in a browser.
+
 ## 2026-09-14 — Login, roles, and the app's overall shell
 
 Built the part of the app everyone touches before anything else: signing

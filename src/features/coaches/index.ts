@@ -1,0 +1,4 @@
+export { AddCoachPage } from './components/AddCoachPage'
+export { CoachDetailPage } from './components/CoachDetailPage'
+export { CoachesListPage } from './components/CoachesListPage'
+export { EditCoachPage } from './components/EditCoachPage'

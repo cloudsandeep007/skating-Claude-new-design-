@@ -1,6 +1,13 @@
 import { createBrowserRouter } from 'react-router-dom'
 
 import { ForgotPasswordPage, LoginPage, ProtectedRoute, ResetPasswordPage } from '@/features/auth'
+import { AddCoachPage, CoachDetailPage, CoachesListPage, EditCoachPage } from '@/features/coaches'
+import {
+  AddStudentPage,
+  EditStudentPage,
+  StudentDetailPage,
+  StudentsListPage,
+} from '@/features/students'
 import { AdminLayout, CoachLayout, DevLayout, ParentLayout } from '@/app/layouts'
 
 import { ForbiddenPage } from './ForbiddenPage'
@@ -33,7 +40,17 @@ export const router = createBrowserRouter([
       {
         path: '/admin',
         element: <AdminLayout />,
-        children: [{ index: true, element: <PlaceholderPage title="Admin dashboard" /> }],
+        children: [
+          { index: true, element: <PlaceholderPage title="Admin dashboard" /> },
+          { path: 'students', element: <StudentsListPage /> },
+          { path: 'students/new', element: <AddStudentPage /> },
+          { path: 'students/:studentId', element: <StudentDetailPage /> },
+          { path: 'students/:studentId/edit', element: <EditStudentPage /> },
+          { path: 'coaches', element: <CoachesListPage /> },
+          { path: 'coaches/new', element: <AddCoachPage /> },
+          { path: 'coaches/:coachId', element: <CoachDetailPage /> },
+          { path: 'coaches/:coachId/edit', element: <EditCoachPage /> },
+        ],
       },
     ],
   },

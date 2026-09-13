@@ -11,5 +11,5 @@ in the same session the feature is built or changed. Each file covers:
 - **Known limitations** — what this deliberately doesn't handle yet
 
 - [auth.md](./auth.md) — login, roles, and route protection (Phase 0.4)
-
-The first business feature (students, Phase 1.1) lands here next.
+- [students.md](./students.md) — roster list, add/edit/archive, detail (Phase 1.1)
+- [coaches.md](./coaches.md) — coaching staff list, invite, deactivate (Phase 1.1)

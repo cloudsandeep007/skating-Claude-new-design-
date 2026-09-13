@@ -75,9 +75,47 @@ new numbered migration is added):**
    Find `<project-id>` in the dashboard under Settings → General → Reference ID.
 
 **Adding a later migration:** create a new numbered file (e.g.
-`0002_add_waitlist_status.sql`), paste it into the SQL Editor and run it
+`0003_add_waitlist_status.sql`), paste it into the SQL Editor and run it
 the same way, then regenerate types. Never edit a migration file that has
 already been applied.
+
+**Migrations applied so far — run each once, in order:**
+
+| File                                       | What it does                                           |
+| ------------------------------------------ | ------------------------------------------------------ |
+| `0001_initial_schema.sql`                  | Every table, enum, index, RLS policy, trigger, view    |
+| `0002_storage.sql`                         | The private `student-photos` bucket and its policies   |
+
+Photo upload on the Add/Edit student screens will fail with a "bucket not
+found" error until `0002_storage.sql` has been run.
+
+## Edge Functions
+
+Server-side code that runs inside Supabase. Right now there's one:
+`invite-user`, which creates parent and coach accounts and sends their
+invite email (the browser can't do this itself — see
+[DATA-MODEL.md](./DATA-MODEL.md)).
+
+**Deploying (one-time, and again whenever the function's code changes):**
+
+```
+npx supabase login
+npx supabase functions deploy invite-user --project-ref <project-id>
+```
+
+`login` opens a browser window once; after that the CLI remembers you.
+Nothing else to configure — the function reads `SUPABASE_URL`,
+`SUPABASE_ANON_KEY` and `SUPABASE_SERVICE_ROLE_KEY` from secrets Supabase
+provides to every function automatically.
+
+Until it's deployed, "Add coach" and "Add student → New parent (send
+invite)" will fail with a "function not found" toast. Linking a student to
+an **existing** parent, and everything else on those screens, works
+without it.
+
+**Invite emails** go out through Supabase's built-in email service, which
+is fine for testing but rate-limited (a few per hour). Before real use,
+set up a custom SMTP provider under Authentication → Settings → SMTP.
 
 See [DATA-MODEL.md](./DATA-MODEL.md) for what the schema actually contains.
 

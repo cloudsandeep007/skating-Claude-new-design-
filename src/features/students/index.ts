@@ -1,0 +1,4 @@
+export { AddStudentPage } from './components/AddStudentPage'
+export { EditStudentPage } from './components/EditStudentPage'
+export { StudentDetailPage } from './components/StudentDetailPage'
+export { StudentsListPage } from './components/StudentsListPage'

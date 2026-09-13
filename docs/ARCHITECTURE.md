@@ -43,8 +43,36 @@ Phase 1. Two rules that apply from day one:
   raw table queries aggregated in the frontend.
 - All of it goes through TanStack Query hooks in each feature's `api/`
   folder, reading from the typed Supabase client in
-  `src/shared/lib/supabase.ts` (added in Phase 0.4) against the generated
-  types in `src/shared/types/database.ts`.
+  `src/shared/lib/supabase.ts` against the generated types in
+  `src/shared/types/database.ts`.
+- **List screens** (e.g. `features/students/api/listStudents.ts`) run
+  one paginated query for the rows, embedding foreign-key relations with
+  PostgREST's nested select (`current_level:levels(name)`), then a few
+  parallel `.in('student_id', ids)` lookups for anything that lives in a
+  view or another table, and merge them in the query function. Business
+  rules like "which fee counts as current" live there, not in components.
+- **Mutations** invalidate the relevant `['feature', ...]` query keys on
+  success. Single-field, reversible flips (archive a student, deactivate a
+  coach) are **optimistic** — the cache is patched before the request and
+  rolled back on error. Multi-step creates are not.
+- **Privileged writes** (creating auth accounts) never happen in the
+  browser. They go through `supabase/functions/invite-user`, an Edge
+  Function called via `shared/lib/invokeFunction`. It verifies the
+  caller's JWT is an `academy_admin` before using the service-role key.
+- **Files** go to Supabase Storage. The `student-photos` bucket is
+  private; the table stores the object path and the app signs a
+  short-lived URL when it needs to display one.
+
+## Server-side code
+
+| Piece                                | Where                             | Deployed how                     |
+| ------------------------------------ | --------------------------------- | -------------------------------- |
+| Schema, RLS, views, triggers         | `supabase/migrations/*.sql`       | pasted into the SQL Editor       |
+| Storage bucket + policies            | `supabase/migrations/0002_*.sql`  | same                             |
+| Account creation (`invite-user`)     | `supabase/functions/invite-user/` | `supabase functions deploy`      |
+
+Edge Functions run on Deno with their own tsconfig; they're excluded from
+the app's ESLint/tsc (see `eslint.config.js`).
 
 ## Auth model
 
@@ -100,6 +128,24 @@ layers enforce isolation, both described in full in
    etc.) so `super_admin` sees everything, `academy_admin` sees their
    academy, `coach` reads their academy and writes attendance/skills, and
    `parent` sees only their own children's data.
+
+## Design system
+
+The visual spec is the Claude Design handoff in `docs/design/handoff/` —
+read `Skating Academy Design System.dc.html` first, then the per-screen
+files (`Admin Console`, `Academy Screens`, `Developer Console`). It's
+wired into the app in two places:
+
+- `src/index.css` — shadcn's semantic tokens (`--primary`, `--ring`,
+  `--radius`, …) remapped to the design's ink/brand palette, so every
+  shadcn component is on-brand without per-component edits.
+- `tailwind.config.js` — the Archivo font and the raw colour ramps
+  (`brand-*`, `success-*`, `warning-*`, `info-*`) for spot colours the
+  semantic tokens don't cover (status pills, attendance bars).
+
+Small design-specific components that shadcn doesn't ship live as
+wrappers in `src/shared/ui/` (`StatusBadge`, `EmptyState`, `PageLoader`);
+generated shadcn files aren't hand-edited.
 
 ## External services
 

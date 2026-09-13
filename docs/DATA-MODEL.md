@@ -468,6 +468,30 @@ these, never aggregate raw tables.**
 | `attendance_summary_for_range(p_from, p_to, p_batch_id?)` | RPC | student in range | student_id, full_name, counted/attended/absent/late/excused_sessions, attendance_pct |
 | `at_risk_students_for(p_days=30, p_threshold=60, p_min_sessions=3)` | RPC | at-risk student with custom window | student_id, full_name, counted_sessions, attended_sessions, attendance_pct |
 
+## Storage (`supabase/migrations/0002_storage.sql`)
+
+| Bucket           | Public | Object path                              | Policies                                                                                       |
+| ---------------- | ------ | ---------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| `student-photos` | **no** | `<academy_id>/<student_id>/photo.<ext>`  | super_admin all · any academy member select within their academy folder · academy_admin insert/update/delete within their academy folder |
+
+The bucket is private (photos of minors), so `students.photo_url` stores
+the **storage path**, not a URL. The frontend resolves it to a short-lived
+signed URL at display time (`getStudentPhotoUrl` in
+`features/students/api/uploadStudentPhoto.ts`). Tenancy is enforced by
+reading the first path segment with `storage.foldername(name)` and
+comparing it to `current_academy_id()` — the same helpers as table RLS.
+
+## Account creation (Edge Function `invite-user`)
+
+New parent and coach accounts can't be created by the browser — the anon
+key has no access to Supabase's Admin API. `supabase/functions/invite-user`
+runs server-side with the service-role key and, after verifying the caller
+is an `academy_admin`, either reuses an existing `profiles` row with that
+email (same academy only) or calls `auth.admin.inviteUserByEmail` (which
+sends the invite email), inserts the `profiles` row with `status =
+'invited'`, and then inserts the `parents_students` or `coaches` row. See
+[RUNBOOK.md](./RUNBOOK.md) for deploying it.
+
 ## Seed data (`supabase/seed.sql`)
 
 One academy ("Glide Skating Academy", Bengaluru), one super admin, one

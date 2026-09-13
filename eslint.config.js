@@ -9,7 +9,17 @@ export default tseslint.config(
   {
     // database.ts is regenerated wholesale by `supabase gen types` (see
     // CLAUDE.md) — lint it like build output, not hand-written code.
-    ignores: ['dist', 'playwright-report', 'test-results', 'docs', 'src/shared/types/database.ts'],
+    // supabase/functions runs on Deno, a separate runtime/tsconfig from this
+    // Vite app — linting it against the app's tsconfig would just error on
+    // `Deno.*` globals and jsr: imports it can't resolve.
+    ignores: [
+      'dist',
+      'playwright-report',
+      'test-results',
+      'docs',
+      'src/shared/types/database.ts',
+      'supabase/functions/**',
+    ],
   },
   {
     extends: [

@@ -17,6 +17,128 @@ Format:
 
 ---
 
+## 2026-09-14 — Account creation goes through an Edge Function, never the browser
+
+**Decision:** New parent and coach accounts are created by
+`supabase/functions/invite-user`, which runs with the service-role key
+server-side. The frontend only ever calls it via
+`supabase.functions.invoke` (wrapped in `shared/lib/invokeFunction`).
+
+**Options considered:** (a) Ship the service-role key to the browser and
+call `auth.admin.inviteUserByEmail` from the app; (b) Have the admin
+create the login manually in the Supabase dashboard and only link it in
+the app; (c) An Edge Function.
+
+**Why:** (a) is a hard no — the service-role key bypasses every RLS policy
+in the database; anyone who opens DevTools would own every academy's
+data. (b) doesn't meet the "creates their account and sends an invite"
+requirement and is a bad admin experience. (c) is the only option that is
+both secure and one-click: the function verifies the *caller's* JWT is an
+`academy_admin` before doing anything privileged, so the endpoint can't be
+abused even though it's publicly reachable.
+
+**Trade-offs:** One more thing to deploy (`supabase functions deploy`),
+documented in RUNBOOK.md. It runs on Deno, so it lives outside the app's
+tsconfig/ESLint (excluded in `eslint.config.js`). One function handles
+both roles rather than two near-identical ones — simpler to deploy and
+reason about.
+
+## 2026-09-14 — Student photos in a private bucket, path stored, signed URL at display time
+
+**Decision:** `student-photos` is a private Storage bucket;
+`students.photo_url` holds the object path (`<academy>/<student>/photo.ext`),
+and the app resolves it to a 1-hour signed URL when rendering.
+
+**Options considered:** A public bucket storing the permanent public URL
+(simpler — one field, no signing step).
+
+**Why:** These are photos of children. A public bucket means anyone with
+the URL can view them forever, and URLs leak (screenshots, shared links,
+browser history). A private bucket with folder-per-academy RLS means the
+same tenancy rules as the tables apply to photos.
+
+**Trade-offs:** One extra call per displayed photo (cheap, cacheable). The
+avatar currently shows initials and the signed-URL resolver isn't wired
+in yet — noted in the students feature doc.
+
+## 2026-09-14 — Flat parent-link schema instead of a Zod discriminated union
+
+**Decision:** `ParentLinkSchema` in `features/students/types.ts` is one
+flat object with a `mode` field and all other fields optional; which ones
+are required per mode is enforced in `.superRefine`, not the type system.
+
+**Options considered:** `z.discriminatedUnion('mode', [Existing, New])` —
+the "correct" modelling, and what I wrote first.
+
+**Why:** react-hook-form's `Path<T>` type helper is recursive, and a
+discriminated union nested inside a larger form type made TypeScript's
+memory use explode during `tsc` (a known RHF + Zod interaction). The flat
+shape type-checks in a fraction of the time and the runtime validation is
+identical for the user.
+
+**Trade-offs:** The API layer (`linkParent`) has to re-check the fields
+it needs rather than getting narrowing for free — two explicit `if
+(!x) throw` guards. Worth it for a build that finishes.
+
+## 2026-09-14 — Students list merges four lookups client-side rather than a bespoke view
+
+**Decision:** `api/listStudents.ts` runs one paginated query for the
+student rows (with batch and level embedded via foreign keys), then four
+small `.in('student_id', ids)` lookups for attendance %, latest fee,
+last-active and parent name, and merges them in the query function.
+
+**Options considered:** (a) A new Postgres view `student_roster` joining
+everything, then one query; (b) One giant PostgREST embed.
+
+**Why:** (b) isn't possible — attendance % comes from a view, and
+PostgREST can't embed a view without a foreign-key relationship it can
+see. (a) is cleaner long-term but means another migration and view to
+maintain right now for a list of 10 rows per page; the four lookups are
+each a single indexed `IN (...)` on the visible ids and run in parallel.
+It still honours the real rule ("charts never aggregate raw tables"):
+attendance % is read from `student_attendance_summary`, not recomputed.
+
+**Trade-offs:** Five requests per page instead of one. If the roster page
+ever feels slow, promote this to a view — the merge logic is in one
+function, so the swap is local. Revisit when the dashboard (Phase 3)
+adds its own roster-shaped queries anyway.
+
+## 2026-09-14 — Design tokens applied globally; component variants left as shadcn defaults
+
+**Decision:** The design system's palette, Archivo font and radius scale
+are wired into `index.css`/`tailwind.config.js` so every shadcn component
+picks them up; the raw ramps (`brand-*`, `success-*`, `warning-*`,
+`info-*`) are available for spot colours. Status pills are a small
+wrapper (`shared/ui/StatusBadge`) rather than edits to `badge.tsx`. Button
+variants (e.g. the design's outline-style "destructive") stay as shadcn
+ships them.
+
+**Options considered:** Hand-tuning every shadcn component's variant
+classes to match each hover/focus/disabled state in the mockup.
+
+**Why:** The tokens carry ~90% of the look (ink primary, red focus ring,
+12px cards, the type ramp) for zero per-component work, and CLAUDE.md
+says not to hand-edit generated variant boilerplate. Coaches had no
+design mockup at all, so they reuse the students screens' patterns.
+
+**Trade-offs:** A few states are visibly "shadcn default" rather than
+pixel-matched (solid red destructive button vs the design's outline
+style; badge weight). Flag them if they matter and they become a
+wrapper each, not a rewrite.
+
+## 2026-09-14 — `npm run lint` runs Node with a 4 GB heap
+
+**Decision:** The `lint` script is `node --max-old-space-size=4096
+node_modules/eslint/bin/eslint.js .` rather than plain `eslint .`.
+
+**Why:** typescript-eslint's type-aware rules load the whole program into
+memory; once the students/coaches features landed, `eslint .` ran out of
+heap on the development machine (which had <500 MB free at the time).
+Baking the flag into the script means it works the same locally and in
+CI without anyone remembering an env var. Invoking eslint's entry file
+directly is what makes the flag cross-platform (a `NODE_OPTIONS=` prefix
+doesn't work in Windows `cmd`).
+
 ## 2026-09-14 — react-router data router (`createBrowserRouter`) over declarative `<Routes>`
 
 **Decision:** Route the app with `createBrowserRouter([...]) `+ `<RouterProvider>`
