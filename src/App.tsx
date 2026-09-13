@@ -1,13 +1,22 @@
+import * as Sentry from '@sentry/react'
+import { RouterProvider } from 'react-router-dom'
+
+import { AuthProvider, SessionExpiredToast } from '@/features/auth'
+import { AppErrorFallback, QueryProvider } from '@/app/providers'
+import { router } from '@/app/routes'
+import { Toaster } from '@/shared/ui/sonner'
+
 function App() {
   return (
-    <main className="flex min-h-screen items-center justify-center p-8 text-center">
-      <div>
-        <h1 className="text-2xl font-semibold">Skating Academy</h1>
-        <p className="mt-2 text-muted-foreground">
-          Project foundation is set up. No features have been built yet.
-        </p>
-      </div>
-    </main>
+    <Sentry.ErrorBoundary fallback={<AppErrorFallback />}>
+      <QueryProvider>
+        <AuthProvider>
+          <SessionExpiredToast />
+          <RouterProvider router={router} />
+          <Toaster />
+        </AuthProvider>
+      </QueryProvider>
+    </Sentry.ErrorBoundary>
   )
 }
 

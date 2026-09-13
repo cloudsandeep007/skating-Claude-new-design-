@@ -10,4 +10,6 @@ in the same session the feature is built or changed. Each file covers:
 - **Edge cases** — what happens in the unusual situations
 - **Known limitations** — what this deliberately doesn't handle yet
 
-No features exist yet — this folder is empty until Phase 1.
+- [auth.md](./auth.md) — login, roles, and route protection (Phase 0.4)
+
+The first business feature (students, Phase 1.1) lands here next.

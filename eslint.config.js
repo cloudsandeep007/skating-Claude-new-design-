@@ -6,7 +6,11 @@ import tseslint from 'typescript-eslint'
 import eslintConfigPrettier from 'eslint-config-prettier'
 
 export default tseslint.config(
-  { ignores: ['dist', 'playwright-report', 'test-results', 'docs'] },
+  {
+    // database.ts is regenerated wholesale by `supabase gen types` (see
+    // CLAUDE.md) — lint it like build output, not hand-written code.
+    ignores: ['dist', 'playwright-report', 'test-results', 'docs', 'src/shared/types/database.ts'],
+  },
   {
     extends: [
       js.configs.recommended,
@@ -35,11 +39,17 @@ export default tseslint.config(
     },
   },
   {
-    // shadcn/ui generates these files; they intentionally co-export variant
-    // helpers (e.g. buttonVariants) alongside the component, which is fine.
+    // shadcn/ui generates these files (see CLAUDE.md: "don't hand-edit the
+    // variant boilerplate"); they intentionally co-export variant helpers
+    // (e.g. buttonVariants) and don't follow our stricter type-checked rules.
     files: ['src/shared/ui/**/*.tsx'],
     rules: {
       'react-refresh/only-export-components': 'off',
+      '@typescript-eslint/consistent-type-imports': 'off',
+      '@typescript-eslint/consistent-type-definitions': 'off',
+      '@typescript-eslint/no-unnecessary-template-expression': 'off',
+      '@typescript-eslint/no-unnecessary-type-conversion': 'off',
+      '@typescript-eslint/no-unnecessary-condition': 'off',
     },
   },
   eslintConfigPrettier,

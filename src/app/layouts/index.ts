@@ -1,2 +1,4 @@
-// Per-role app shells (admin sidebar, coach/parent bottom nav, dev console) go here.
-export {}
+export { AdminLayout } from './AdminLayout'
+export { CoachLayout } from './CoachLayout'
+export { DevLayout } from './DevLayout'
+export { ParentLayout } from './ParentLayout'

@@ -20,9 +20,31 @@ npm test
 npm run test:e2e
 ```
 
+`npm run test:e2e` needs `.env` filled in with a real Supabase project
+that has `supabase/seed.sql` applied — it logs in as each of the four
+seeded roles and checks it lands on the right home screen. If port 5173
+is already taken by something else on your machine, run
+`PORT=5183 npm run test:e2e` instead (any free port works).
+
+## Continuous integration
+
+Every push and pull request runs `.github/workflows/ci.yml`: install,
+typecheck, lint, unit tests, build. It fails the check on any error. It
+does **not** run the Playwright e2e tests — those need a real Supabase
+project with seed data, which isn't something CI should depend on yet.
+Run `npm run test:e2e` locally before trusting a change that touches
+login or routing.
+
 ## Environment variables
 
 See [.env.example](../.env.example) for the full documented list.
+
+**Windows PowerShell note:** redirecting command output with `>` (e.g.
+`command > file.ts`) writes UTF-16 by default, which breaks TypeScript
+and other tools expecting UTF-8. This bit the `supabase gen types`
+command in this project. If a generated file looks empty or garbled,
+check its encoding (`file path/to/file`) before assuming the command
+failed — converting it back to UTF-8 is usually the actual fix.
 
 ## Database migrations
 

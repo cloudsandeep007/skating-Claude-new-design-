@@ -48,9 +48,40 @@ Phase 1. Two rules that apply from day one:
 
 ## Auth model
 
-_To be filled in once auth is built (Phase 0.4)._ The roles the schema
-already supports are `super_admin`, `academy_admin`, `coach`, and
-`parent` (see `profiles.role` in [DATA-MODEL.md](./DATA-MODEL.md)).
+Supabase Auth (email/password only for now) with the session held in
+`src/features/auth`:
+
+- `<AuthProvider>` (mounted once in `App.tsx`) loads the initial session,
+  subscribes to `supabase.auth.onAuthStateChange`, and — whenever the
+  session changes — fetches the matching `profiles` row so the rest of
+  the app always has `{ session, profile }` together, never just a bare
+  Supabase user. It blocks rendering behind a full-page spinner until
+  that first resolution completes.
+- `useAuth()` reads that context; `<ProtectedRoute allowedRoles={[...]}>`
+  (a layout route with no `element` of its own, wrapping the real layout)
+  redirects to `/login` when signed out and to `/403` when signed in as
+  the wrong role.
+- After login, `ROLE_HOME_PATH` (in `features/auth/types.ts`) sends each
+  role to its home: `super_admin → /dev`, `academy_admin → /admin`,
+  `coach → /coach`, `parent → /parent`. The same map drives `/`'s
+  redirect and the post-password-reset redirect.
+- **Session expiry:** Supabase auto-refreshes the access token in the
+  background. If a refresh ever fails, the client fires a `SIGNED_OUT`
+  event indistinguishable from a deliberate logout — `useAuthSession`
+  tells them apart with a ref flag set just before an intentional
+  `signOut()`, and `<SessionExpiredToast>` (mounted once, near the router)
+  shows "Your session has expired" only for the unintentional case.
+- Password reset: `/forgot-password` calls
+  `supabase.auth.resetPasswordForEmail` with `redirectTo` pointing at
+  `/reset-password`; Supabase's link puts a recovery session straight
+  into the URL, which the client picks up automatically
+  (`detectSessionInUrl: true`) before that page ever calls
+  `supabase.auth.updateUser({ password })`.
+- No public sign-up screen — accounts are created by an academy admin
+  (Phase 1) or manually in the Supabase dashboard for now.
+
+The roles themselves are `super_admin`, `academy_admin`, `coach`, and
+`parent` (`profiles.role` in [DATA-MODEL.md](./DATA-MODEL.md)).
 
 ## Tenancy model
 

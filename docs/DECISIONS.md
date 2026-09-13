@@ -17,6 +17,68 @@ Format:
 
 ---
 
+## 2026-09-14 — react-router data router (`createBrowserRouter`) over declarative `<Routes>`
+
+**Decision:** Route the app with `createBrowserRouter([...]) `+ `<RouterProvider>`
+instead of nesting `<Routes>`/`<Route>` JSX in `App.tsx`.
+
+**Options considered:** The classic declarative `<BrowserRouter><Routes>`
+API, which is simpler for a handful of static routes.
+
+**Why:** The data router gives every route an `errorElement` for free —
+a render error in one route shows a friendly fallback there instead of
+crashing routes that have nothing to do with it. Role-based route
+protection also reads more clearly as its own layout route
+(`<ProtectedRoute allowedRoles={[...]}>` wrapping a layout's children)
+than as a wrapper component repeated in JSX at every branch.
+
+**Trade-offs:** Slightly more indirection to read the route tree (it's a
+plain array of objects in `app/routes/router.tsx`, not JSX) — acceptable
+since it's one file and rarely touched once a role's routes exist.
+
+## 2026-09-14 — Auth session state lives in a hand-written context, not TanStack Query
+
+**Decision:** `useAuthSession` (backing `<AuthProvider>`) manages
+`{ session, profile, status }` with plain `useState` + a
+`supabase.auth.onAuthStateChange` subscription, not a `useQuery`.
+
+**Options considered:** Modeling the session as a TanStack Query query
+(e.g. `useQuery(['session'], ...)`), which the rest of the app's data
+fetching uses.
+
+**Why:** TanStack Query's model is "fetch on demand, refetch on
+triggers"; auth session changes are **pushed** by Supabase's own
+`onAuthStateChange` listener (sign-in, sign-out, token auto-refresh) —
+there's nothing to poll or refetch. Forcing that through `useQuery` would
+mean manually calling `queryClient.setQueryData` from inside the
+subscription anyway, which is no simpler than just holding the state
+directly. Profile *fetching* still goes through a plain async function
+(`fetchProfile`) in `features/auth/api/`, matching the "data access
+lives in `api/`" rule even though it isn't itself a `useQuery` hook.
+
+**Trade-offs:** Auth state isn't visible in TanStack Query's devtools
+alongside other server state. Acceptable — it's a single provider at the
+app root, not data a feature screen fetches.
+
+## 2026-09-14 — Distinguishing "signed out" from "session expired"
+
+**Decision:** `useAuthSession` sets a ref flag immediately before calling
+`supabase.auth.signOut()`; the `onAuthStateChange` listener only shows
+the "your session expired" toast for a `SIGNED_OUT` event when that flag
+is *not* set, then always clears it.
+
+**Options considered:** Showing the expiry toast on every `SIGNED_OUT`
+event.
+
+**Why:** Supabase fires the identical `SIGNED_OUT` event whether the user
+clicked "sign out" or a background token refresh failed — the SDK gives
+no other way to tell them apart. Toasting "your session expired" right
+after someone deliberately signs out would be confusing and wrong.
+
+**Trade-offs:** A ref (not state) is the right tool here since setting it
+must happen synchronously *before* the `signOut()` call that triggers the
+listener — a state update wouldn't be committed in time. None otherwise.
+
 ## 2026-09-14 — RLS via SECURITY DEFINER helper functions, called as `(select fn())`
 
 **Decision:** All role/tenancy checks in RLS policies go through six
