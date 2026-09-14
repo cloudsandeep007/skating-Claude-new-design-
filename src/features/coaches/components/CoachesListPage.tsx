@@ -1,27 +1,23 @@
 import { Award, Plus } from 'lucide-react'
 import { Link, useNavigate } from 'react-router-dom'
 
-import { Avatar, AvatarFallback } from '@/shared/ui/avatar'
+import { useSignedPhotoUrls } from '@/shared/lib/signedPhotoUrls'
 import { Button } from '@/shared/ui/button'
 import { EmptyState } from '@/shared/ui/EmptyState'
+import { PersonAvatar } from '@/shared/ui/PersonAvatar'
 import { Skeleton } from '@/shared/ui/skeleton'
 import { StatusBadge } from '@/shared/ui/StatusBadge'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/shared/ui/table'
 
 import { useCoaches } from '../api/listCoaches'
 
-function initials(name: string) {
-  return name
-    .split(' ')
-    .map((part) => part[0])
-    .slice(0, 2)
-    .join('')
-    .toUpperCase()
-}
-
 export function CoachesListPage() {
   const navigate = useNavigate()
   const { data: coaches, isLoading } = useCoaches()
+  const { data: photoUrls } = useSignedPhotoUrls(
+    'coach-photos',
+    (coaches ?? []).map((c) => c.photoUrl),
+  )
 
   return (
     <div>
@@ -79,11 +75,12 @@ export function CoachesListPage() {
                 >
                   <TableCell>
                     <div className="flex items-center gap-2.5">
-                      <Avatar className="h-9 w-9">
-                        <AvatarFallback className="bg-neutral-200 text-xs font-bold text-neutral-800">
-                          {initials(coach.fullName)}
-                        </AvatarFallback>
-                      </Avatar>
+                      <PersonAvatar
+                        name={coach.fullName}
+                        photoUrl={coach.photoUrl ? photoUrls?.[coach.photoUrl] : undefined}
+                        className="h-9 w-9"
+                        fallbackClassName="bg-neutral-200 text-xs font-bold text-neutral-800"
+                      />
                       <div>
                         <div className="font-bold">{coach.fullName}</div>
                         <div className="text-xs text-muted-foreground">{coach.email}</div>

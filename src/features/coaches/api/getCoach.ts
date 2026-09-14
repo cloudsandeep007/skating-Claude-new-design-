@@ -11,6 +11,7 @@ export interface CoachDetail {
   email: string | null
   phone: string | null
   specialization: string | null
+  photoUrl: string | null
   status: CoachStatus
   joinedDate: string
   batches: { id: string; name: string; studentCount: number }[]
@@ -20,7 +21,7 @@ async function fetchCoach(id: string): Promise<CoachDetail> {
   const { data, error } = await supabase
     .from('coaches')
     .select(
-      `id, specialization, status, joined_date,
+      `id, specialization, photo_url, status, joined_date,
        profile:profiles(id, full_name, email, phone),
        batches(id, name)`,
     )
@@ -47,6 +48,7 @@ async function fetchCoach(id: string): Promise<CoachDetail> {
     email: data.profile.email,
     phone: data.profile.phone,
     specialization: data.specialization,
+    photoUrl: data.photo_url,
     status: data.status,
     joinedDate: data.joined_date,
     batches: data.batches.map((b) => ({

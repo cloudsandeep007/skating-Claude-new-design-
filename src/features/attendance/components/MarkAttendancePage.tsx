@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { toast } from 'sonner'
 
 import { formatDate, formatTime } from '@/shared/lib/format'
+import { useSignedPhotoUrls } from '@/shared/lib/signedPhotoUrls'
 import { cn } from '@/shared/lib/utils'
 import { Button } from '@/shared/ui/button'
 import { EmptyState } from '@/shared/ui/EmptyState'
@@ -10,7 +11,6 @@ import { Skeleton } from '@/shared/ui/skeleton'
 
 import { useSessionForMarking } from '../api/getSessionForMarking'
 import { useSubmitAttendance } from '../api/saveAttendance'
-import { useStudentPhotoUrls } from '../api/studentPhotos'
 import { useMarkingDraft } from '../hooks/useMarkingDraft'
 import type { AttendanceStatus, RosterStudent } from '../types'
 
@@ -66,7 +66,10 @@ export function MarkAttendancePage() {
   const submit = useSubmitAttendance()
   const roster = data?.roster ?? []
   const draft = useMarkingDraft(sessionId, data?.saved, roster)
-  const { data: photoUrls } = useStudentPhotoUrls(roster.map((s) => s.photoUrl))
+  const { data: photoUrls } = useSignedPhotoUrls(
+    'student-photos',
+    roster.map((s) => s.photoUrl),
+  )
 
   if (isError) {
     return (

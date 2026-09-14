@@ -109,6 +109,9 @@ Server-side code that runs inside Supabase. There are two:
 
 - `invite-user` — creates parent and coach accounts and sends their invite
   email (the browser can't do this itself).
+- `delete-user` — permanently removes a coach's account (the "Remove
+  coach" button); the mirror image of `invite-user` for the same reason —
+  the browser's anon key can't call the Admin API.
 - `generate-fees` — the scheduled fee job: generates the coming billing
   period for every student on a fee plan, and flips overdue fees. See
   "Scheduled jobs" below for wiring up its cron trigger.
@@ -118,6 +121,7 @@ Server-side code that runs inside Supabase. There are two:
 ```
 npx supabase login
 npx supabase functions deploy invite-user --project-ref <project-id>
+npx supabase functions deploy delete-user --project-ref <project-id>
 npx supabase functions deploy generate-fees --project-ref <project-id>
 ```
 

@@ -188,6 +188,7 @@ academy · parent select own links.
 | academy_id     | uuid         | no       |                   | FK → academies cascade               |
 | profile_id     | uuid         | no       |                   | FK → profiles cascade; **unique**    |
 | specialization | text         | yes      |                   |                                      |
+| photo_url      | text         | yes      |                   | storage path in `coach-photos`, not a URL (0009) |
 | joined_date    | date         | no       | current_date      |                                      |
 | status         | coach_status | no       | 'active'          |                                      |
 | created_at / updated_at | timestamptz | no | now()       | trigger                              |
@@ -563,18 +564,22 @@ together automatically.
 possible, an RPC only where server-side validation or a bundled
 multi-step write earns its keep.
 
-## Storage (`supabase/migrations/0002_storage.sql`)
+## Storage (`supabase/migrations/0002_storage.sql`, `0009_photos_and_needs_attention.sql`)
 
 | Bucket           | Public | Object path                              | Policies                                                                                       |
 | ---------------- | ------ | ---------------------------------------- | ---------------------------------------------------------------------------------------------- |
 | `student-photos` | **no** | `<academy_id>/<student_id>/photo.<ext>`  | super_admin all · any academy member select within their academy folder · academy_admin insert/update/delete within their academy folder |
+| `coach-photos`   | **no** | `<academy_id>/<coach_id>/photo.<ext>`    | same shape as `student-photos`: super_admin all · academy member select · academy_admin insert/update/delete within their academy folder |
 
-The bucket is private (photos of minors), so `students.photo_url` stores
-the **storage path**, not a URL. The frontend resolves it to a short-lived
-signed URL at display time (`getStudentPhotoUrl` in
-`features/students/api/uploadStudentPhoto.ts`). Tenancy is enforced by
-reading the first path segment with `storage.foldername(name)` and
-comparing it to `current_academy_id()` — the same helpers as table RLS.
+Both buckets are private, so `students.photo_url` / `coaches.photo_url`
+store the **storage path**, not a URL. The frontend resolves it to a
+short-lived (1hr) signed URL at display time via the shared
+`useSignedPhotoUrls(bucket, paths)` hook (`shared/lib/signedPhotoUrls.ts`),
+rendered through the shared `PersonAvatar` component
+(`shared/ui/PersonAvatar.tsx`) which falls back to initials on any miss —
+no photo, still loading, or a failed fetch. Tenancy is enforced by reading
+the first path segment with `storage.foldername(name)` and comparing it to
+`current_academy_id()` — the same helpers as table RLS.
 
 ## Account creation (Edge Function `invite-user`)
 
@@ -586,6 +591,20 @@ email (same academy only) or calls `auth.admin.inviteUserByEmail` (which
 sends the invite email), inserts the `profiles` row with `status =
 'invited'`, and then inserts the `parents_students` or `coaches` row. See
 [RUNBOOK.md](./RUNBOOK.md) for deploying it.
+
+## Account removal (Edge Function `delete-user`)
+
+The mirror image of `invite-user`: the browser's anon key can't call
+`auth.admin.deleteUser`, so removing a coach's account for good (not just
+deactivating) has to go through `supabase/functions/delete-user`. It runs
+server-side with the service-role key and, after verifying the caller is
+an `academy_admin` and the target account is a `coach` in the caller's
+own academy (and isn't the caller themself), calls
+`auth.admin.deleteUser(profile_id)`. Deleting the `auth.users` row
+cascades to `profiles` and then `coaches` automatically (`ON DELETE
+CASCADE` both steps) — this is deliberately *not* a plain
+`.delete().from('coaches')`, which would leave a working login behind
+with no coach record. See [RUNBOOK.md](./RUNBOOK.md) for deploying it.
 
 ## Scheduled fee generation (Edge Function `generate-fees`)
 
@@ -620,7 +639,13 @@ underlying tables scopes every one of them to the caller's own academy.
 | `batch_capacity_summary()`                              | Enrolled vs capacity per active batch.                                                                                                                  | one row per batch                                |
 | `monthly_active_students(p_months=6)`                   | Distinct students with an attendance record per month — the closest available "active" proxy without a historical status snapshot.                     | one row per month with sessions                 |
 | `coach_load_summary(p_days=30)`                          | Students (active enrollment across their batches) and sessions (trailing window) per coach.                                                            | one row per active coach                         |
-| `needs_attention(p_days=30, p_threshold=60, p_min_sessions=3)` | Same rule as `at_risk_students`, plus current level and an overdue-fee flag — the dashboard's "Needs attention" panel.                            | one row per at-risk student                      |
+| `needs_attention(p_days=30, p_threshold=60, p_min_sessions=3)` | Same rule as `at_risk_students`, plus current level, `photo_url` (added in 0009, see below) and an overdue-fee flag — the dashboard's "Needs attention" panel. | one row per at-risk student                      |
+
+`needs_attention()` was redefined in `0009_photos_and_needs_attention.sql`
+to add `photo_url` to its return columns — Postgres won't let
+`create or replace function` change a function's return type, so that
+migration `drop function`s it first, then recreates it with the same
+body plus the one new column.
 | `fee_collection_report(p_from, p_to, p_batch_id?)`       | Same shape as `student_fees_list()`, filtered by an explicit `due_date` range instead of one calendar month — the Reports page's date-range filter.    | one row per fee due in range                     |
 | `student_progress_report(p_from, p_to, p_batch_id?)`     | Per student: current level, skills marked achieved within the range (any level, not just their current one — see the feature doc), and attendance % in the range. | one row per active student                       |
 | `coach_activity_report(p_from, p_to, p_batch_id?)`       | Per coach: sessions held, distinct students seen, and attendance % for their sessions, within the range.                                               | one row per active coach                         |

@@ -1,10 +1,16 @@
-export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[]
+export type Json =
+  | string
+  | number
+  | boolean
+  | null
+  | { [key: string]: Json | undefined }
+  | Json[]
 
 export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: '14.5'
+    PostgrestVersion: "14.5"
   }
   graphql_public: {
     Tables: {
@@ -42,10 +48,10 @@ export type Database = {
           logo_url: string | null
           name: string
           phone: string | null
-          plan_tier: Database['public']['Enums']['plan_tier']
+          plan_tier: Database["public"]["Enums"]["plan_tier"]
           settings: Json
           slug: string
-          status: Database['public']['Enums']['academy_status']
+          status: Database["public"]["Enums"]["academy_status"]
           updated_at: string
         }
         Insert: {
@@ -56,10 +62,10 @@ export type Database = {
           logo_url?: string | null
           name: string
           phone?: string | null
-          plan_tier?: Database['public']['Enums']['plan_tier']
+          plan_tier?: Database["public"]["Enums"]["plan_tier"]
           settings?: Json
           slug: string
-          status?: Database['public']['Enums']['academy_status']
+          status?: Database["public"]["Enums"]["academy_status"]
           updated_at?: string
         }
         Update: {
@@ -70,10 +76,10 @@ export type Database = {
           logo_url?: string | null
           name?: string
           phone?: string | null
-          plan_tier?: Database['public']['Enums']['plan_tier']
+          plan_tier?: Database["public"]["Enums"]["plan_tier"]
           settings?: Json
           slug?: string
-          status?: Database['public']['Enums']['academy_status']
+          status?: Database["public"]["Enums"]["academy_status"]
           updated_at?: string
         }
         Relationships: []
@@ -81,7 +87,7 @@ export type Database = {
       announcements: {
         Row: {
           academy_id: string
-          audience: Database['public']['Enums']['announcement_audience']
+          audience: Database["public"]["Enums"]["announcement_audience"]
           batch_id: string | null
           body: string
           created_at: string
@@ -95,7 +101,7 @@ export type Database = {
         }
         Insert: {
           academy_id: string
-          audience?: Database['public']['Enums']['announcement_audience']
+          audience?: Database["public"]["Enums"]["announcement_audience"]
           batch_id?: string | null
           body: string
           created_at?: string
@@ -109,7 +115,7 @@ export type Database = {
         }
         Update: {
           academy_id?: string
-          audience?: Database['public']['Enums']['announcement_audience']
+          audience?: Database["public"]["Enums"]["announcement_audience"]
           batch_id?: string | null
           body?: string
           created_at?: string
@@ -123,25 +129,25 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: 'announcements_academy_id_fkey'
-            columns: ['academy_id']
+            foreignKeyName: "announcements_academy_id_fkey"
+            columns: ["academy_id"]
             isOneToOne: false
-            referencedRelation: 'academies'
-            referencedColumns: ['id']
+            referencedRelation: "academies"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: 'announcements_batch_id_academy_id_fkey'
-            columns: ['batch_id', 'academy_id']
+            foreignKeyName: "announcements_batch_id_academy_id_fkey"
+            columns: ["batch_id", "academy_id"]
             isOneToOne: false
-            referencedRelation: 'batches'
-            referencedColumns: ['id', 'academy_id']
+            referencedRelation: "batches"
+            referencedColumns: ["id", "academy_id"]
           },
           {
-            foreignKeyName: 'announcements_created_by_fkey'
-            columns: ['created_by']
+            foreignKeyName: "announcements_created_by_fkey"
+            columns: ["created_by"]
             isOneToOne: false
-            referencedRelation: 'profiles'
-            referencedColumns: ['id']
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -154,7 +160,7 @@ export type Database = {
           marked_by: string | null
           notes: string | null
           session_id: string
-          status: Database['public']['Enums']['attendance_status']
+          status: Database["public"]["Enums"]["attendance_status"]
           student_id: string
           updated_at: string
         }
@@ -166,7 +172,7 @@ export type Database = {
           marked_by?: string | null
           notes?: string | null
           session_id: string
-          status: Database['public']['Enums']['attendance_status']
+          status: Database["public"]["Enums"]["attendance_status"]
           student_id: string
           updated_at?: string
         }
@@ -178,38 +184,38 @@ export type Database = {
           marked_by?: string | null
           notes?: string | null
           session_id?: string
-          status?: Database['public']['Enums']['attendance_status']
+          status?: Database["public"]["Enums"]["attendance_status"]
           student_id?: string
           updated_at?: string
         }
         Relationships: [
           {
-            foreignKeyName: 'attendance_academy_id_fkey'
-            columns: ['academy_id']
+            foreignKeyName: "attendance_academy_id_fkey"
+            columns: ["academy_id"]
             isOneToOne: false
-            referencedRelation: 'academies'
-            referencedColumns: ['id']
+            referencedRelation: "academies"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: 'attendance_marked_by_fkey'
-            columns: ['marked_by']
+            foreignKeyName: "attendance_marked_by_fkey"
+            columns: ["marked_by"]
             isOneToOne: false
-            referencedRelation: 'profiles'
-            referencedColumns: ['id']
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: 'attendance_session_id_academy_id_fkey'
-            columns: ['session_id', 'academy_id']
+            foreignKeyName: "attendance_session_id_academy_id_fkey"
+            columns: ["session_id", "academy_id"]
             isOneToOne: false
-            referencedRelation: 'schedule_sessions'
-            referencedColumns: ['id', 'academy_id']
+            referencedRelation: "schedule_sessions"
+            referencedColumns: ["id", "academy_id"]
           },
           {
-            foreignKeyName: 'attendance_student_id_academy_id_fkey'
-            columns: ['student_id', 'academy_id']
+            foreignKeyName: "attendance_student_id_academy_id_fkey"
+            columns: ["student_id", "academy_id"]
             isOneToOne: false
-            referencedRelation: 'students'
-            referencedColumns: ['id', 'academy_id']
+            referencedRelation: "students"
+            referencedColumns: ["id", "academy_id"]
           },
         ]
       }
@@ -249,18 +255,18 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: 'audit_logs_academy_id_fkey'
-            columns: ['academy_id']
+            foreignKeyName: "audit_logs_academy_id_fkey"
+            columns: ["academy_id"]
             isOneToOne: false
-            referencedRelation: 'academies'
-            referencedColumns: ['id']
+            referencedRelation: "academies"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: 'audit_logs_actor_profile_id_fkey'
-            columns: ['actor_profile_id']
+            foreignKeyName: "audit_logs_actor_profile_id_fkey"
+            columns: ["actor_profile_id"]
             isOneToOne: false
-            referencedRelation: 'profiles'
-            referencedColumns: ['id']
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -276,7 +282,7 @@ export type Database = {
           level_range: string | null
           name: string
           start_time: string
-          status: Database['public']['Enums']['batch_status']
+          status: Database["public"]["Enums"]["batch_status"]
           updated_at: string
           venue: string | null
         }
@@ -291,7 +297,7 @@ export type Database = {
           level_range?: string | null
           name: string
           start_time: string
-          status?: Database['public']['Enums']['batch_status']
+          status?: Database["public"]["Enums"]["batch_status"]
           updated_at?: string
           venue?: string | null
         }
@@ -306,24 +312,24 @@ export type Database = {
           level_range?: string | null
           name?: string
           start_time?: string
-          status?: Database['public']['Enums']['batch_status']
+          status?: Database["public"]["Enums"]["batch_status"]
           updated_at?: string
           venue?: string | null
         }
         Relationships: [
           {
-            foreignKeyName: 'batches_academy_id_fkey'
-            columns: ['academy_id']
+            foreignKeyName: "batches_academy_id_fkey"
+            columns: ["academy_id"]
             isOneToOne: false
-            referencedRelation: 'academies'
-            referencedColumns: ['id']
+            referencedRelation: "academies"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: 'batches_coach_id_academy_id_fkey'
-            columns: ['coach_id', 'academy_id']
+            foreignKeyName: "batches_coach_id_academy_id_fkey"
+            columns: ["coach_id", "academy_id"]
             isOneToOne: false
-            referencedRelation: 'coaches'
-            referencedColumns: ['id', 'academy_id']
+            referencedRelation: "coaches"
+            referencedColumns: ["id", "academy_id"]
           },
         ]
       }
@@ -333,9 +339,10 @@ export type Database = {
           created_at: string
           id: string
           joined_date: string
+          photo_url: string | null
           profile_id: string
           specialization: string | null
-          status: Database['public']['Enums']['coach_status']
+          status: Database["public"]["Enums"]["coach_status"]
           updated_at: string
         }
         Insert: {
@@ -343,9 +350,10 @@ export type Database = {
           created_at?: string
           id?: string
           joined_date?: string
+          photo_url?: string | null
           profile_id: string
           specialization?: string | null
-          status?: Database['public']['Enums']['coach_status']
+          status?: Database["public"]["Enums"]["coach_status"]
           updated_at?: string
         }
         Update: {
@@ -353,25 +361,26 @@ export type Database = {
           created_at?: string
           id?: string
           joined_date?: string
+          photo_url?: string | null
           profile_id?: string
           specialization?: string | null
-          status?: Database['public']['Enums']['coach_status']
+          status?: Database["public"]["Enums"]["coach_status"]
           updated_at?: string
         }
         Relationships: [
           {
-            foreignKeyName: 'coaches_academy_id_fkey'
-            columns: ['academy_id']
+            foreignKeyName: "coaches_academy_id_fkey"
+            columns: ["academy_id"]
             isOneToOne: false
-            referencedRelation: 'academies'
-            referencedColumns: ['id']
+            referencedRelation: "academies"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: 'coaches_profile_id_fkey'
-            columns: ['profile_id']
+            foreignKeyName: "coaches_profile_id_fkey"
+            columns: ["profile_id"]
             isOneToOne: true
-            referencedRelation: 'profiles'
-            referencedColumns: ['id']
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -380,7 +389,7 @@ export type Database = {
           academy_id: string | null
           created_at: string
           id: string
-          level: Database['public']['Enums']['error_level']
+          level: Database["public"]["Enums"]["error_level"]
           message: string
           profile_id: string | null
           route: string | null
@@ -391,7 +400,7 @@ export type Database = {
           academy_id?: string | null
           created_at?: string
           id?: string
-          level?: Database['public']['Enums']['error_level']
+          level?: Database["public"]["Enums"]["error_level"]
           message: string
           profile_id?: string | null
           route?: string | null
@@ -402,7 +411,7 @@ export type Database = {
           academy_id?: string | null
           created_at?: string
           id?: string
-          level?: Database['public']['Enums']['error_level']
+          level?: Database["public"]["Enums"]["error_level"]
           message?: string
           profile_id?: string | null
           route?: string | null
@@ -411,18 +420,18 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: 'error_logs_academy_id_fkey'
-            columns: ['academy_id']
+            foreignKeyName: "error_logs_academy_id_fkey"
+            columns: ["academy_id"]
             isOneToOne: false
-            referencedRelation: 'academies'
-            referencedColumns: ['id']
+            referencedRelation: "academies"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: 'error_logs_profile_id_fkey'
-            columns: ['profile_id']
+            foreignKeyName: "error_logs_profile_id_fkey"
+            columns: ["profile_id"]
             isOneToOne: false
-            referencedRelation: 'profiles'
-            referencedColumns: ['id']
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -460,7 +469,7 @@ export type Database = {
         Row: {
           academy_id: string
           amount: number
-          billing_cycle: Database['public']['Enums']['billing_cycle']
+          billing_cycle: Database["public"]["Enums"]["billing_cycle"]
           created_at: string
           description: string | null
           id: string
@@ -470,7 +479,7 @@ export type Database = {
         Insert: {
           academy_id: string
           amount: number
-          billing_cycle: Database['public']['Enums']['billing_cycle']
+          billing_cycle: Database["public"]["Enums"]["billing_cycle"]
           created_at?: string
           description?: string | null
           id?: string
@@ -480,7 +489,7 @@ export type Database = {
         Update: {
           academy_id?: string
           amount?: number
-          billing_cycle?: Database['public']['Enums']['billing_cycle']
+          billing_cycle?: Database["public"]["Enums"]["billing_cycle"]
           created_at?: string
           description?: string | null
           id?: string
@@ -489,11 +498,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: 'fee_plans_academy_id_fkey'
-            columns: ['academy_id']
+            foreignKeyName: "fee_plans_academy_id_fkey"
+            columns: ["academy_id"]
             isOneToOne: false
-            referencedRelation: 'academies'
-            referencedColumns: ['id']
+            referencedRelation: "academies"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -521,11 +530,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: 'holidays_academy_id_fkey'
-            columns: ['academy_id']
+            foreignKeyName: "holidays_academy_id_fkey"
+            columns: ["academy_id"]
             isOneToOne: false
-            referencedRelation: 'academies'
-            referencedColumns: ['id']
+            referencedRelation: "academies"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -559,11 +568,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: 'levels_academy_id_fkey'
-            columns: ['academy_id']
+            foreignKeyName: "levels_academy_id_fkey"
+            columns: ["academy_id"]
             isOneToOne: false
-            referencedRelation: 'academies'
-            referencedColumns: ['id']
+            referencedRelation: "academies"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -606,25 +615,25 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: 'notifications_academy_id_fkey'
-            columns: ['academy_id']
+            foreignKeyName: "notifications_academy_id_fkey"
+            columns: ["academy_id"]
             isOneToOne: false
-            referencedRelation: 'academies'
-            referencedColumns: ['id']
+            referencedRelation: "academies"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: 'notifications_announcement_id_fkey'
-            columns: ['announcement_id']
+            foreignKeyName: "notifications_announcement_id_fkey"
+            columns: ["announcement_id"]
             isOneToOne: false
-            referencedRelation: 'announcements'
-            referencedColumns: ['id']
+            referencedRelation: "announcements"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: 'notifications_profile_id_fkey'
-            columns: ['profile_id']
+            foreignKeyName: "notifications_profile_id_fkey"
+            columns: ["profile_id"]
             isOneToOne: false
-            referencedRelation: 'profiles'
-            referencedColumns: ['id']
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -633,44 +642,44 @@ export type Database = {
           academy_id: string
           created_at: string
           parent_profile_id: string
-          relationship: Database['public']['Enums']['parent_relationship']
+          relationship: Database["public"]["Enums"]["parent_relationship"]
           student_id: string
         }
         Insert: {
           academy_id: string
           created_at?: string
           parent_profile_id: string
-          relationship?: Database['public']['Enums']['parent_relationship']
+          relationship?: Database["public"]["Enums"]["parent_relationship"]
           student_id: string
         }
         Update: {
           academy_id?: string
           created_at?: string
           parent_profile_id?: string
-          relationship?: Database['public']['Enums']['parent_relationship']
+          relationship?: Database["public"]["Enums"]["parent_relationship"]
           student_id?: string
         }
         Relationships: [
           {
-            foreignKeyName: 'parents_students_academy_id_fkey'
-            columns: ['academy_id']
+            foreignKeyName: "parents_students_academy_id_fkey"
+            columns: ["academy_id"]
             isOneToOne: false
-            referencedRelation: 'academies'
-            referencedColumns: ['id']
+            referencedRelation: "academies"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: 'parents_students_parent_profile_id_fkey'
-            columns: ['parent_profile_id']
+            foreignKeyName: "parents_students_parent_profile_id_fkey"
+            columns: ["parent_profile_id"]
             isOneToOne: false
-            referencedRelation: 'profiles'
-            referencedColumns: ['id']
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: 'parents_students_student_id_academy_id_fkey'
-            columns: ['student_id', 'academy_id']
+            foreignKeyName: "parents_students_student_id_academy_id_fkey"
+            columns: ["student_id", "academy_id"]
             isOneToOne: false
-            referencedRelation: 'students'
-            referencedColumns: ['id', 'academy_id']
+            referencedRelation: "students"
+            referencedColumns: ["id", "academy_id"]
           },
         ]
       }
@@ -680,7 +689,7 @@ export type Database = {
           amount: number
           created_at: string
           id: string
-          method: Database['public']['Enums']['payment_method']
+          method: Database["public"]["Enums"]["payment_method"]
           notes: string | null
           paid_date: string
           recorded_by: string | null
@@ -693,7 +702,7 @@ export type Database = {
           amount: number
           created_at?: string
           id?: string
-          method?: Database['public']['Enums']['payment_method']
+          method?: Database["public"]["Enums"]["payment_method"]
           notes?: string | null
           paid_date?: string
           recorded_by?: string | null
@@ -706,7 +715,7 @@ export type Database = {
           amount?: number
           created_at?: string
           id?: string
-          method?: Database['public']['Enums']['payment_method']
+          method?: Database["public"]["Enums"]["payment_method"]
           notes?: string | null
           paid_date?: string
           recorded_by?: string | null
@@ -716,25 +725,25 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: 'payments_academy_id_fkey'
-            columns: ['academy_id']
+            foreignKeyName: "payments_academy_id_fkey"
+            columns: ["academy_id"]
             isOneToOne: false
-            referencedRelation: 'academies'
-            referencedColumns: ['id']
+            referencedRelation: "academies"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: 'payments_recorded_by_fkey'
-            columns: ['recorded_by']
+            foreignKeyName: "payments_recorded_by_fkey"
+            columns: ["recorded_by"]
             isOneToOne: false
-            referencedRelation: 'profiles'
-            referencedColumns: ['id']
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: 'payments_student_fee_id_academy_id_fkey'
-            columns: ['student_fee_id', 'academy_id']
+            foreignKeyName: "payments_student_fee_id_academy_id_fkey"
+            columns: ["student_fee_id", "academy_id"]
             isOneToOne: false
-            referencedRelation: 'student_fees'
-            referencedColumns: ['id', 'academy_id']
+            referencedRelation: "student_fees"
+            referencedColumns: ["id", "academy_id"]
           },
         ]
       }
@@ -747,8 +756,8 @@ export type Database = {
           full_name: string
           id: string
           phone: string | null
-          role: Database['public']['Enums']['app_role']
-          status: Database['public']['Enums']['profile_status']
+          role: Database["public"]["Enums"]["app_role"]
+          status: Database["public"]["Enums"]["profile_status"]
           updated_at: string
         }
         Insert: {
@@ -759,8 +768,8 @@ export type Database = {
           full_name: string
           id: string
           phone?: string | null
-          role: Database['public']['Enums']['app_role']
-          status?: Database['public']['Enums']['profile_status']
+          role: Database["public"]["Enums"]["app_role"]
+          status?: Database["public"]["Enums"]["profile_status"]
           updated_at?: string
         }
         Update: {
@@ -771,17 +780,17 @@ export type Database = {
           full_name?: string
           id?: string
           phone?: string | null
-          role?: Database['public']['Enums']['app_role']
-          status?: Database['public']['Enums']['profile_status']
+          role?: Database["public"]["Enums"]["app_role"]
+          status?: Database["public"]["Enums"]["profile_status"]
           updated_at?: string
         }
         Relationships: [
           {
-            foreignKeyName: 'profiles_academy_id_fkey'
-            columns: ['academy_id']
+            foreignKeyName: "profiles_academy_id_fkey"
+            columns: ["academy_id"]
             isOneToOne: false
-            referencedRelation: 'academies'
-            referencedColumns: ['id']
+            referencedRelation: "academies"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -796,7 +805,7 @@ export type Database = {
           id: string
           session_date: string
           start_time: string
-          status: Database['public']['Enums']['session_status']
+          status: Database["public"]["Enums"]["session_status"]
           updated_at: string
         }
         Insert: {
@@ -809,7 +818,7 @@ export type Database = {
           id?: string
           session_date: string
           start_time: string
-          status?: Database['public']['Enums']['session_status']
+          status?: Database["public"]["Enums"]["session_status"]
           updated_at?: string
         }
         Update: {
@@ -822,30 +831,30 @@ export type Database = {
           id?: string
           session_date?: string
           start_time?: string
-          status?: Database['public']['Enums']['session_status']
+          status?: Database["public"]["Enums"]["session_status"]
           updated_at?: string
         }
         Relationships: [
           {
-            foreignKeyName: 'schedule_sessions_academy_id_fkey'
-            columns: ['academy_id']
+            foreignKeyName: "schedule_sessions_academy_id_fkey"
+            columns: ["academy_id"]
             isOneToOne: false
-            referencedRelation: 'academies'
-            referencedColumns: ['id']
+            referencedRelation: "academies"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: 'schedule_sessions_batch_id_academy_id_fkey'
-            columns: ['batch_id', 'academy_id']
+            foreignKeyName: "schedule_sessions_batch_id_academy_id_fkey"
+            columns: ["batch_id", "academy_id"]
             isOneToOne: false
-            referencedRelation: 'batches'
-            referencedColumns: ['id', 'academy_id']
+            referencedRelation: "batches"
+            referencedColumns: ["id", "academy_id"]
           },
           {
-            foreignKeyName: 'schedule_sessions_coach_id_academy_id_fkey'
-            columns: ['coach_id', 'academy_id']
+            foreignKeyName: "schedule_sessions_coach_id_academy_id_fkey"
+            columns: ["coach_id", "academy_id"]
             isOneToOne: false
-            referencedRelation: 'coaches'
-            referencedColumns: ['id', 'academy_id']
+            referencedRelation: "coaches"
+            referencedColumns: ["id", "academy_id"]
           },
         ]
       }
@@ -882,18 +891,18 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: 'skills_academy_id_fkey'
-            columns: ['academy_id']
+            foreignKeyName: "skills_academy_id_fkey"
+            columns: ["academy_id"]
             isOneToOne: false
-            referencedRelation: 'academies'
-            referencedColumns: ['id']
+            referencedRelation: "academies"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: 'skills_level_id_academy_id_fkey'
-            columns: ['level_id', 'academy_id']
+            foreignKeyName: "skills_level_id_academy_id_fkey"
+            columns: ["level_id", "academy_id"]
             isOneToOne: false
-            referencedRelation: 'levels'
-            referencedColumns: ['id', 'academy_id']
+            referencedRelation: "levels"
+            referencedColumns: ["id", "academy_id"]
           },
         ]
       }
@@ -903,7 +912,7 @@ export type Database = {
           batch_id: string
           created_at: string
           enrolled_date: string
-          status: Database['public']['Enums']['enrollment_status']
+          status: Database["public"]["Enums"]["enrollment_status"]
           student_id: string
         }
         Insert: {
@@ -911,7 +920,7 @@ export type Database = {
           batch_id: string
           created_at?: string
           enrolled_date?: string
-          status?: Database['public']['Enums']['enrollment_status']
+          status?: Database["public"]["Enums"]["enrollment_status"]
           student_id: string
         }
         Update: {
@@ -919,30 +928,30 @@ export type Database = {
           batch_id?: string
           created_at?: string
           enrolled_date?: string
-          status?: Database['public']['Enums']['enrollment_status']
+          status?: Database["public"]["Enums"]["enrollment_status"]
           student_id?: string
         }
         Relationships: [
           {
-            foreignKeyName: 'student_batches_academy_id_fkey'
-            columns: ['academy_id']
+            foreignKeyName: "student_batches_academy_id_fkey"
+            columns: ["academy_id"]
             isOneToOne: false
-            referencedRelation: 'academies'
-            referencedColumns: ['id']
+            referencedRelation: "academies"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: 'student_batches_batch_id_academy_id_fkey'
-            columns: ['batch_id', 'academy_id']
+            foreignKeyName: "student_batches_batch_id_academy_id_fkey"
+            columns: ["batch_id", "academy_id"]
             isOneToOne: false
-            referencedRelation: 'batches'
-            referencedColumns: ['id', 'academy_id']
+            referencedRelation: "batches"
+            referencedColumns: ["id", "academy_id"]
           },
           {
-            foreignKeyName: 'student_batches_student_id_academy_id_fkey'
-            columns: ['student_id', 'academy_id']
+            foreignKeyName: "student_batches_student_id_academy_id_fkey"
+            columns: ["student_id", "academy_id"]
             isOneToOne: false
-            referencedRelation: 'students'
-            referencedColumns: ['id', 'academy_id']
+            referencedRelation: "students"
+            referencedColumns: ["id", "academy_id"]
           },
         ]
       }
@@ -956,7 +965,7 @@ export type Database = {
           id: string
           period_end: string
           period_start: string
-          status: Database['public']['Enums']['fee_status']
+          status: Database["public"]["Enums"]["fee_status"]
           student_id: string
           updated_at: string
           waived_reason: string | null
@@ -970,7 +979,7 @@ export type Database = {
           id?: string
           period_end: string
           period_start: string
-          status?: Database['public']['Enums']['fee_status']
+          status?: Database["public"]["Enums"]["fee_status"]
           student_id: string
           updated_at?: string
           waived_reason?: string | null
@@ -984,32 +993,32 @@ export type Database = {
           id?: string
           period_end?: string
           period_start?: string
-          status?: Database['public']['Enums']['fee_status']
+          status?: Database["public"]["Enums"]["fee_status"]
           student_id?: string
           updated_at?: string
           waived_reason?: string | null
         }
         Relationships: [
           {
-            foreignKeyName: 'student_fees_academy_id_fkey'
-            columns: ['academy_id']
+            foreignKeyName: "student_fees_academy_id_fkey"
+            columns: ["academy_id"]
             isOneToOne: false
-            referencedRelation: 'academies'
-            referencedColumns: ['id']
+            referencedRelation: "academies"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: 'student_fees_fee_plan_id_academy_id_fkey'
-            columns: ['fee_plan_id', 'academy_id']
+            foreignKeyName: "student_fees_fee_plan_id_academy_id_fkey"
+            columns: ["fee_plan_id", "academy_id"]
             isOneToOne: false
-            referencedRelation: 'fee_plans'
-            referencedColumns: ['id', 'academy_id']
+            referencedRelation: "fee_plans"
+            referencedColumns: ["id", "academy_id"]
           },
           {
-            foreignKeyName: 'student_fees_student_id_academy_id_fkey'
-            columns: ['student_id', 'academy_id']
+            foreignKeyName: "student_fees_student_id_academy_id_fkey"
+            columns: ["student_id", "academy_id"]
             isOneToOne: false
-            referencedRelation: 'students'
-            referencedColumns: ['id', 'academy_id']
+            referencedRelation: "students"
+            referencedColumns: ["id", "academy_id"]
           },
         ]
       }
@@ -1020,7 +1029,7 @@ export type Database = {
           id: string
           notes: string | null
           skill_id: string
-          status: Database['public']['Enums']['skill_status']
+          status: Database["public"]["Enums"]["skill_status"]
           student_id: string
           updated_at: string
           updated_by: string | null
@@ -1031,7 +1040,7 @@ export type Database = {
           id?: string
           notes?: string | null
           skill_id: string
-          status?: Database['public']['Enums']['skill_status']
+          status?: Database["public"]["Enums"]["skill_status"]
           student_id: string
           updated_at?: string
           updated_by?: string | null
@@ -1042,39 +1051,39 @@ export type Database = {
           id?: string
           notes?: string | null
           skill_id?: string
-          status?: Database['public']['Enums']['skill_status']
+          status?: Database["public"]["Enums"]["skill_status"]
           student_id?: string
           updated_at?: string
           updated_by?: string | null
         }
         Relationships: [
           {
-            foreignKeyName: 'student_skills_academy_id_fkey'
-            columns: ['academy_id']
+            foreignKeyName: "student_skills_academy_id_fkey"
+            columns: ["academy_id"]
             isOneToOne: false
-            referencedRelation: 'academies'
-            referencedColumns: ['id']
+            referencedRelation: "academies"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: 'student_skills_skill_id_academy_id_fkey'
-            columns: ['skill_id', 'academy_id']
+            foreignKeyName: "student_skills_skill_id_academy_id_fkey"
+            columns: ["skill_id", "academy_id"]
             isOneToOne: false
-            referencedRelation: 'skills'
-            referencedColumns: ['id', 'academy_id']
+            referencedRelation: "skills"
+            referencedColumns: ["id", "academy_id"]
           },
           {
-            foreignKeyName: 'student_skills_student_id_academy_id_fkey'
-            columns: ['student_id', 'academy_id']
+            foreignKeyName: "student_skills_student_id_academy_id_fkey"
+            columns: ["student_id", "academy_id"]
             isOneToOne: false
-            referencedRelation: 'students'
-            referencedColumns: ['id', 'academy_id']
+            referencedRelation: "students"
+            referencedColumns: ["id", "academy_id"]
           },
           {
-            foreignKeyName: 'student_skills_updated_by_fkey'
-            columns: ['updated_by']
+            foreignKeyName: "student_skills_updated_by_fkey"
+            columns: ["updated_by"]
             isOneToOne: false
-            referencedRelation: 'profiles'
-            referencedColumns: ['id']
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -1087,12 +1096,12 @@ export type Database = {
           emergency_contact: Json
           fee_plan_id: string | null
           full_name: string
-          gender: Database['public']['Enums']['gender'] | null
+          gender: Database["public"]["Enums"]["gender"] | null
           id: string
           joined_date: string
           medical_notes: string | null
           photo_url: string | null
-          status: Database['public']['Enums']['student_status']
+          status: Database["public"]["Enums"]["student_status"]
           updated_at: string
         }
         Insert: {
@@ -1103,12 +1112,12 @@ export type Database = {
           emergency_contact?: Json
           fee_plan_id?: string | null
           full_name: string
-          gender?: Database['public']['Enums']['gender'] | null
+          gender?: Database["public"]["Enums"]["gender"] | null
           id?: string
           joined_date?: string
           medical_notes?: string | null
           photo_url?: string | null
-          status?: Database['public']['Enums']['student_status']
+          status?: Database["public"]["Enums"]["student_status"]
           updated_at?: string
         }
         Update: {
@@ -1119,35 +1128,35 @@ export type Database = {
           emergency_contact?: Json
           fee_plan_id?: string | null
           full_name?: string
-          gender?: Database['public']['Enums']['gender'] | null
+          gender?: Database["public"]["Enums"]["gender"] | null
           id?: string
           joined_date?: string
           medical_notes?: string | null
           photo_url?: string | null
-          status?: Database['public']['Enums']['student_status']
+          status?: Database["public"]["Enums"]["student_status"]
           updated_at?: string
         }
         Relationships: [
           {
-            foreignKeyName: 'students_academy_id_fkey'
-            columns: ['academy_id']
+            foreignKeyName: "students_academy_id_fkey"
+            columns: ["academy_id"]
             isOneToOne: false
-            referencedRelation: 'academies'
-            referencedColumns: ['id']
+            referencedRelation: "academies"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: 'students_current_level_id_academy_id_fkey'
-            columns: ['current_level_id', 'academy_id']
+            foreignKeyName: "students_current_level_id_academy_id_fkey"
+            columns: ["current_level_id", "academy_id"]
             isOneToOne: false
-            referencedRelation: 'levels'
-            referencedColumns: ['id', 'academy_id']
+            referencedRelation: "levels"
+            referencedColumns: ["id", "academy_id"]
           },
           {
-            foreignKeyName: 'students_fee_plan_id_fkey'
-            columns: ['fee_plan_id', 'academy_id']
+            foreignKeyName: "students_fee_plan_id_fkey"
+            columns: ["fee_plan_id", "academy_id"]
             isOneToOne: false
-            referencedRelation: 'fee_plans'
-            referencedColumns: ['id', 'academy_id']
+            referencedRelation: "fee_plans"
+            referencedColumns: ["id", "academy_id"]
           },
         ]
       }
@@ -1167,18 +1176,18 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: 'attendance_academy_id_fkey'
-            columns: ['academy_id']
+            foreignKeyName: "attendance_academy_id_fkey"
+            columns: ["academy_id"]
             isOneToOne: false
-            referencedRelation: 'academies'
-            referencedColumns: ['id']
+            referencedRelation: "academies"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: 'attendance_student_id_academy_id_fkey'
-            columns: ['student_id', 'academy_id']
+            foreignKeyName: "attendance_student_id_academy_id_fkey"
+            columns: ["student_id", "academy_id"]
             isOneToOne: false
-            referencedRelation: 'students'
-            referencedColumns: ['id', 'academy_id']
+            referencedRelation: "students"
+            referencedColumns: ["id", "academy_id"]
           },
         ]
       }
@@ -1189,17 +1198,17 @@ export type Database = {
           attended_sessions: number | null
           batch_id: string | null
           batch_name: string | null
-          batch_status: Database['public']['Enums']['batch_status'] | null
+          batch_status: Database["public"]["Enums"]["batch_status"] | null
           counted_sessions: number | null
           sessions_marked: number | null
         }
         Relationships: [
           {
-            foreignKeyName: 'attendance_academy_id_fkey'
-            columns: ['academy_id']
+            foreignKeyName: "attendance_academy_id_fkey"
+            columns: ["academy_id"]
             isOneToOne: false
-            referencedRelation: 'academies'
-            referencedColumns: ['id']
+            referencedRelation: "academies"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -1229,22 +1238,22 @@ export type Database = {
           full_name: string | null
           late_sessions: number | null
           student_id: string | null
-          student_status: Database['public']['Enums']['student_status'] | null
+          student_status: Database["public"]["Enums"]["student_status"] | null
         }
         Relationships: [
           {
-            foreignKeyName: 'attendance_academy_id_fkey'
-            columns: ['academy_id']
+            foreignKeyName: "attendance_academy_id_fkey"
+            columns: ["academy_id"]
             isOneToOne: false
-            referencedRelation: 'academies'
-            referencedColumns: ['id']
+            referencedRelation: "academies"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: 'attendance_student_id_academy_id_fkey'
-            columns: ['student_id', 'academy_id']
+            foreignKeyName: "attendance_student_id_academy_id_fkey"
+            columns: ["student_id", "academy_id"]
             isOneToOne: false
-            referencedRelation: 'students'
-            referencedColumns: ['id', 'academy_id']
+            referencedRelation: "students"
+            referencedColumns: ["id", "academy_id"]
           },
         ]
       }
@@ -1309,7 +1318,7 @@ export type Database = {
       current_academy_id: { Args: never; Returns: string }
       current_user_role: {
         Args: never
-        Returns: Database['public']['Enums']['app_role']
+        Returns: Database["public"]["Enums"]["app_role"]
       }
       dashboard_stat_cards: {
         Args: never
@@ -1336,7 +1345,7 @@ export type Database = {
           fee_plan_name: string
           full_name: string
           paid: number
-          status: Database['public']['Enums']['fee_status']
+          status: Database["public"]["Enums"]["fee_status"]
           student_fee_id: string
           student_id: string
         }[]
@@ -1359,14 +1368,14 @@ export type Database = {
           id: string
           period_end: string
           period_start: string
-          status: Database['public']['Enums']['fee_status']
+          status: Database["public"]["Enums"]["fee_status"]
           student_id: string
           updated_at: string
           waived_reason: string | null
         }[]
         SetofOptions: {
-          from: '*'
-          to: 'student_fees'
+          from: "*"
+          to: "student_fees"
           isOneToOne: false
           isSetofReturn: true
         }
@@ -1412,6 +1421,7 @@ export type Database = {
           missed_sessions: number
           parent_name: string
           parent_phone: string
+          photo_url: string
           student_id: string
         }[]
       }
@@ -1428,7 +1438,7 @@ export type Database = {
       record_payment: {
         Args: {
           p_amount: number
-          p_method?: Database['public']['Enums']['payment_method']
+          p_method?: Database["public"]["Enums"]["payment_method"]
           p_notes?: string
           p_paid_date?: string
           p_reference?: string
@@ -1439,7 +1449,7 @@ export type Database = {
           amount: number
           created_at: string
           id: string
-          method: Database['public']['Enums']['payment_method']
+          method: Database["public"]["Enums"]["payment_method"]
           notes: string | null
           paid_date: string
           recorded_by: string | null
@@ -1448,8 +1458,8 @@ export type Database = {
           updated_at: string
         }
         SetofOptions: {
-          from: '*'
-          to: 'payments'
+          from: "*"
+          to: "payments"
           isOneToOne: true
           isSetofReturn: false
         }
@@ -1481,7 +1491,7 @@ export type Database = {
         Args: {
           p_batch_id?: string
           p_month?: string
-          p_status?: Database['public']['Enums']['fee_status']
+          p_status?: Database["public"]["Enums"]["fee_status"]
         }
         Returns: {
           amount: number
@@ -1493,7 +1503,7 @@ export type Database = {
           paid: number
           period_end: string
           period_start: string
-          status: Database['public']['Enums']['fee_status']
+          status: Database["public"]["Enums"]["fee_status"]
           student_fee_id: string
           student_id: string
         }[]
@@ -1512,24 +1522,30 @@ export type Database = {
       }
     }
     Enums: {
-      academy_status: 'active' | 'suspended' | 'archived'
-      announcement_audience: 'all' | 'batch' | 'parents' | 'coaches'
-      app_role: 'super_admin' | 'academy_admin' | 'coach' | 'parent'
-      attendance_status: 'present' | 'absent' | 'late' | 'excused'
-      batch_status: 'active' | 'inactive' | 'archived'
-      billing_cycle: 'monthly' | 'quarterly' | 'annual'
-      coach_status: 'active' | 'inactive'
-      enrollment_status: 'active' | 'inactive'
-      error_level: 'debug' | 'info' | 'warning' | 'error' | 'fatal'
-      fee_status: 'pending' | 'paid' | 'overdue' | 'waived'
-      gender: 'male' | 'female' | 'other'
-      parent_relationship: 'father' | 'mother' | 'guardian' | 'other'
-      payment_method: 'cash' | 'upi' | 'card' | 'bank_transfer' | 'cheque' | 'other'
-      plan_tier: 'free' | 'starter' | 'pro'
-      profile_status: 'active' | 'invited' | 'inactive'
-      session_status: 'scheduled' | 'completed' | 'cancelled'
-      skill_status: 'not_started' | 'learning' | 'achieved'
-      student_status: 'active' | 'inactive' | 'archived'
+      academy_status: "active" | "suspended" | "archived"
+      announcement_audience: "all" | "batch" | "parents" | "coaches"
+      app_role: "super_admin" | "academy_admin" | "coach" | "parent"
+      attendance_status: "present" | "absent" | "late" | "excused"
+      batch_status: "active" | "inactive" | "archived"
+      billing_cycle: "monthly" | "quarterly" | "annual"
+      coach_status: "active" | "inactive"
+      enrollment_status: "active" | "inactive"
+      error_level: "debug" | "info" | "warning" | "error" | "fatal"
+      fee_status: "pending" | "paid" | "overdue" | "waived"
+      gender: "male" | "female" | "other"
+      parent_relationship: "father" | "mother" | "guardian" | "other"
+      payment_method:
+        | "cash"
+        | "upi"
+        | "card"
+        | "bank_transfer"
+        | "cheque"
+        | "other"
+      plan_tier: "free" | "starter" | "pro"
+      profile_status: "active" | "invited" | "inactive"
+      session_status: "scheduled" | "completed" | "cancelled"
+      skill_status: "not_started" | "learning" | "achieved"
+      student_status: "active" | "inactive" | "archived"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1537,31 +1553,33 @@ export type Database = {
   }
 }
 
-type DatabaseWithoutInternals = Omit<Database, '__InternalSupabase'>
+type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">
 
-type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, 'public'>]
+type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, "public">]
 
 export type Tables<
   DefaultSchemaTableNameOrOptions extends
-    | keyof (DefaultSchema['Tables'] & DefaultSchema['Views'])
+    | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
     | { schema: keyof DatabaseWithoutInternals },
   TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
-    ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Tables'] &
-        DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Views'])
+    ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+        DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
     : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
-  ? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Tables'] &
-      DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Views'])[TableName] extends {
+  ? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+      DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
       Row: infer R
     }
     ? R
     : never
-  : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema['Tables'] & DefaultSchema['Views'])
-    ? (DefaultSchema['Tables'] & DefaultSchema['Views'])[DefaultSchemaTableNameOrOptions] extends {
+  : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema["Tables"] &
+        DefaultSchema["Views"])
+    ? (DefaultSchema["Tables"] &
+        DefaultSchema["Views"])[DefaultSchemaTableNameOrOptions] extends {
         Row: infer R
       }
       ? R
@@ -1570,22 +1588,23 @@ export type Tables<
 
 export type TablesInsert<
   DefaultSchemaTableNameOrOptions extends
-    keyof DefaultSchema['Tables'] | { schema: keyof DatabaseWithoutInternals },
+    | keyof DefaultSchema["Tables"]
+    | { schema: keyof DatabaseWithoutInternals },
   TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
-    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Tables']
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
     : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
-  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Tables'][TableName] extends {
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
       Insert: infer I
     }
     ? I
     : never
-  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema['Tables']
-    ? DefaultSchema['Tables'][DefaultSchemaTableNameOrOptions] extends {
+  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
+    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
         Insert: infer I
       }
       ? I
@@ -1594,22 +1613,23 @@ export type TablesInsert<
 
 export type TablesUpdate<
   DefaultSchemaTableNameOrOptions extends
-    keyof DefaultSchema['Tables'] | { schema: keyof DatabaseWithoutInternals },
+    | keyof DefaultSchema["Tables"]
+    | { schema: keyof DatabaseWithoutInternals },
   TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
-    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Tables']
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
     : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
-  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Tables'][TableName] extends {
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
       Update: infer U
     }
     ? U
     : never
-  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema['Tables']
-    ? DefaultSchema['Tables'][DefaultSchemaTableNameOrOptions] extends {
+  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
+    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
         Update: infer U
       }
       ? U
@@ -1618,34 +1638,36 @@ export type TablesUpdate<
 
 export type Enums<
   DefaultSchemaEnumNameOrOptions extends
-    keyof DefaultSchema['Enums'] | { schema: keyof DatabaseWithoutInternals },
+    | keyof DefaultSchema["Enums"]
+    | { schema: keyof DatabaseWithoutInternals },
   EnumName extends (DefaultSchemaEnumNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
-    ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions['schema']]['Enums']
+    ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
     : never) = never,
 > = DefaultSchemaEnumNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
-  ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions['schema']]['Enums'][EnumName]
-  : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema['Enums']
-    ? DefaultSchema['Enums'][DefaultSchemaEnumNameOrOptions]
+  ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
+  : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema["Enums"]
+    ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
     : never
 
 export type CompositeTypes<
   PublicCompositeTypeNameOrOptions extends
-    keyof DefaultSchema['CompositeTypes'] | { schema: keyof DatabaseWithoutInternals },
+    | keyof DefaultSchema["CompositeTypes"]
+    | { schema: keyof DatabaseWithoutInternals },
   CompositeTypeName extends (PublicCompositeTypeNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
-    ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions['schema']]['CompositeTypes']
+    ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
     : never) = never,
 > = PublicCompositeTypeNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
-  ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions['schema']]['CompositeTypes'][CompositeTypeName]
-  : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema['CompositeTypes']
-    ? DefaultSchema['CompositeTypes'][PublicCompositeTypeNameOrOptions]
+  ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
+  : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema["CompositeTypes"]
+    ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
     : never
 
 export const Constants = {
@@ -1654,24 +1676,31 @@ export const Constants = {
   },
   public: {
     Enums: {
-      academy_status: ['active', 'suspended', 'archived'],
-      announcement_audience: ['all', 'batch', 'parents', 'coaches'],
-      app_role: ['super_admin', 'academy_admin', 'coach', 'parent'],
-      attendance_status: ['present', 'absent', 'late', 'excused'],
-      batch_status: ['active', 'inactive', 'archived'],
-      billing_cycle: ['monthly', 'quarterly', 'annual'],
-      coach_status: ['active', 'inactive'],
-      enrollment_status: ['active', 'inactive'],
-      error_level: ['debug', 'info', 'warning', 'error', 'fatal'],
-      fee_status: ['pending', 'paid', 'overdue', 'waived'],
-      gender: ['male', 'female', 'other'],
-      parent_relationship: ['father', 'mother', 'guardian', 'other'],
-      payment_method: ['cash', 'upi', 'card', 'bank_transfer', 'cheque', 'other'],
-      plan_tier: ['free', 'starter', 'pro'],
-      profile_status: ['active', 'invited', 'inactive'],
-      session_status: ['scheduled', 'completed', 'cancelled'],
-      skill_status: ['not_started', 'learning', 'achieved'],
-      student_status: ['active', 'inactive', 'archived'],
+      academy_status: ["active", "suspended", "archived"],
+      announcement_audience: ["all", "batch", "parents", "coaches"],
+      app_role: ["super_admin", "academy_admin", "coach", "parent"],
+      attendance_status: ["present", "absent", "late", "excused"],
+      batch_status: ["active", "inactive", "archived"],
+      billing_cycle: ["monthly", "quarterly", "annual"],
+      coach_status: ["active", "inactive"],
+      enrollment_status: ["active", "inactive"],
+      error_level: ["debug", "info", "warning", "error", "fatal"],
+      fee_status: ["pending", "paid", "overdue", "waived"],
+      gender: ["male", "female", "other"],
+      parent_relationship: ["father", "mother", "guardian", "other"],
+      payment_method: [
+        "cash",
+        "upi",
+        "card",
+        "bank_transfer",
+        "cheque",
+        "other",
+      ],
+      plan_tier: ["free", "starter", "pro"],
+      profile_status: ["active", "invited", "inactive"],
+      session_status: ["scheduled", "completed", "cancelled"],
+      skill_status: ["not_started", "learning", "achieved"],
+      student_status: ["active", "inactive", "archived"],
     },
   },
 } as const

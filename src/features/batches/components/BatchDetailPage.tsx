@@ -1,17 +1,30 @@
-import { ArrowLeft, Pencil, X } from 'lucide-react'
+import { ArrowLeft, Pencil, Trash2, X } from 'lucide-react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { toast } from 'sonner'
 
 import { GenerateScheduleDialog } from '@/features/schedule'
 import { formatDate, formatDays, formatTime, formatTimeRange } from '@/shared/lib/format'
 import { cn } from '@/shared/lib/utils'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/shared/ui/alert-dialog'
 import { Button } from '@/shared/ui/button'
 import { EmptyState } from '@/shared/ui/EmptyState'
 import { Skeleton } from '@/shared/ui/skeleton'
 import { StatusBadge } from '@/shared/ui/StatusBadge'
 
+import { useDeleteBatch } from '../api/deleteBatch'
 import { useRemoveStudent } from '../api/enrollment'
 import { useBatch } from '../api/getBatch'
+import { useSetBatchStatus } from '../api/setBatchStatus'
 import { capacityTone } from '../hooks/capacity'
 import { EnrollStudentDialog } from './EnrollStudentDialog'
 
@@ -20,6 +33,8 @@ export function BatchDetailPage() {
   const navigate = useNavigate()
   const { data: batch, isLoading } = useBatch(batchId)
   const removeStudent = useRemoveStudent(batchId)
+  const setStatus = useSetBatchStatus()
+  const deleteBatch = useDeleteBatch()
 
   if (isLoading || !batch) {
     return (
@@ -27,6 +42,24 @@ export function BatchDetailPage() {
         <Skeleton className="h-8 w-40" />
         <Skeleton className="h-32 w-full rounded-lg" />
       </div>
+    )
+  }
+
+  const isActive = batch.status === 'active'
+  const { id, name } = batch
+
+  const toggleStatus = () => {
+    const nextStatus = isActive ? 'inactive' : 'active'
+    setStatus.mutate(
+      { batchId: id, status: nextStatus },
+      {
+        onSuccess: () => {
+          toast.success(isActive ? `${name} was deactivated.` : `${name} was reactivated.`)
+        },
+        onError: () => {
+          toast.error('Could not update this batch.')
+        },
+      },
     )
   }
 
@@ -69,6 +102,55 @@ export function BatchDetailPage() {
                 <Pencil className="h-4 w-4" />
               </Link>
             </Button>
+            <Button
+              variant={isActive ? 'destructive' : 'outline'}
+              onClick={toggleStatus}
+              disabled={setStatus.isPending}
+            >
+              {isActive ? 'Deactivate' : 'Reactivate'}
+            </Button>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  aria-label={`Remove ${name}`}
+                  className="text-brand-700 hover:text-brand-800"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Remove {name}?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    This permanently deletes the batch, its full schedule of sessions, and the
+                    attendance recorded against those sessions — all {batch.enrolledCount} enrolled
+                    skater{batch.enrolledCount === 1 ? '' : 's'} are also unenrolled. This can't be
+                    undone; use Deactivate instead if the batch is just paused or finished for the
+                    season.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Keep batch</AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={() => {
+                      deleteBatch.mutate(id, {
+                        onSuccess: () => {
+                          toast.success(`${name} was removed.`)
+                          void navigate('/admin/batches')
+                        },
+                        onError: () => {
+                          toast.error('Could not remove this batch.')
+                        },
+                      })
+                    }}
+                  >
+                    Remove batch
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
           </div>
         </div>
       </div>

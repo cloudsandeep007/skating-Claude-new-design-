@@ -4,10 +4,11 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 
 import { useBatchOptions } from '@/features/batches'
 import { useDebouncedValue } from '@/shared/hooks'
-import { Avatar, AvatarFallback } from '@/shared/ui/avatar'
+import { useSignedPhotoUrls } from '@/shared/lib/signedPhotoUrls'
 import { Button } from '@/shared/ui/button'
 import { EmptyState } from '@/shared/ui/EmptyState'
 import { Input } from '@/shared/ui/input'
+import { PersonAvatar } from '@/shared/ui/PersonAvatar'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/ui/select'
 import { Skeleton } from '@/shared/ui/skeleton'
 import { StatusBadge } from '@/shared/ui/StatusBadge'
@@ -23,15 +24,6 @@ import {
 import type { StudentListParams, StudentSortColumn, StudentStatus } from '../types'
 
 const PAGE_SIZE = 10
-
-function initials(name: string) {
-  return name
-    .split(' ')
-    .map((part) => part[0])
-    .slice(0, 2)
-    .join('')
-    .toUpperCase()
-}
 
 function formatLastActive(iso: string | null) {
   if (!iso) return '—'
@@ -70,6 +62,10 @@ export function StudentsListPage() {
     sortDir,
   }
   const { data, isLoading, isPlaceholderData } = useStudents(params)
+  const { data: photoUrls } = useSignedPhotoUrls(
+    'student-photos',
+    (data?.items ?? []).map((s) => s.photoUrl),
+  )
 
   const totalPages = data ? Math.max(1, Math.ceil(data.total / PAGE_SIZE)) : 1
   const filtersActive = search !== '' || batchId !== 'all' || status !== 'active'
@@ -247,11 +243,12 @@ export function StudentsListPage() {
                     >
                       <TableCell>
                         <div className="flex min-w-0 items-center gap-2.5">
-                          <Avatar className="h-9 w-9 shrink-0">
-                            <AvatarFallback className="bg-neutral-200 text-xs font-bold text-neutral-800">
-                              {initials(student.fullName)}
-                            </AvatarFallback>
-                          </Avatar>
+                          <PersonAvatar
+                            name={student.fullName}
+                            photoUrl={student.photoUrl ? photoUrls?.[student.photoUrl] : undefined}
+                            className="h-9 w-9 shrink-0"
+                            fallbackClassName="bg-neutral-200 text-xs font-bold text-neutral-800"
+                          />
                           <div className="min-w-0">
                             <div className="truncate font-bold">{student.fullName}</div>
                             {student.parentName && (

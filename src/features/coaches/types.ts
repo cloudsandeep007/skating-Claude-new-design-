@@ -12,6 +12,7 @@ export interface CoachListItem {
   email: string | null
   phone: string | null
   specialization: string | null
+  photoUrl: string | null
   status: CoachStatus
   batchCount: number
   studentCount: number

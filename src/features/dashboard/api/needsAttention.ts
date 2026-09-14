@@ -20,6 +20,7 @@ export function useNeedsAttention() {
       return data.map((r) => ({
         studentId: r.student_id,
         fullName: r.full_name,
+        photoUrl: r.photo_url,
         batchNames: r.batch_names,
         levelName: r.level_name,
         countedSessions: r.counted_sessions,

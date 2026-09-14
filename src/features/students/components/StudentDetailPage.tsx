@@ -5,8 +5,7 @@ import { toast } from 'sonner'
 import { useAuth } from '@/features/auth'
 import { PaymentHistoryList } from '@/features/fees'
 import { AchievementHistoryList, SkillAssessmentPanel } from '@/features/progression'
-import { Avatar, AvatarFallback } from '@/shared/ui/avatar'
-import { Button } from '@/shared/ui/button'
+import { useSignedPhotoUrls } from '@/shared/lib/signedPhotoUrls'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -18,6 +17,8 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/shared/ui/alert-dialog'
+import { Button } from '@/shared/ui/button'
+import { PersonAvatar } from '@/shared/ui/PersonAvatar'
 import { Skeleton } from '@/shared/ui/skeleton'
 import { StatusBadge } from '@/shared/ui/StatusBadge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/ui/tabs'
@@ -26,21 +27,13 @@ import { useSetStudentStatus } from '../api/archiveStudent'
 import { useStudent } from '../api/getStudent'
 import { attendancePctColorClass } from '../hooks/statusPresentation'
 
-function initials(name: string) {
-  return name
-    .split(' ')
-    .map((part) => part[0])
-    .slice(0, 2)
-    .join('')
-    .toUpperCase()
-}
-
 export function StudentDetailPage() {
   const { studentId = '' } = useParams<{ studentId: string }>()
   const navigate = useNavigate()
   const { profile } = useAuth()
   const { data: student, isLoading } = useStudent(studentId)
   const setStatus = useSetStudentStatus()
+  const { data: photoUrls } = useSignedPhotoUrls('student-photos', [student?.photoUrl ?? null])
 
   if (isLoading || !student) {
     return (
@@ -97,11 +90,12 @@ export function StudentDetailPage() {
 
       <div className="overflow-hidden rounded-lg border bg-card shadow-sm">
         <div className="flex flex-wrap items-start gap-4 p-5">
-          <Avatar className="h-16 w-16 shrink-0">
-            <AvatarFallback className="bg-neutral-950 text-lg font-extrabold text-white">
-              {initials(student.fullName)}
-            </AvatarFallback>
-          </Avatar>
+          <PersonAvatar
+            name={student.fullName}
+            photoUrl={student.photoUrl ? photoUrls?.[student.photoUrl] : undefined}
+            className="h-16 w-16 shrink-0"
+            fallbackClassName="bg-neutral-950 text-lg font-extrabold text-white"
+          />
 
           <div className="min-w-[220px] flex-1">
             <div className="text-2xl font-extrabold tracking-tight">{student.fullName}</div>

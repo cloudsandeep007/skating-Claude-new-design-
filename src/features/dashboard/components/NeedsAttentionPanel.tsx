@@ -1,28 +1,25 @@
 import { Phone } from 'lucide-react'
 import { Link } from 'react-router-dom'
 
+import { useSignedPhotoUrls } from '@/shared/lib/signedPhotoUrls'
 import { cn } from '@/shared/lib/utils'
 import { EmptyState } from '@/shared/ui/EmptyState'
+import { PersonAvatar } from '@/shared/ui/PersonAvatar'
 import { Skeleton } from '@/shared/ui/skeleton'
 import { StatusBadge } from '@/shared/ui/StatusBadge'
 
 import { useNeedsAttention } from '../api/needsAttention'
 import type { NeedsAttentionRow } from '../types'
 
-function initials(name: string) {
-  return name
-    .split(' ')
-    .map((part) => part[0])
-    .slice(0, 2)
-    .join('')
-    .toUpperCase()
-}
-
 /** The dashboard's visual anchor, not a footnote — an ink panel deliberately
  * heavier than the chart cards above it, exactly matching the "Needs
  * attention" treatment in the design handoff. */
 export function NeedsAttentionPanel() {
   const { data, isLoading, isError, refetch } = useNeedsAttention()
+  const { data: photoUrls } = useSignedPhotoUrls(
+    'student-photos',
+    (data ?? []).map((r) => r.photoUrl),
+  )
   const overdueCount = data?.filter((r) => r.hasOverdueFee).length ?? 0
 
   if (isError) {
@@ -78,7 +75,11 @@ export function NeedsAttentionPanel() {
         <>
           <ul>
             {data.map((row) => (
-              <AttentionRow key={row.studentId} row={row} />
+              <AttentionRow
+                key={row.studentId}
+                row={row}
+                photoUrl={row.photoUrl ? photoUrls?.[row.photoUrl] : undefined}
+              />
             ))}
           </ul>
           {overdueCount > 0 && (
@@ -97,16 +98,19 @@ export function NeedsAttentionPanel() {
   )
 }
 
-function AttentionRow({ row }: { row: NeedsAttentionRow }) {
+function AttentionRow({ row, photoUrl }: { row: NeedsAttentionRow; photoUrl: string | undefined }) {
   const pct = row.attendancePct ?? 0
   const pctColor = pct < 40 ? 'text-brand-400' : 'text-warning-300'
   const barColor = pct < 40 ? 'bg-brand-500' : 'bg-warning-300'
 
   return (
     <li className="flex flex-wrap items-center gap-3.5 border-b border-white/10 px-5 py-3.5 last:border-b-0">
-      <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white/10 text-[15px] font-bold text-white">
-        {initials(row.fullName)}
-      </span>
+      <PersonAvatar
+        name={row.fullName}
+        photoUrl={photoUrl}
+        className="h-11 w-11 shrink-0"
+        fallbackClassName="bg-white/10 text-[15px] font-bold text-white"
+      />
       <div className="min-w-[160px] flex-1">
         <Link
           to={`/admin/students/${row.studentId}`}

@@ -16,15 +16,17 @@ the schedule is generated from them. This is the academy admin's view.
   (Sun–Sat), venue. Edit adds the **"Also move upcoming scheduled
   sessions"** checkbox (see business rules).
 - **Detail** (`/admin/batches/:id`) — header with capacity/level/status
-  pills and the weekly rule; **Generate schedule** and Edit buttons;
-  roster (name, level, enrolled-since, remove ×) with an **Enroll skater**
-  dialog; the next 20 upcoming sessions with cancelled/done markers.
+  pills and the weekly rule; **Generate schedule**, Edit,
+  Deactivate/Reactivate, and Remove (permanent delete, behind a
+  confirmation dialog) buttons; roster (name, level, enrolled-since,
+  remove ×) with an **Enroll skater** dialog; the next 20 upcoming
+  sessions with cancelled/done markers.
 
 ## Data touched
 
 | Table                       | Read | Write | Notes                                                  |
 | --------------------------- | ---- | ----- | ------------------------------------------------------ |
-| `batches`                   | ✓    | ✓     | create, update                                         |
+| `batches`                   | ✓    | ✓     | create, update, status flip, delete                    |
 | `student_batches`           | ✓    | ✓     | enroll = upsert to active; remove = set inactive       |
 | `students`, `levels`        | ✓    |       | roster names/levels; enrollable-student picker         |
 | `coaches` + `profiles`      | ✓    |       | coach dropdown (via `useCoachOptions` from coaches)    |
@@ -50,6 +52,15 @@ the schedule is generated from them. This is the academy admin's view.
   removed — they're already on the calendar; cancel them individually if
   needed.
 - Days toggle stores 0 = Sunday … 6 = Saturday, matching Postgres `dow`.
+- **Deactivate is a status flip** (`batches.status` active ↔ inactive),
+  reversible, no data lost — same pattern as coaches.
+- **Remove is a real delete**, and unlike coaches this one does destroy
+  history: `schedule_sessions` (and the `attendance` rows against them)
+  and `student_batches` enrollment records all cascade-delete with the
+  batch (`ON DELETE CASCADE`, see 0001_initial_schema.sql). The
+  confirmation dialog says so explicitly and names the enrolled-skater
+  count; prefer Deactivate for a batch that's just paused or finished
+  for the season.
 
 ## Edge cases
 
@@ -62,7 +73,8 @@ the schedule is generated from them. This is the academy admin's view.
 
 ## Known limitations
 
-- No archive/deactivate for batches yet (status is display-only).
+- The `'archived'` status value exists in the database but nothing in
+  the UI sets it yet — the status toggle only offers active/inactive.
 - Enrolling is one student at a time.
 - A student can be in several batches; the students list shows only the
   first active one.

@@ -17,6 +17,107 @@ Format:
 
 ---
 
+## 2026-09-15 — Coach account removal goes through an Edge Function, not a table delete
+
+**Decision:** "Remove coach" calls a new `delete-user` Edge Function
+(service-role only) that runs `auth.admin.deleteUser(profile_id)`,
+instead of `useDeleteCoach` doing a plain `supabase.from('coaches').delete()`.
+
+**Options considered:** (a) delete only the `coaches` row directly from
+the client — simple, no new server code; (b) delete the underlying
+`auth.users` account via the Admin API, mirroring how `invite-user`
+already creates accounts.
+
+**Why:** `coaches.profile_id references profiles(id) on delete cascade`,
+and `profiles.id references auth.users(id) on delete cascade` — but only
+in that direction. Deleting just the `coaches` row leaves `profiles` and
+the `auth.users` login completely intact: the account could still sign
+in, just land on a broken, coach-less experience. The point of "Remove
+coach" is to fully undo a mistake, including revoking the login, so it
+has to delete the account itself; that cascades back down through
+`profiles` to `coaches` automatically. This also matches the existing
+`invite-user` pattern (service-role Edge Function, caller verified as an
+`academy_admin` acting only within their own academy) rather than
+inventing a second way to do privileged account operations.
+
+**Trade-offs:** One more Edge Function to deploy and keep in sync
+(RUNBOOK.md lists it alongside `invite-user`). If a "remove" capability
+is ever needed for parents or other roles, this function's role check
+(`targetProfile.role !== 'coach'`) needs generalizing rather than copying.
+
+---
+
+## 2026-09-15 — Coach photos reuse the exact student-photos pattern; a shared hook/component replace the per-feature copies
+
+**Decision:** `coaches.photo_url` + a private `coach-photos` bucket with
+the same RLS shape as `student-photos` (0002_storage.sql), uploaded the
+same way (`uploadCoachPhoto`, mirroring `uploadStudentPhoto`). The
+signed-URL resolving hook that used to live in the attendance feature
+(`attendance/api/studentPhotos.ts`, used only by `MarkAttendancePage`)
+moved to `shared/lib/signedPhotoUrls.ts` as a bucket-agnostic
+`useSignedPhotoUrls(bucket, paths)`, and every avatar-with-initials
+render site was switched to a new shared `shared/ui/PersonAvatar.tsx`.
+
+**Options considered:** (a) copy-paste a coach-specific version of the
+existing student photo/avatar code; (b) extract the already-working
+pattern into `shared/` once a second feature needed the identical thing.
+
+**Why:** The photo-resolving hook was already generic in everything but
+its bucket name and its home (it lived under `attendance/`, which per
+the feature-isolation rule in CLAUDE.md means no other feature — not
+even `students`, the feature that actually owns photos — could import
+it). Needing the same capability for coaches, and wanting students'
+*own* list/detail pages and the dashboard's Needs Attention panel to
+finally show real photos too (they had the data — `photoUrl` — but every
+render site still called a local `initials()` function and ignored it),
+made six near-identical copies of the same 15 lines the wrong call.
+Extracting once, now that a second real caller exists, keeps every
+avatar's fallback behavior (no photo / still loading / failed fetch →
+initials) identical everywhere by construction.
+
+**Trade-offs:** `shared/ui/PersonAvatar` takes `className`/
+`fallbackClassName` instead of being pre-styled, so each call site still
+repeats its own sizing/color classes — deliberately, since the size and
+color scheme differ enough per screen (dashboard's dark panel vs. a
+table row vs. a 64px detail-page header) that baking one style in would
+just move the duplication into prop overrides instead of removing it.
+
+---
+
+## 2026-09-15 — Batches get a real status toggle and a real delete; students still don't
+
+**Decision:** Batches gained Deactivate/Reactivate (`batches.status`,
+same binary pattern as coaches) and a hard "Remove batch" behind a
+confirmation dialog that names what's destroyed. Students were
+deliberately left untouched — still Archive-only, no hard delete.
+
+**Options considered:** (a) give every entity (students, coaches,
+batches) the same delete capability for consistency; (b) scope hard
+delete to what's actually safe, and match each entity's existing
+precedent otherwise.
+
+**Why:** `batches.status` already existed in the schema with three
+values (active/inactive/archived) but nothing in the UI ever set it —
+a real gap, independent of the delete question. For delete: a batch's
+`schedule_sessions` (and the `attendance` against them) and
+`student_batches` enrollments are all `ON DELETE CASCADE` from
+`batches`, so removing a batch **does** destroy real history — the
+confirmation dialog says so explicitly, same honesty the existing Level
+delete dialog already uses for cascading away student progress. A
+student's cascade is far larger (attendance, fees, payments, skills,
+parent links) and further from "a batch created by mistake" — archiving
+was already the deliberate, safer design for students, and nothing in
+this round's ask (an admin unable to delete *a coach*) argued for
+revisiting that.
+
+**Trade-offs:** An admin who deletes a batch with real session history
+loses it permanently, same risk profile the app already accepted for
+levels. If that turns out to be too easy to do by accident, the next
+step would be disabling (not just warning on) delete once a batch has
+any completed sessions — not attempted here since it wasn't asked for.
+
+---
+
 ## 2026-09-15 — Scroll-shadow affordance for overflowing tables, instead of restructuring every table for mobile
 
 **Decision:** Every horizontally-scrollable table/grid in the app (the

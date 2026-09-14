@@ -97,7 +97,9 @@ Phase 1. Two rules that apply from day one:
 | Skill progression RPCs               | `supabase/migrations/0006_*.sql`  | same                             |
 | Fee management RPCs                  | `supabase/migrations/0007_*.sql`  | same                             |
 | Dashboard & reports RPCs             | `supabase/migrations/0008_*.sql`  | same                             |
+| Coach photos + needs_attention photo | `supabase/migrations/0009_*.sql`  | same                             |
 | Account creation (`invite-user`)     | `supabase/functions/invite-user/` | `supabase functions deploy`      |
+| Account removal (`delete-user`)      | `supabase/functions/delete-user/` | `supabase functions deploy`      |
 | Scheduled fee job (`generate-fees`)  | `supabase/functions/generate-fees/` | `supabase functions deploy` + cron (RUNBOOK) |
 
 Edge Functions run on Deno with their own tsconfig; they're excluded from

@@ -5,6 +5,30 @@ non-technical person can follow it. Newest first.
 
 ---
 
+## 2026-09-15 — Real photos everywhere, and full delete/remove permissions for admins
+
+- **Coaches can now have a photo**, uploaded the same way students'
+  photos already were — pick a file when adding or editing a coach.
+- **Every circle that used to show only initials now shows the real
+  photo when one exists** — the Skaters list, a skater's own profile
+  page, the Coaches list, a coach's own profile page, and the dashboard's
+  "Needs attention" panel. This was mostly a display gap: student photos
+  were already being collected, they just weren't being shown anywhere
+  except the attendance-marking screen.
+- **Admins can now permanently remove a coach**, not just deactivate one
+  — for an account added by mistake. This fully deletes their login too
+  (deactivating stays the option for a coach who's just on leave or
+  left on good terms; anything they were assigned to is simply left
+  with no coach, nothing else changes).
+- **Batches got the admin controls they were missing**: a
+  Deactivate/Reactivate toggle (the field already existed but had no
+  button anywhere), and a permanent Remove for a batch created by
+  mistake. Removing a batch is explained clearly in a confirmation
+  dialog first, since — unlike removing a coach — it does delete that
+  batch's schedule and attendance history along with it.
+
+---
+
 ## 2026-09-15 — PRSA branding, and a mobile/tablet pass across the whole app
 
 - **Branding.** The academy is now named "Professional Roller Skating

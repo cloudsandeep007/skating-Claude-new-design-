@@ -38,7 +38,7 @@ ability to add, edit and archive them.
 | `student_attendance_summary` | ✓    |       | attendance % per student (the view, not raw attendance)      |
 | `student_fees`               | ✓    |       | most recent fee row per student → fee status pill            |
 | `attendance`                 | ✓    |       | most recent `marked_at` per student → "last active"          |
-| Storage `student-photos`     |      | ✓     | photo upload; path saved to `students.photo_url`             |
+| Storage `student-photos`     | ✓    | ✓     | photo upload/display; path saved to `students.photo_url`     |
 | Edge Function `invite-user`  |      | ✓     | "new parent" — creates account, sends invite, links them     |
 
 The list page makes one paginated query for the student rows, then four
@@ -84,7 +84,5 @@ deliberate — see DECISIONS.md.
   relationship) — only set at creation. Coming with a later phase.
 - The list's "last active" is the most recent attendance mark, so a
   brand-new student shows "—" until their first session is marked.
-- Photos are displayed as initials for now; the signed-URL resolver
-  (`getStudentPhotoUrl`) exists but isn't wired into the avatar yet.
 - Pagination is Prev/Next only, not numbered pages.
 - No CSV export.

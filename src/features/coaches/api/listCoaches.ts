@@ -7,6 +7,7 @@ import type { CoachListItem } from '../types'
 interface CoachRow {
   id: string
   specialization: string | null
+  photo_url: string | null
   status: CoachListItem['status']
   profile: { id: string; full_name: string; email: string | null; phone: string | null } | null
   batches: { id: string }[]
@@ -16,7 +17,7 @@ async function fetchCoaches(): Promise<CoachListItem[]> {
   const { data, error } = await supabase
     .from('coaches')
     .select(
-      `id, specialization, status,
+      `id, specialization, photo_url, status,
        profile:profiles(id, full_name, email, phone),
        batches(id)`,
     )
@@ -34,6 +35,7 @@ async function fetchCoaches(): Promise<CoachListItem[]> {
     email: coach.profile?.email ?? null,
     phone: coach.profile?.phone ?? null,
     specialization: coach.specialization,
+    photoUrl: coach.photo_url,
     status: coach.status,
     batchCount: coach.batches.length,
     studentCount: coach.batches.reduce((sum, b) => sum + (studentCounts.get(b.id) ?? 0), 0),

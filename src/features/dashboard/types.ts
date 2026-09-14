@@ -46,6 +46,7 @@ export interface CoachLoadRow {
 export interface NeedsAttentionRow {
   studentId: string
   fullName: string
+  photoUrl: string | null
   batchNames: string | null
   levelName: string | null
   countedSessions: number

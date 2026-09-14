@@ -1,13 +1,15 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { toast } from 'sonner'
 
+import { useAuth } from '@/features/auth'
 import { Button } from '@/shared/ui/button'
 import { Card, CardContent } from '@/shared/ui/card'
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/shared/ui/form'
 import { Input } from '@/shared/ui/input'
+import { Label } from '@/shared/ui/label'
 import { Skeleton } from '@/shared/ui/skeleton'
 
 import { useCoach } from '../api/getCoach'
@@ -17,8 +19,10 @@ import { CoachEditSchema, type CoachEdit } from '../types'
 export function EditCoachPage() {
   const { coachId = '' } = useParams<{ coachId: string }>()
   const navigate = useNavigate()
+  const { profile } = useAuth()
   const { data: coach, isLoading } = useCoach(coachId)
   const updateCoach = useUpdateCoach()
+  const [photoFile, setPhotoFile] = useState<File | null>(null)
 
   const form = useForm<CoachEdit>({
     resolver: zodResolver(CoachEditSchema),
@@ -36,9 +40,15 @@ export function EditCoachPage() {
   }, [coach, form])
 
   async function onSubmit(values: CoachEdit) {
-    if (!coach) return
+    if (!coach || !profile?.academy_id) return
     try {
-      await updateCoach.mutateAsync({ coachId: coach.id, profileId: coach.profileId, form: values })
+      await updateCoach.mutateAsync({
+        academyId: profile.academy_id,
+        coachId: coach.id,
+        profileId: coach.profileId,
+        form: values,
+        photoFile,
+      })
       toast.success('Coach updated.')
       void navigate(`/admin/coaches/${coach.id}`)
     } catch {
@@ -106,6 +116,16 @@ export function EditCoachPage() {
                   </FormItem>
                 )}
               />
+              <div className="space-y-2">
+                <Label>Photo {coach.photoUrl ? '(replace)' : '(optional)'}</Label>
+                <Input
+                  type="file"
+                  accept="image/*"
+                  onChange={(event) => {
+                    setPhotoFile(event.target.files?.[0] ?? null)
+                  }}
+                />
+              </div>
               <div className="flex justify-end gap-3 pt-2">
                 <Button variant="outline" asChild>
                   <Link to={`/admin/coaches/${coach.id}`}>Cancel</Link>

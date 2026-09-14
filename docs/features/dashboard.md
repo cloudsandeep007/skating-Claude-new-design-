@@ -25,10 +25,10 @@ function; no chart component runs a raw table query.
   6. Coach load (students & sessions) — grouped bar
 - **Needs attention** — the visual anchor, not a footnote: a full-width
   ink panel below the charts, heavier than the chart cards above it.
-  Students under 60% attendance in the last 30 days, each with name,
-  batch, level, attendance % with a colored bar, parent name/phone, and
-  a tap-to-call `tel:` link. A footer note flags how many also have an
-  overdue fee, linking to the Fees screen.
+  Students under 60% attendance in the last 30 days, each with photo (or
+  initials fallback), name, batch, level, attendance % with a colored
+  bar, parent name/phone, and a tap-to-call `tel:` link. A footer note
+  flags how many also have an overdue fee, linking to the Fees screen.
 - **Export PDF** — captures the stat cards + charts + attention panel as
   they're currently rendered (current date range, current batch filter)
   into a paginated PDF.

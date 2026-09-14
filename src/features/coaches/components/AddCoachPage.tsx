@@ -1,19 +1,24 @@
+import { useState } from 'react'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
 import { Link, useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
 
+import { useAuth } from '@/features/auth'
 import { Button } from '@/shared/ui/button'
 import { Card, CardContent } from '@/shared/ui/card'
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/shared/ui/form'
 import { Input } from '@/shared/ui/input'
+import { Label } from '@/shared/ui/label'
 
 import { useCreateCoach } from '../api/createCoach'
 import { CoachFormSchema, type CoachForm } from '../types'
 
 export function AddCoachPage() {
   const navigate = useNavigate()
+  const { profile } = useAuth()
   const createCoach = useCreateCoach()
+  const [photoFile, setPhotoFile] = useState<File | null>(null)
 
   const form = useForm<CoachForm>({
     resolver: zodResolver(CoachFormSchema),
@@ -21,8 +26,9 @@ export function AddCoachPage() {
   })
 
   async function onSubmit(values: CoachForm) {
+    if (!profile?.academy_id) return
     try {
-      await createCoach.mutateAsync(values)
+      await createCoach.mutateAsync({ academyId: profile.academy_id, form: values, photoFile })
       toast.success(`Invite sent to ${values.email}.`)
       void navigate('/admin/coaches')
     } catch {
@@ -94,6 +100,17 @@ export function AddCoachPage() {
                   </FormItem>
                 )}
               />
+              <div className="space-y-2">
+                <Label>Photo (optional)</Label>
+                <Input
+                  type="file"
+                  accept="image/*"
+                  onChange={(event) => {
+                    setPhotoFile(event.target.files?.[0] ?? null)
+                  }}
+                />
+              </div>
+
               <p className="text-sm text-muted-foreground">
                 An invite email will be sent so they can set their own password.
               </p>
