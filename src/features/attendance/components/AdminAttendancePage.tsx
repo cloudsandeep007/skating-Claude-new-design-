@@ -21,25 +21,16 @@ import { computeTotals } from '../hooks/attendancePct'
 import { attendanceLabel, attendanceTone, pctColorClass } from '../hooks/attendanceTone'
 import { OverrideSelect } from './OverrideSelect'
 
-const TAB_TRIGGER =
-  'h-[52px] rounded-none border-b-2 border-transparent px-4.5 data-[state=active]:border-foreground data-[state=active]:shadow-none'
-
 export function AdminAttendancePage() {
   return (
     <div>
       <h1 className="mb-4 text-2xl font-extrabold tracking-tight">Attendance</h1>
       <div className="overflow-hidden rounded-lg border bg-card shadow-sm">
         <Tabs defaultValue="date">
-          <TabsList className="h-auto w-full justify-start rounded-none border-b bg-transparent p-0">
-            <TabsTrigger value="date" className={TAB_TRIGGER}>
-              By date
-            </TabsTrigger>
-            <TabsTrigger value="batch" className={TAB_TRIGGER}>
-              By batch
-            </TabsTrigger>
-            <TabsTrigger value="student" className={TAB_TRIGGER}>
-              By student
-            </TabsTrigger>
+          <TabsList className="border-b-0 border-b-neutral-200">
+            <TabsTrigger value="date">By date</TabsTrigger>
+            <TabsTrigger value="batch">By batch</TabsTrigger>
+            <TabsTrigger value="student">By student</TabsTrigger>
           </TabsList>
           <TabsContent value="date" className="p-4">
             <ByDate />

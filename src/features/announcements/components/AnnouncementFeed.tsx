@@ -33,6 +33,7 @@ export function AnnouncementFeed({ limit }: { limit?: number }) {
   if (isError) {
     return (
       <EmptyState
+        tone="error"
         title="Couldn't load announcements"
         description="Check your connection and try again."
       />

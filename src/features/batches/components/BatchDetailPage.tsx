@@ -84,8 +84,9 @@ export function BatchDetailPage() {
             />
           </div>
           {batch.roster.length === 0 ? (
-            <div className="p-6">
+            <div className="p-2">
               <EmptyState
+                className="border-0 shadow-none"
                 title="No skaters yet"
                 description="Enroll the first skater to this batch."
               />
@@ -136,8 +137,9 @@ export function BatchDetailPage() {
             <h2 className="font-bold">Upcoming sessions</h2>
           </div>
           {batch.upcomingSessions.length === 0 ? (
-            <div className="p-6">
+            <div className="p-2">
               <EmptyState
+                className="border-0 shadow-none"
                 title="Nothing scheduled"
                 description="Use Generate schedule to create sessions from this batch's days."
               />

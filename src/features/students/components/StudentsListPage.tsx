@@ -1,6 +1,6 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Plus, Search, Users } from 'lucide-react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 
 import { useBatchOptions } from '@/features/batches'
 import { useDebouncedValue } from '@/shared/hooks'
@@ -40,14 +40,24 @@ function formatLastActive(iso: string | null) {
 
 export function StudentsListPage() {
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
   const [page, setPage] = useState(0)
-  const [searchInput, setSearchInput] = useState('')
+  // The admin top bar's global search lands here with ?q=…
+  const [searchInput, setSearchInput] = useState(searchParams.get('q') ?? '')
   const [batchId, setBatchId] = useState<string>('all')
   const [status, setStatus] = useState<StudentStatus | 'all'>('active')
   const [sortBy, setSortBy] = useState<StudentSortColumn>('full_name')
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc')
 
   const search = useDebouncedValue(searchInput)
+
+  useEffect(() => {
+    const q = searchParams.get('q')
+    if (q !== null) {
+      setSearchInput(q)
+      setPage(0)
+    }
+  }, [searchParams])
   const { data: batches } = useBatchOptions()
 
   const params: StudentListParams = {
@@ -164,8 +174,9 @@ export function StudentsListPage() {
         {isLoading ? (
           <StudentsSkeleton />
         ) : !data || data.items.length === 0 ? (
-          <div className="p-6">
+          <div className="p-2">
             <EmptyState
+              className="border-0 shadow-none"
               icon={Users}
               title={filtersActive ? 'No students match those filters' : 'No students yet'}
               description={

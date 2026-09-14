@@ -113,7 +113,13 @@ export const router = createBrowserRouter([
       {
         path: '/dev',
         element: <DevLayout />,
-        children: [{ index: true, element: <PlaceholderPage title="Dev overview" /> }],
+        children: [
+          { index: true, element: <PlaceholderPage title="Overview" dark /> },
+          { path: 'academies', element: <PlaceholderPage title="Academies" dark /> },
+          { path: 'errors', element: <PlaceholderPage title="Error log" dark /> },
+          { path: 'flags', element: <PlaceholderPage title="Feature flags" dark /> },
+          { path: 'audit', element: <PlaceholderPage title="Jobs and audit" dark /> },
+        ],
       },
     ],
   },

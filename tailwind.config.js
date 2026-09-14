@@ -14,6 +14,9 @@ export default {
       fontFamily: {
         sans: ['Archivo', 'ui-sans-serif', 'system-ui', 'sans-serif'],
       },
+      animation: {
+        shimmer: 'shimmer 1.4s linear infinite',
+      },
       colors: {
         // Raw ramps from the design system, for spot colors (status pills,
         // progress bars) that don't map to one of shadcn's semantic tokens
@@ -67,6 +70,12 @@ export default {
           700: '#0f4680',
           800: '#0c3560',
           900: '#0a2643',
+        },
+        // Developer console surfaces (design: Developer Console.dc.html)
+        ink: {
+          rail: '#161413',
+          surface: '#2a2726',
+          surface2: '#34302f',
         },
         border: 'hsl(var(--border))',
         input: 'hsl(var(--input))',

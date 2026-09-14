@@ -38,8 +38,9 @@ export function BatchesListPage() {
             ))}
           </div>
         ) : !batches || batches.length === 0 ? (
-          <div className="p-6">
+          <div className="p-2">
             <EmptyState
+              className="border-0 shadow-none"
               icon={Layers}
               title="No batches yet"
               description="Create a batch to start enrolling skaters and scheduling sessions."

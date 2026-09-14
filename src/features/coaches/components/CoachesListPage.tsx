@@ -49,8 +49,9 @@ export function CoachesListPage() {
             ))}
           </div>
         ) : !coaches || coaches.length === 0 ? (
-          <div className="p-6">
+          <div className="p-2">
             <EmptyState
+              className="border-0 shadow-none"
               icon={Award}
               title="No coaches yet"
               description="Add your first coach to start assigning batches."

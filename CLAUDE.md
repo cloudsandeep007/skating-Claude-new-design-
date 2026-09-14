@@ -31,7 +31,10 @@ src/
   shared/
     ui/           shadcn components (generated — don't hand-edit the
                    variant boilerplate, add wrapper components instead
-                   if you need different behavior)
+                   if you need different behavior). Exception: the
+                   Tailwind class strings inside them are tuned to the
+                   design system in docs/design — keep structure and
+                   behaviour as generated, change only classes.
     lib/          supabase client, utils, constants
     hooks/        hooks shared by more than one feature
     types/        types shared by more than one feature (incl. the

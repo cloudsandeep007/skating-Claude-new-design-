@@ -76,15 +76,18 @@ export function AdminAnnouncementsPage() {
             ))}
           </div>
         ) : isError ? (
-          <div className="p-6">
+          <div className="p-2">
             <EmptyState
+              className="border-0 shadow-none"
+              tone="error"
               title="Couldn't load announcements"
               description={error instanceof Error ? error.message : 'Please try again.'}
             />
           </div>
         ) : !items || items.length === 0 ? (
-          <div className="p-6">
+          <div className="p-2">
             <EmptyState
+              className="border-0 shadow-none"
               icon={Megaphone}
               title="No announcements yet"
               description="Anything you post here reaches parents and coaches in the app."

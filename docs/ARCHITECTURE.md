@@ -162,13 +162,22 @@ wired into the app in two places:
 - `src/index.css` — shadcn's semantic tokens (`--primary`, `--ring`,
   `--radius`, …) remapped to the design's ink/brand palette, so every
   shadcn component is on-brand without per-component edits.
-- `tailwind.config.js` — the Archivo font and the raw colour ramps
+- `tailwind.config.js` — the Archivo font, the raw colour ramps
   (`brand-*`, `success-*`, `warning-*`, `info-*`) for spot colours the
-  semantic tokens don't cover (status pills, attendance bars).
+  semantic tokens don't cover (status pills, attendance bars), the
+  `ink-rail/surface/surface2` greys for the developer console, and the
+  `shimmer` skeleton animation.
+- `src/shared/ui/*` — the Tailwind class strings inside the generated
+  shadcn primitives are tuned to the spec (sizes, borders, weights,
+  bottom-sheet dialogs on phones, ink toasts). Structure, props and
+  behaviour stay as generated; see DECISIONS 2026-09-14.
 
 Small design-specific components that shadcn doesn't ship live as
-wrappers in `src/shared/ui/` (`StatusBadge`, `EmptyState`, `PageLoader`);
-generated shadcn files aren't hand-edited.
+wrappers in `src/shared/ui/` (`StatusBadge`, `EmptyState`, `PageLoader`).
+The per-role shells in `src/app/layouts/` are built directly from the
+mockups: `AdminLayout` (ink sidebar + search/bell/identity top bar),
+`DevLayout` (environment banner + dark rail), `CoachLayout` and
+`ParentLayout` (mobile-first, bottom tabs).
 
 ## External services
 

@@ -5,6 +5,33 @@ non-technical person can follow it. Newest first.
 
 ---
 
+## 2026-09-14 — The app now looks like the design handoff
+
+A visual pass over everything built so far, using the design files in
+`docs/design`. Nothing about *what* the app does changed.
+
+- **Admin console shell** — black left sidebar with the academy's
+  wordmark ("Glide." with a red full stop), a white pill on the current
+  section, and the active-skater count at the bottom. The top bar shows
+  the academy name and current section, a global "Search skaters" box
+  (press Enter to jump to the filtered skater list), a bell that goes to
+  announcements with an unread count, and an identity menu with sign out.
+- **Developer console shell** — dark throughout, with a full-width
+  environment banner (blue for development, amber for staging, red for
+  production) showing the Supabase host and build, a "Skating/dev" rail
+  with Overview / Academies / Error log / Feature flags / Jobs and audit,
+  and a header naming the current screen. The four new sections are
+  placeholders until their phases arrive.
+- **Sign-in, forgot- and reset-password pages** carry the wordmark.
+- **Buttons, inputs, dropdowns, tables, tabs, cards, dialogs, toasts,
+  loading shimmers and empty states** all match the design system —
+  taller touch targets, thicker borders, underline-style tabs, and
+  dialogs that slide up from the bottom on phones.
+- Empty states now have a distinct red icon when something failed to
+  load versus grey when there's simply nothing yet.
+
+---
+
 ## 2026-09-14 — The parent app, and announcements with live notifications
 
 Parents now have a proper app, not just an attendance page. **Home**

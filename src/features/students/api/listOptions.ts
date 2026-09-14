@@ -62,3 +62,19 @@ export function useStudentOptions() {
     },
   })
 }
+
+/** Count of active students — for the admin sidebar footer. */
+export function useActiveStudentCount() {
+  return useQuery({
+    queryKey: ['students', 'active-count'],
+    staleTime: 5 * 60 * 1000,
+    queryFn: async (): Promise<number> => {
+      const { count, error } = await supabase
+        .from('students')
+        .select('id', { count: 'exact', head: true })
+        .eq('status', 'active')
+      if (error) throw error
+      return count ?? 0
+    },
+  })
+}

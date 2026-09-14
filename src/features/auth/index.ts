@@ -1,3 +1,4 @@
+export { useAcademy } from './api/getAcademy'
 export { AuthProvider } from './components/AuthProvider'
 export { ForgotPasswordPage } from './components/ForgotPasswordPage'
 export { LoginPage } from './components/LoginPage'

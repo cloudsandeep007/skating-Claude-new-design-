@@ -169,13 +169,9 @@ export function StudentDetailPage() {
         </div>
 
         <Tabs defaultValue="overview">
-          <TabsList className="h-auto w-full justify-start overflow-x-auto rounded-none border-b border-t bg-transparent p-0">
+          <TabsList className="border-t border-t-neutral-200">
             {['overview', 'attendance', 'progress', 'fees', 'notes'].map((tab) => (
-              <TabsTrigger
-                key={tab}
-                value={tab}
-                className="h-[52px] rounded-none border-b-2 border-transparent px-4.5 capitalize data-[state=active]:border-foreground data-[state=active]:shadow-none"
-              >
+              <TabsTrigger key={tab} value={tab} className="capitalize">
                 {tab}
               </TabsTrigger>
             ))}

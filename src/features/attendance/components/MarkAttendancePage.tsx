@@ -71,6 +71,7 @@ export function MarkAttendancePage() {
   if (isError) {
     return (
       <EmptyState
+        tone="error"
         title="Couldn't load this session"
         description="Check your connection and try again."
         action={
