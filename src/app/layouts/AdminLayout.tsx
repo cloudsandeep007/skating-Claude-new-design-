@@ -4,6 +4,7 @@ import {
   Bell,
   CalendarDays,
   ClipboardCheck,
+  FileBarChart,
   IndianRupee,
   Layers,
   LayoutDashboard,
@@ -42,6 +43,7 @@ const NAV_ITEMS = [
   { to: '/admin/progression', label: 'Progress', icon: Trophy, end: false },
   { to: '/admin/fees', label: 'Fees', icon: IndianRupee, end: false },
   { to: '/admin/announcements', label: 'Announcements', icon: Megaphone, end: false },
+  { to: '/admin/reports', label: 'Reports', icon: FileBarChart, end: false },
 ]
 
 function initials(name: string) {

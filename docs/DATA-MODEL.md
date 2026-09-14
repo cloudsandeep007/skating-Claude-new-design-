@@ -604,6 +604,27 @@ it, and for the admin "Generate now" button, which calls
 `generate_upcoming_fees()` directly from the client instead (RLS scopes
 that path to the caller's own academy, so it doesn't need this function).
 
+## Dashboard & reports RPCs (`0008_dashboard.sql`)
+
+Phase 0 already added the core dashboard views (`student_attendance_summary`,
+`batch_attendance_summary`, `monthly_collection_totals`, `at_risk_students`);
+skill progression added `level_distribution()`. This migration adds the
+rest so every chart and report reads a view or RPC — never a raw table
+query from a component. All are `SECURITY INVOKER` — RLS on the
+underlying tables scopes every one of them to the caller's own academy.
+
+| Function                                               | Does                                                                                                                                                    | Returns                                        |
+| -------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------ |
+| `dashboard_stat_cards()`                                | The 4 top stat cards in one round trip, each with a "vs last month" comparison. Where there's no historical snapshot to compare against, the comparison is the closest honest proxy — see the function's own comment for exactly what each one means. | one row                                          |
+| `monthly_attendance_trend(p_months=6, p_batch_id?)`     | Attendance % per month, optionally scoped to one batch.                                                                                                 | one row per month with sessions                 |
+| `batch_capacity_summary()`                              | Enrolled vs capacity per active batch.                                                                                                                  | one row per batch                                |
+| `monthly_active_students(p_months=6)`                   | Distinct students with an attendance record per month — the closest available "active" proxy without a historical status snapshot.                     | one row per month with sessions                 |
+| `coach_load_summary(p_days=30)`                          | Students (active enrollment across their batches) and sessions (trailing window) per coach.                                                            | one row per active coach                         |
+| `needs_attention(p_days=30, p_threshold=60, p_min_sessions=3)` | Same rule as `at_risk_students`, plus current level and an overdue-fee flag — the dashboard's "Needs attention" panel.                            | one row per at-risk student                      |
+| `fee_collection_report(p_from, p_to, p_batch_id?)`       | Same shape as `student_fees_list()`, filtered by an explicit `due_date` range instead of one calendar month — the Reports page's date-range filter.    | one row per fee due in range                     |
+| `student_progress_report(p_from, p_to, p_batch_id?)`     | Per student: current level, skills marked achieved within the range (any level, not just their current one — see the feature doc), and attendance % in the range. | one row per active student                       |
+| `coach_activity_report(p_from, p_to, p_batch_id?)`       | Per coach: sessions held, distinct students seen, and attendance % for their sessions, within the range.                                               | one row per active coach                         |
+
 ## Seed data (`supabase/seed.sql`)
 
 One academy ("Glide Skating Academy", Bengaluru), one super admin, one

@@ -15,6 +15,9 @@ dist-ssr
 .env.*
 !.env.example
 
+# Exports downloaded during local testing (CSV/PDF from the app itself)
+*.pdf
+
 # Test output
 coverage
 playwright-report

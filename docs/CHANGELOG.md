@@ -5,6 +5,30 @@ non-technical person can follow it. Newest first.
 
 ---
 
+## 2026-09-15 — The academy admin dashboard, and four exportable reports
+
+Every number here reads a Postgres view or RPC function — no chart
+queries a table directly.
+
+- **Dashboard** (now the admin's landing page) — four stat cards (active
+  students, today's attendance, fees collected this month, outstanding
+  dues), each with a trend against last month; a date-range selector
+  (3/6/12 months); six charts (attendance trend, revenue collected vs
+  expected, students per batch vs capacity, skill level distribution,
+  retention, coach load); and **Needs attention** — a full-width panel,
+  deliberately the heaviest thing on the page, listing every skater
+  under 60% attendance in the last 30 days with a tap-to-call parent
+  phone number and a note about who also has an overdue fee. Every
+  chart has its own loading skeleton and its own empty state — nothing
+  on this page renders blank. **Export PDF** captures the whole page as
+  it's currently filtered.
+- **Reports** (new "Reports" screen) — attendance, fee collection,
+  student progress, and coach activity, each filterable by an explicit
+  date range and batch, each exportable to CSV or a proper (not
+  screenshot) PDF table.
+
+---
+
 ## 2026-09-14 — Fee management: plans, generation, and manual payment recording
 
 No payment gateway yet — every payment is recorded by an admin after

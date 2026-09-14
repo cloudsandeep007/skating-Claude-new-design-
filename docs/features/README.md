@@ -20,3 +20,5 @@ in the same session the feature is built or changed. Each file covers:
 - [parent.md](./parent.md) — the parent app: home, child profile, attendance, schedule, news, profile (Phase 1.4)
 - [progression.md](./progression.md) — levels & skills setup, coach assessment (single + bulk), promotion, parent progress screen, admin reports
 - [fees.md](./fees.md) — fee plans, generation, manual payment recording (incl. partial), waivers, admin dashboard, parent dues and receipts
+- [dashboard.md](./dashboard.md) — the admin landing page: stat cards, 6 charts, the "Needs attention" panel, PDF export
+- [reports.md](./reports.md) — attendance/fees/progress/coach-activity reports, filterable, CSV + PDF export

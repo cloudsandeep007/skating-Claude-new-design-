@@ -17,6 +17,35 @@ Format:
 
 ---
 
+## 2026-09-15 — PDF export libraries are dynamically imported, never at module scope
+
+**Decision:** `shared/lib/pdf.ts`'s two exported functions each
+`import('jspdf')` / `import('jspdf-autotable')` / `import('html2canvas')`
+inside the function body, not as top-of-file imports.
+
+**Options considered:** (a) normal static imports, simplest code; (b)
+dynamic `import()` inside each export function.
+
+**Why:** jsPDF + html2canvas + jspdf-autotable together are roughly
+600KB minified. A static import pulls them into whatever chunk
+references `pdf.ts`, which — since the Dashboard and Reports pages both
+import it directly — means every visitor downloads the whole PDF
+toolchain on page load whether or not they ever click an export button.
+Confirmed by measurement: the main bundle dropped from 2.23MB to 1.60MB
+(gzip 650KB → 461KB) switching to dynamic imports, with zero change to
+when or how export actually runs (Vite/Rollup code-splits the dynamic
+import into its own chunk automatically, fetched on first click).
+
+**Trade-offs:** The first export click on a fresh page load has a brief
+extra network fetch before the PDF starts generating (both export
+buttons already show a pending/"Exporting…" state, so this reads as
+normal loading, not a stall). Every other feature keeps the "boring"
+static-import default — this exception applies specifically because the
+library weight is large and the usage is optional/occasional, not
+because dynamic imports are the new default policy.
+
+---
+
 ## 2026-09-14 — Partial payments use balance math, not a fifth fee status
 
 **Decision:** `student_fees.status` stays the original four values

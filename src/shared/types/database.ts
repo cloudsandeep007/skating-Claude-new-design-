@@ -1273,14 +1273,73 @@ export type Database = {
           student_id: string
         }[]
       }
+      batch_capacity_summary: {
+        Args: never
+        Returns: {
+          batch_id: string
+          batch_name: string
+          capacity: number
+          enrolled_count: number
+        }[]
+      }
       cancel_session: {
         Args: { p_reason: string; p_session_id: string }
         Returns: undefined
+      }
+      coach_activity_report: {
+        Args: { p_batch_id?: string; p_from: string; p_to: string }
+        Returns: {
+          attendance_pct: number
+          batch_names: string
+          coach_id: string
+          coach_name: string
+          session_count: number
+          student_count: number
+        }[]
+      }
+      coach_load_summary: {
+        Args: { p_days?: number }
+        Returns: {
+          coach_id: string
+          coach_name: string
+          session_count: number
+          student_count: number
+        }[]
       }
       current_academy_id: { Args: never; Returns: string }
       current_user_role: {
         Args: never
         Returns: Database['public']['Enums']['app_role']
+      }
+      dashboard_stat_cards: {
+        Args: never
+        Returns: {
+          active_students: number
+          fees_collected_last_month: number
+          fees_collected_this_month: number
+          last_month_attendance_pct: number
+          new_students_this_month: number
+          outstanding_due_last_month: number
+          outstanding_due_this_month: number
+          outstanding_students: number
+          outstanding_total: number
+          today_attendance_pct: number
+        }[]
+      }
+      fee_collection_report: {
+        Args: { p_batch_id?: string; p_from: string; p_to: string }
+        Returns: {
+          amount: number
+          balance: number
+          batch_names: string
+          due_date: string
+          fee_plan_name: string
+          full_name: string
+          paid: number
+          status: Database['public']['Enums']['fee_status']
+          student_fee_id: string
+          student_id: string
+        }[]
       }
       generate_sessions: {
         Args: { p_batch_id: string; p_from: string; p_to: string }
@@ -1326,6 +1385,36 @@ export type Database = {
         }[]
       }
       mark_fees_overdue: { Args: never; Returns: number }
+      monthly_active_students: {
+        Args: { p_months?: number }
+        Returns: {
+          active_count: number
+          month: string
+        }[]
+      }
+      monthly_attendance_trend: {
+        Args: { p_batch_id?: string; p_months?: number }
+        Returns: {
+          attendance_pct: number
+          month: string
+        }[]
+      }
+      needs_attention: {
+        Args: { p_days?: number; p_min_sessions?: number; p_threshold?: number }
+        Returns: {
+          attendance_pct: number
+          attended_sessions: number
+          batch_names: string
+          counted_sessions: number
+          full_name: string
+          has_overdue_fee: boolean
+          level_name: string
+          missed_sessions: number
+          parent_name: string
+          parent_phone: string
+          student_id: string
+        }[]
+      }
       parent_batch_ids: { Args: never; Returns: string[] }
       parent_student_ids: { Args: never; Returns: string[] }
       promote_student: {
@@ -1406,6 +1495,18 @@ export type Database = {
           period_start: string
           status: Database['public']['Enums']['fee_status']
           student_fee_id: string
+          student_id: string
+        }[]
+      }
+      student_progress_report: {
+        Args: { p_batch_id?: string; p_from: string; p_to: string }
+        Returns: {
+          attendance_pct: number
+          batch_names: string
+          full_name: string
+          level_name: string
+          skills_achieved_range: number
+          skills_in_level: number
           student_id: string
         }[]
       }

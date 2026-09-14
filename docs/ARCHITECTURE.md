@@ -18,6 +18,7 @@ each fully isolated from the others' data.
 - React Router — routing
 - Recharts — charts
 - @dnd-kit — drag-to-reorder (levels & skills admin screen)
+- jspdf / jspdf-autotable / html2canvas — PDF export (dashboard, reports; dynamically imported, see DECISIONS)
 - Supabase — Postgres database, auth, storage
 - Vitest + Playwright — testing
 - Sentry — error tracking
@@ -95,6 +96,7 @@ Phase 1. Two rules that apply from day one:
 | Announcement fan-out + realtime      | `supabase/migrations/0005_*.sql`  | same                             |
 | Skill progression RPCs               | `supabase/migrations/0006_*.sql`  | same                             |
 | Fee management RPCs                  | `supabase/migrations/0007_*.sql`  | same                             |
+| Dashboard & reports RPCs             | `supabase/migrations/0008_*.sql`  | same                             |
 | Account creation (`invite-user`)     | `supabase/functions/invite-user/` | `supabase functions deploy`      |
 | Scheduled fee job (`generate-fees`)  | `supabase/functions/generate-fees/` | `supabase functions deploy` + cron (RUNBOOK) |
 
