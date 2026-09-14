@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Award, LayoutDashboard, LogOut, Menu, Users } from 'lucide-react'
+import { Award, CalendarDays, Layers, LayoutDashboard, LogOut, Menu, Users } from 'lucide-react'
 import { NavLink, Outlet } from 'react-router-dom'
 
 import { useAuth } from '@/features/auth'
@@ -12,6 +12,8 @@ const NAV_ITEMS = [
   { to: '/admin', label: 'Dashboard', icon: LayoutDashboard, end: true },
   { to: '/admin/students', label: 'Skaters', icon: Users, end: false },
   { to: '/admin/coaches', label: 'Coaches', icon: Award, end: false },
+  { to: '/admin/batches', label: 'Batches', icon: Layers, end: false },
+  { to: '/admin/schedule', label: 'Schedule', icon: CalendarDays, end: false },
 ]
 
 function initials(name: string) {

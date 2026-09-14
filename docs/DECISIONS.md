@@ -17,6 +17,78 @@ Format:
 
 ---
 
+## 2026-09-14 — Schedule generation and cancellation are Postgres functions, not client loops
+
+**Decision:** `generate_sessions()` and `cancel_session()` live in
+`0003_scheduling.sql` and the app calls them via `supabase.rpc()`.
+
+**Options considered:** Computing the dates in the browser and bulk
+inserting; cancelling with an `update` then a separate `insert` into
+notifications from the client.
+
+**Why:** Generation needs three checks per day (holiday, already exists,
+coach overlap) against *current* data — done client-side that's several
+round trips per batch and a race if two admins generate at once. In one
+function it's a single transaction. Cancel-and-notify must be atomic: a
+cancelled session with no notifications, or notifications for a session
+that failed to cancel, are both worse than either failing outright. Both
+functions are `SECURITY INVOKER`, so they add no new privilege — RLS on
+the underlying tables still decides.
+
+**Trade-offs:** Business logic in SQL is less visible to a JS-only
+reader; both functions are short and documented in DATA-MODEL.md. The
+return shape of `generate_sessions` (one row per day with an outcome)
+exists precisely so the UI can explain what it skipped and why.
+
+## 2026-09-14 — Sessions own their time; editing a batch is opt-in for future sessions
+
+**Decision:** `schedule_sessions` stores `start_time`, `end_time` and
+`coach_id` per row (copied from the batch at generation). Editing a
+batch changes the rule only; a checkbox on the edit form optionally moves
+future *scheduled* sessions to match. Completed/cancelled sessions are
+never touched.
+
+**Options considered:** (a) Sessions reference the batch's time at read
+time (no per-session copy); (b) always rewrite future sessions on edit.
+
+**Why:** (a) rewrites history — a session that happened at 5 PM would
+retroactively display as 6 PM after a batch change, and attendance
+records would look wrong. (b) surprises admins who changed a batch for
+next term but had already told parents this week's times. Explicit
+opt-in with a clear label is the boring, safe option.
+
+**Trade-offs:** Removing a day from `days_of_week` leaves sessions on
+that day in place; the admin cancels them. Documented in the feature doc.
+
+## 2026-09-14 — Holidays affect generation only, never existing sessions
+
+**Decision:** Adding a holiday doesn't cancel sessions already on that
+date; extra (one-off) sessions may be placed on a holiday.
+
+**Why:** Cancelling notifies parents with a reason — that should be a
+deliberate act per session, not a side effect of a calendar entry. And
+a holiday is exactly when an academy might run a special extra session.
+
+## 2026-09-14 — Dates are local `YYYY-MM-DD` strings, never `toISOString()`
+
+**Decision:** `shared/lib/format.ts` (`todayIso`, `addDays`, `toIsoDate`)
+builds dates from local `getFullYear/getMonth/getDate`; the first pass at
+this feature used `new Date().toISOString().slice(0, 10)` and was fixed.
+
+**Why:** `toISOString()` is UTC. In IST (UTC+5:30), from 18:30 local
+onward it returns *tomorrow's* date — "today's sessions" would be wrong
+every evening, exactly when evening batches run.
+
+## 2026-09-14 — Batch colour on the calendar is hashed from the batch id
+
+**Decision:** `schedule/hooks/batchColor.ts` picks one of six design-
+system ramps by hashing the batch id, rather than storing a colour column.
+
+**Why:** No schema change, stable across reloads and weeks, no UI to
+manage. Six batches → six colours; a seventh wraps. Acceptable until an
+academy has enough batches that collisions bother someone — then add a
+`color` column and keep this as the fallback.
+
 ## 2026-09-14 — Account creation goes through an Edge Function, never the browser
 
 **Decision:** New parent and coach accounts are created by

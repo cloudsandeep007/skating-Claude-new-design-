@@ -468,6 +468,32 @@ these, never aggregate raw tables.**
 | `attendance_summary_for_range(p_from, p_to, p_batch_id?)` | RPC | student in range | student_id, full_name, counted/attended/absent/late/excused_sessions, attendance_pct |
 | `at_risk_students_for(p_days=30, p_threshold=60, p_min_sessions=3)` | RPC | at-risk student with custom window | student_id, full_name, counted_sessions, attended_sessions, attendance_pct |
 
+### `holidays` — dates the academy is closed (`0003_scheduling.sql`)
+
+| Column       | Type        | Nullable | Default           | Notes                                   |
+| ------------ | ----------- | -------- | ----------------- | --------------------------------------- |
+| id           | uuid        | no       | gen_random_uuid() |                                         |
+| academy_id   | uuid        | no       |                   | FK → academies cascade                  |
+| holiday_date | date        | no       |                   | unique per academy                      |
+| name         | text        | no       |                   | e.g. "Diwali"                           |
+| created_at   | timestamptz | no       | now()             |                                         |
+
+Indexes: `(academy_id, holiday_date)`.
+**RLS:** super_admin all · academy_admin all in academy · members select.
+Only consulted by `generate_sessions()`; existing sessions on a holiday
+are unaffected.
+
+## Scheduling RPCs (`0003_scheduling.sql`)
+
+Both are `SECURITY INVOKER` — they run as the caller, so the table RLS
+above decides who can use them (an academy_admin can; a parent's call
+would fail on the first write).
+
+| Function                                        | Does                                                                                                                                                                       | Returns                                     |
+| ----------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------- |
+| `generate_sessions(p_batch_id, p_from, p_to)`   | For each date in range matching the batch's `days_of_week`: skip if a holiday, skip if the batch already has a session at that time, skip if the batch's coach has an overlapping non-cancelled session, else insert a `scheduled` session copying the batch's time and coach. Max 366 days. | one row per candidate day: `(day, outcome)` where outcome ∈ created / holiday / exists / coach_conflict |
+| `cancel_session(p_session_id, p_reason)`        | Sets status `cancelled` + reason on a `scheduled` session (errors otherwise), then inserts one `notifications` row (`type = 'session_cancelled'`, link `/parent`) per distinct parent of any active student in the batch. | void                                        |
+
 ## Storage (`supabase/migrations/0002_storage.sql`)
 
 | Bucket           | Public | Object path                              | Policies                                                                                       |

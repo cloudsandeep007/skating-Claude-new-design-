@@ -55,6 +55,10 @@ Phase 1. Two rules that apply from day one:
   success. Single-field, reversible flips (archive a student, deactivate a
   coach) are **optimistic** — the cache is patched before the request and
   rolled back on error. Multi-step creates are not.
+- **Multi-step or race-prone writes** (expanding a schedule, cancel +
+  notify) are Postgres functions called with `supabase.rpc()` from the
+  feature's `api/`, so they run in one transaction as the caller —
+  RLS still applies. Simple writes go straight to the table.
 - **Privileged writes** (creating auth accounts) never happen in the
   browser. They go through `supabase/functions/invite-user`, an Edge
   Function called via `shared/lib/invokeFunction`. It verifies the
@@ -69,6 +73,7 @@ Phase 1. Two rules that apply from day one:
 | ------------------------------------ | --------------------------------- | -------------------------------- |
 | Schema, RLS, views, triggers         | `supabase/migrations/*.sql`       | pasted into the SQL Editor       |
 | Storage bucket + policies            | `supabase/migrations/0002_*.sql`  | same                             |
+| Scheduling RPCs + holidays           | `supabase/migrations/0003_*.sql`  | same                             |
 | Account creation (`invite-user`)     | `supabase/functions/invite-user/` | `supabase functions deploy`      |
 
 Edge Functions run on Deno with their own tsconfig; they're excluded from

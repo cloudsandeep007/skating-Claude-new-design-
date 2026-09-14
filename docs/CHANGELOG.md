@@ -5,6 +5,45 @@ non-technical person can follow it. Newest first.
 
 ---
 
+## 2026-09-14 — Batches and the weekly schedule
+
+Under **Batches**, the admin now sees every class with its coach, time,
+days and how full it is (the enrolled count turns amber at the last two
+places and red when full), can create and edit batches (name, level
+range, coach, capacity, time, days, venue), and open one to see its
+roster and upcoming sessions. Skaters are enrolled from the batch page
+with a dropdown; if the batch is full the app warns clearly but still
+lets the admin go ahead. Removing a skater keeps their history.
+
+**Generate schedule** on a batch page turns its weekly pattern into real
+sessions for a chosen date range. It's safe to run again — days that
+already have a session are left alone — and it skips holidays and any
+day the coach is already booked at that time, then tells you exactly how
+many it created and how many it skipped and why.
+
+Under **Schedule**, a Monday-to-Sunday calendar shows every session
+colour-coded by batch with the coach and skater count, today marked,
+holidays flagged, and week-by-week navigation. From here the admin can
+**cancel a session** (a reason is required, and every affected parent
+gets a notification with it — one per parent even if two of their
+children are in the batch), **add a one-off extra session** (it refuses
+if the coach would be double-booked), and maintain the **holiday list**.
+
+Coaches now land on a **Today** screen: their sessions today as bold
+cards with time, batch, venue and skater count — cancelled ones greyed
+with the reason.
+
+Two safety rules worth knowing: editing a batch's time never rewrites
+sessions that already exist unless you tick "also move upcoming
+scheduled sessions" (and even then, past and cancelled sessions are
+left alone); and adding a holiday doesn't cancel anything already on
+the calendar — you cancel those yourself so parents are told why.
+
+**Needs doing on Supabase:** run `0003_scheduling.sql` (RUNBOOK.md).
+Browsing batches, the calendar, enrolling and the coach view all work
+against the existing data; generating, cancelling and holidays need the
+migration.
+
 ## 2026-09-14 — Students and coaches screens for the academy admin
 
 The first real day-to-day screens. Under **Skaters**, the admin now sees

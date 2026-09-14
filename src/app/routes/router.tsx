@@ -1,7 +1,9 @@
 import { createBrowserRouter } from 'react-router-dom'
 
 import { ForgotPasswordPage, LoginPage, ProtectedRoute, ResetPasswordPage } from '@/features/auth'
+import { AddBatchPage, BatchDetailPage, BatchesListPage, EditBatchPage } from '@/features/batches'
 import { AddCoachPage, CoachDetailPage, CoachesListPage, EditCoachPage } from '@/features/coaches'
+import { CoachTodayPage, WeekCalendarPage } from '@/features/schedule'
 import {
   AddStudentPage,
   EditStudentPage,
@@ -50,6 +52,11 @@ export const router = createBrowserRouter([
           { path: 'coaches/new', element: <AddCoachPage /> },
           { path: 'coaches/:coachId', element: <CoachDetailPage /> },
           { path: 'coaches/:coachId/edit', element: <EditCoachPage /> },
+          { path: 'batches', element: <BatchesListPage /> },
+          { path: 'batches/new', element: <AddBatchPage /> },
+          { path: 'batches/:batchId', element: <BatchDetailPage /> },
+          { path: 'batches/:batchId/edit', element: <EditBatchPage /> },
+          { path: 'schedule', element: <WeekCalendarPage /> },
         ],
       },
     ],
@@ -61,7 +68,7 @@ export const router = createBrowserRouter([
       {
         path: '/coach',
         element: <CoachLayout />,
-        children: [{ index: true, element: <PlaceholderPage title="Coach home" /> }],
+        children: [{ index: true, element: <CoachTodayPage /> }],
       },
     ],
   },

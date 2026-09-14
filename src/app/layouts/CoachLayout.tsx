@@ -5,7 +5,7 @@ import { useAuth } from '@/features/auth'
 import { Button } from '@/shared/ui/button'
 import { cn } from '@/shared/lib/utils'
 
-const NAV_ITEMS = [{ to: '/coach', label: 'Home', icon: Home, end: true }]
+const NAV_ITEMS = [{ to: '/coach', label: 'Today', icon: Home, end: true }]
 
 export function CoachLayout() {
   const { profile, signOut } = useAuth()

@@ -494,6 +494,38 @@ export type Database = {
           },
         ]
       }
+      holidays: {
+        Row: {
+          academy_id: string
+          created_at: string
+          holiday_date: string
+          id: string
+          name: string
+        }
+        Insert: {
+          academy_id: string
+          created_at?: string
+          holiday_date: string
+          id?: string
+          name: string
+        }
+        Update: {
+          academy_id?: string
+          created_at?: string
+          holiday_date?: string
+          id?: string
+          name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'holidays_academy_id_fkey'
+            columns: ['academy_id']
+            isOneToOne: false
+            referencedRelation: 'academies'
+            referencedColumns: ['id']
+          },
+        ]
+      }
       levels: {
         Row: {
           academy_id: string
@@ -1215,10 +1247,18 @@ export type Database = {
           student_id: string
         }[]
       }
+      cancel_session: {
+        Args: { p_reason: string; p_session_id: string }
+        Returns: undefined
+      }
       current_academy_id: { Args: never; Returns: string }
       current_user_role: {
         Args: never
         Returns: Database['public']['Enums']['app_role']
+      }
+      generate_sessions: {
+        Args: { p_batch_id: string; p_from: string; p_to: string }
+        Returns: { day: string; outcome: string }[]
       }
       is_academy_admin: { Args: never; Returns: boolean }
       is_coach: { Args: never; Returns: boolean }
