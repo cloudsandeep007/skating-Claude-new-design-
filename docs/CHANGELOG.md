@@ -5,6 +5,47 @@ non-technical person can follow it. Newest first.
 
 ---
 
+## 2026-09-15 — PRSA branding, and a mobile/tablet pass across the whole app
+
+- **Branding.** The academy is now named "Professional Roller Skating
+  Academy" (PRSA) everywhere in the app — browser tab title and icon,
+  the sign-in/forgot-password/reset-password screens, the admin
+  sidebar, and the coach and parent headers — using the logo supplied
+  by the academy.
+- **Fixed a broken preview caused by the branding change.** The logo
+  files were added under `src/assets/`, but the app's `@` shortcut
+  (used in imports like `@/assets/prsa-logo.png`) had never been told
+  that folder existed, so every page that used the new logo failed to
+  load. Both places that shortcut is configured (the dev server and
+  the type checker) now know about `@/assets`.
+- **Fixed a real mobile layout bug on the Attendance page.** Marking
+  attendance for a session showed the batch name overlapping the time
+  and the "X marked" label on a phone-sized screen, because the row
+  was too narrow for everything on one line. It's now two lines
+  (name, then time) so nothing overlaps. The per-skater marking list
+  underneath had the same problem — a name, a status, and a dropdown
+  squeezed into one line, with the dropdown pushed off the edge of the
+  screen. It's now a simple stacked layout that never needs sideways
+  scrolling to mark a skater present.
+- **Fixed the "Levels & skills" list truncating names to a single
+  letter on a phone** (e.g. "Intermediate 1" showing as "I…") — there
+  wasn't room for the name once every action icon was accounted for.
+  The skill-count badge now only shows on tablet and larger, freeing
+  enough space for the level name to display properly on a phone.
+- **Fixed the from/to date pickers cutting off the second date field**
+  on a phone screen, on both the Reports page and the Attendance "by
+  batch"/"by student" filters (both use the same shared date-range
+  control) — the two dates now wrap onto a second line instead of
+  running off the edge of the screen.
+- **Every data table in the app** (Skaters, Coaches, Fees, Reports,
+  the weekly Schedule grid, and the tabs above them) now shows a
+  subtle shadow at the edge when there's more content to scroll to
+  sideways, instead of just cutting off with no hint that there's
+  more — this was the case behind several "the table doesn't fit"
+  reports on narrow screens.
+
+---
+
 ## 2026-09-15 — The academy admin dashboard, and four exportable reports
 
 Every number here reads a Postgres view or RPC function — no chart

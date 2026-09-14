@@ -82,36 +82,42 @@ function ByDate() {
                     setOpenId(open ? null : session.id)
                   }}
                   className={cn(
-                    'flex h-14 w-full items-center gap-3 px-4 text-left',
+                    'flex min-h-14 w-full items-start gap-3 px-4 py-3 text-left',
                     cancelled ? 'opacity-60' : 'hover:bg-muted',
                   )}
                 >
-                  {cancelled ? (
-                    <span className="w-4" />
-                  ) : open ? (
-                    <ChevronDown className="h-4 w-4" />
-                  ) : (
-                    <ChevronRight className="h-4 w-4" />
-                  )}
-                  <span className="w-40 font-mono text-xs text-muted-foreground">
-                    {formatTime(session.startTime)} – {formatTime(session.endTime)}
+                  <span className="mt-0.5 shrink-0">
+                    {cancelled ? (
+                      <span className="block h-4 w-4" />
+                    ) : open ? (
+                      <ChevronDown className="h-4 w-4" />
+                    ) : (
+                      <ChevronRight className="h-4 w-4" />
+                    )}
                   </span>
-                  <span className="flex-1 font-bold">{session.batchName}</span>
-                  {cancelled ? (
-                    <StatusBadge tone="danger">Cancelled</StatusBadge>
-                  ) : (
-                    <StatusBadge
-                      tone={
-                        session.markedCount === 0
-                          ? 'neutral'
-                          : session.markedCount >= session.studentCount
-                            ? 'success'
-                            : 'warning'
-                      }
-                    >
-                      {session.markedCount}/{session.studentCount} marked
-                    </StatusBadge>
-                  )}
+                  <span className="min-w-0 flex-1">
+                    <span className="block font-bold">{session.batchName}</span>
+                    <span className="block font-mono text-xs text-muted-foreground">
+                      {formatTime(session.startTime)} – {formatTime(session.endTime)}
+                    </span>
+                  </span>
+                  <span className="shrink-0 self-center">
+                    {cancelled ? (
+                      <StatusBadge tone="danger">Cancelled</StatusBadge>
+                    ) : (
+                      <StatusBadge
+                        tone={
+                          session.markedCount === 0
+                            ? 'neutral'
+                            : session.markedCount >= session.studentCount
+                              ? 'success'
+                              : 'warning'
+                        }
+                      >
+                        {session.markedCount}/{session.studentCount} marked
+                      </StatusBadge>
+                    )}
+                  </span>
                 </button>
                 {open && <SessionRoster sessionId={session.id} />}
               </li>
@@ -129,28 +135,31 @@ function SessionRoster({ sessionId }: { sessionId: string }) {
 
   return (
     <div className="border-t bg-muted/40">
-      <Table>
-        <TableBody>
-          {data.roster.map((student) => (
-            <TableRow key={student.id}>
-              <TableCell className="pl-12 font-bold">{student.fullName}</TableCell>
-              <TableCell>
-                <StatusBadge tone={attendanceTone(data.saved[student.id] ?? null)}>
-                  {attendanceLabel(data.saved[student.id] ?? null)}
-                </StatusBadge>
-              </TableCell>
-              <TableCell className="text-right">
-                <OverrideSelect
-                  sessionId={sessionId}
-                  studentId={student.id}
-                  studentName={student.fullName}
-                  value={data.saved[student.id] ?? null}
-                />
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+      <ul className="divide-y divide-border/70">
+        {data.roster.map((student) => (
+          <li
+            key={student.id}
+            className="flex flex-wrap items-center gap-x-3 gap-y-2 px-4 py-2.5 pl-12 sm:flex-nowrap"
+          >
+            <span className="min-w-0 flex-1 basis-full font-bold sm:basis-auto">
+              {student.fullName}
+            </span>
+            <span className="shrink-0">
+              <StatusBadge tone={attendanceTone(data.saved[student.id] ?? null)}>
+                {attendanceLabel(data.saved[student.id] ?? null)}
+              </StatusBadge>
+            </span>
+            <span className="shrink-0">
+              <OverrideSelect
+                sessionId={sessionId}
+                studentId={student.id}
+                studentName={student.fullName}
+                value={data.saved[student.id] ?? null}
+              />
+            </span>
+          </li>
+        ))}
+      </ul>
       <div className="px-4 pb-3 pt-1 text-xs text-muted-foreground">
         Changes here are recorded in the audit log with your name.
       </div>
@@ -168,11 +177,11 @@ function RangePicker({
   onChange: (from: string, to: string) => void
 }) {
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex flex-wrap items-center gap-2">
       <Input
         type="date"
         value={from}
-        className="w-[160px]"
+        className="w-[160px] max-w-full"
         onChange={(e) => {
           onChange(e.target.value, to)
         }}
@@ -181,7 +190,7 @@ function RangePicker({
       <Input
         type="date"
         value={to}
-        className="w-[160px]"
+        className="w-[160px] max-w-full"
         onChange={(e) => {
           onChange(from, e.target.value)
         }}

@@ -540,5 +540,5 @@ function ReportTable({
       />
     )
   }
-  return <div className="overflow-x-auto rounded-lg border">{children}</div>
+  return <div className="scroll-shadow-x overflow-x-auto rounded-lg border">{children}</div>
 }

@@ -88,7 +88,7 @@ export function WeekCalendarPage() {
         </div>
       </div>
 
-      <div className="overflow-x-auto rounded-lg border bg-card shadow-sm">
+      <div className="scroll-shadow-x overflow-x-auto rounded-lg border bg-card shadow-sm">
         <div className="grid min-w-[980px] grid-cols-7 divide-x">
           {days.map((date) => {
             const isToday = date === today

@@ -17,6 +17,7 @@ import {
 } from 'lucide-react'
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 
+import prsaLogo from '@/assets/prsa-logo.png'
 import { UnreadBadge } from '@/features/announcements'
 import { useAcademy, useAuth } from '@/features/auth'
 import { useActiveStudentCount } from '@/features/students'
@@ -64,16 +65,11 @@ function screenLabel(pathname: string) {
 }
 
 function Wordmark({ name }: { name: string }) {
-  // The mockup: "Northgate." with a red full stop, then a small uppercase caption.
-  const short = name.replace(/\s+skating academy$/i, '')
   return (
     <div className="px-2.5 pb-4">
-      <div className="truncate text-base font-extrabold tracking-tight text-white">
-        {short}
-        <span className="text-brand-500">.</span>
-      </div>
-      <div className="mt-0.5 text-[11px] font-medium uppercase tracking-[.1em] text-neutral-500">
-        Skating Academy
+      <img src={prsaLogo} alt="PRSA" className="h-auto w-[168px]" />
+      <div className="mt-1.5 truncate text-[11px] font-medium uppercase tracking-[.08em] text-neutral-500">
+        {name}
       </div>
     </div>
   )

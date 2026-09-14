@@ -1,6 +1,7 @@
 import { CalendarDays, ClipboardCheck, Home, Megaphone, Trophy, UserCircle } from 'lucide-react'
 import { NavLink, Outlet } from 'react-router-dom'
 
+import prsaLogo from '@/assets/prsa-logo.png'
 import { NotificationsLive, UnreadBadge } from '@/features/announcements'
 import { useAuth } from '@/features/auth'
 import { cn } from '@/shared/lib/utils'
@@ -20,8 +21,9 @@ export function ParentLayout() {
     <div className="flex min-h-screen flex-col">
       <NotificationsLive />
 
-      <header className="flex h-14 items-center justify-between border-b bg-card px-4">
-        <span className="text-sm font-semibold">{profile?.full_name}</span>
+      <header className="flex h-14 items-center gap-2.5 border-b bg-card px-4">
+        <img src={prsaLogo} alt="" className="h-7 w-auto shrink-0" />
+        <span className="min-w-0 flex-1 truncate text-sm font-semibold">{profile?.full_name}</span>
         <NavLink
           to="/parent/profile"
           aria-label="Profile and settings"

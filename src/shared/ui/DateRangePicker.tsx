@@ -12,11 +12,11 @@ export function DateRangePicker({
   onChange: (from: string, to: string) => void
 }) {
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex flex-wrap items-center gap-2">
       <Input
         type="date"
         value={from}
-        className="w-[160px]"
+        className="w-[160px] max-w-full"
         onChange={(event) => {
           onChange(event.target.value, to)
         }}
@@ -25,7 +25,7 @@ export function DateRangePicker({
       <Input
         type="date"
         value={to}
-        className="w-[160px]"
+        className="w-[160px] max-w-full"
         onChange={(event) => {
           onChange(from, event.target.value)
         }}

@@ -3,6 +3,7 @@ import { useForm } from 'react-hook-form'
 import { Link } from 'react-router-dom'
 import { toast } from 'sonner'
 
+import { BrandMark } from '@/shared/ui/BrandMark'
 import { Button } from '@/shared/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/ui/card'
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/shared/ui/form'
@@ -29,14 +30,7 @@ export function ForgotPasswordPage() {
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center gap-6 p-4">
-      <div className="text-center">
-        <div className="text-2xl font-extrabold tracking-tight">
-          Skating Academy<span className="text-brand-600">.</span>
-        </div>
-        <div className="mt-1 text-[11px] font-semibold uppercase tracking-[.12em] text-neutral-600">
-          Academy management
-        </div>
-      </div>
+      <BrandMark />
       <Card className="w-full max-w-sm">
         <CardHeader>
           <CardTitle>Forgot password</CardTitle>

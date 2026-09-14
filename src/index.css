@@ -30,6 +30,25 @@
   }
 }
 
+/* Scroll-shadow affordance for horizontally-scrollable tables — a subtle
+   edge shadow that appears only while there's more content to scroll to,
+   so a table that doesn't fit the screen doesn't just look cut off. */
+.scroll-shadow-x {
+  background:
+    linear-gradient(to right, hsl(var(--card)) 30%, transparent),
+    linear-gradient(to left, hsl(var(--card)) 30%, transparent) 100% 0,
+    linear-gradient(to right, rgba(0, 0, 0, 0.12), transparent 10px),
+    linear-gradient(to left, rgba(0, 0, 0, 0.12), transparent 10px) 100% 0;
+  background-repeat: no-repeat;
+  background-color: hsl(var(--card));
+  background-size:
+    24px 100%,
+    24px 100%,
+    10px 100%,
+    10px 100%;
+  background-attachment: local, local, scroll, scroll;
+}
+
 @keyframes shimmer {
   0% {
     background-position: -320px 0;

@@ -1,6 +1,7 @@
 import { Home, LogOut, Megaphone } from 'lucide-react'
 import { NavLink, Outlet } from 'react-router-dom'
 
+import prsaLogo from '@/assets/prsa-logo.png'
 import { NotificationsLive, UnreadBadge } from '@/features/announcements'
 import { PendingSavesIndicator } from '@/features/attendance'
 import { useAuth } from '@/features/auth'
@@ -19,8 +20,9 @@ export function CoachLayout() {
     <div className="flex min-h-screen flex-col">
       <NotificationsLive />
 
-      <header className="flex h-14 items-center justify-between border-b bg-card px-4">
-        <span className="text-sm font-semibold">{profile?.full_name}</span>
+      <header className="flex h-14 items-center gap-2.5 border-b bg-card px-4">
+        <img src={prsaLogo} alt="" className="h-7 w-auto shrink-0" />
+        <span className="min-w-0 truncate text-sm font-semibold">{profile?.full_name}</span>
         <div className="ml-auto mr-2">
           <PendingSavesIndicator />
         </div>

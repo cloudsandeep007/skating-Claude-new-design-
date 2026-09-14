@@ -327,7 +327,7 @@ function LevelCard({
               </span>
             )}
           </span>
-          <StatusBadge tone="neutral">
+          <StatusBadge tone="neutral" className="hidden sm:inline-flex">
             {level.skills.length} skill{level.skills.length === 1 ? '' : 's'}
           </StatusBadge>
           {expanded ? (

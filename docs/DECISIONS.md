@@ -17,6 +17,69 @@ Format:
 
 ---
 
+## 2026-09-15 — Scroll-shadow affordance for overflowing tables, instead of restructuring every table for mobile
+
+**Decision:** Every horizontally-scrollable table/grid in the app (the
+shared `Table` component, the schedule week grid, the reports table
+wrapper, and the shared tabs list) gets a `.scroll-shadow-x` utility
+class (defined once in `index.css`) — a CSS-only edge shadow that
+shows while there's more content to scroll to, using the classic
+`background-attachment: local, scroll` trick, no JavaScript.
+
+**Options considered:** (a) leave tables as plain `overflow-x-auto`
+with no visual hint that they scroll; (b) restructure every table into
+a stacked card layout below a breakpoint, the way the parent app's
+Attendance history already does; (c) a CSS-only scroll-shadow on the
+existing table markup.
+
+**Why:** A table that's wider than the screen but gives no visual hint
+that it scrolls looks broken, not scrollable — this is what was behind
+several "the table just doesn't fit" reports. Restructuring every
+admin list/report table into cards (option b) would have been the more
+thorough mobile treatment, but it's a much larger change across many
+features for a phase whose scope was auditing and fixing, not
+redesigning; the parent app's own history views already use that card
+pattern where a table would have been genuinely unusable (see the
+per-skater attendance-marking fix below). The scroll-shadow is a
+one-file, zero-JS fix that makes every existing table's real
+scrollability visible without changing any table's markup or data.
+
+**Trade-offs:** Wide tables (Fees, Reports, weekly Schedule) still
+require horizontal scrolling on a phone — the shadow makes that
+discoverable, it doesn't remove the scrolling itself. If a specific
+table's mobile experience still feels cramped, restructuring that one
+table into a card list (as was done for the Attendance per-skater
+marking rows, which needed direct interaction and couldn't rely on
+just scrolling) is the next step, not a blanket rule.
+
+---
+
+## 2026-09-15 — Attendance marking rows rebuilt as flex layouts instead of a table, on mobile
+
+**Decision:** The per-session row on the admin Attendance "By date" tab,
+and the per-skater roster row inside it (name, status badge, override
+dropdown), were rebuilt from a fixed-height single-line layout (and a
+3-column `Table`, for the roster) into flex layouts that wrap onto
+their own lines.
+
+**Options considered:** (a) leave the fixed-height/fixed-width layout
+and rely on the new scroll-shadow for discoverability; (b) rebuild as
+a layout that never needs horizontal scrolling.
+
+**Why:** Unlike a read-only report table, marking attendance is a
+direct per-row action (tap a status). Losing sight of *whose* row
+you're editing while scrolling sideways to reach the dropdown is a
+real usability problem, not just a discoverability one — this was the
+cause of the batch name visually overlapping the time and the "marked"
+count on a phone. Scrolling is the right trade-off for a report you
+mostly read; it's the wrong one for a control you're actively using.
+
+**Trade-offs:** None significant — the change is purely layout
+(flex-wrap instead of a table/fixed-width row); no data, props, or
+interaction logic changed.
+
+---
+
 ## 2026-09-15 — PDF export libraries are dynamically imported, never at module scope
 
 **Decision:** `shared/lib/pdf.ts`'s two exported functions each
