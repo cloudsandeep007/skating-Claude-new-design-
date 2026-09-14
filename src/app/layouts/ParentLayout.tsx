@@ -1,50 +1,65 @@
-import { Home, LogOut } from 'lucide-react'
+import { CalendarDays, ClipboardCheck, Home, Megaphone, UserCircle } from 'lucide-react'
 import { NavLink, Outlet } from 'react-router-dom'
 
+import { NotificationsLive, UnreadBadge } from '@/features/announcements'
 import { useAuth } from '@/features/auth'
-import { Button } from '@/shared/ui/button'
 import { cn } from '@/shared/lib/utils'
 
-const NAV_ITEMS = [{ to: '/parent', label: 'Home', icon: Home, end: true }]
+const NAV_ITEMS = [
+  { to: '/parent', label: 'Home', icon: Home, end: true, badge: false },
+  { to: '/parent/schedule', label: 'Schedule', icon: CalendarDays, end: false, badge: false },
+  { to: '/parent/attendance', label: 'Attendance', icon: ClipboardCheck, end: false, badge: false },
+  { to: '/parent/announcements', label: 'News', icon: Megaphone, end: false, badge: true },
+]
 
 export function ParentLayout() {
-  const { profile, signOut } = useAuth()
+  const { profile } = useAuth()
 
   return (
     <div className="flex min-h-screen flex-col">
-      <header className="flex h-14 items-center justify-between border-b px-4">
+      <NotificationsLive />
+
+      <header className="flex h-14 items-center justify-between border-b bg-card px-4">
         <span className="text-sm font-semibold">{profile?.full_name}</span>
-        <Button
-          variant="ghost"
-          size="icon"
-          aria-label="Sign out"
-          onClick={() => {
-            void signOut()
-          }}
+        <NavLink
+          to="/parent/profile"
+          aria-label="Profile and settings"
+          className={({ isActive }) =>
+            cn(
+              'flex h-11 w-11 items-center justify-center rounded-lg text-muted-foreground hover:bg-muted',
+              isActive && 'text-foreground',
+            )
+          }
         >
-          <LogOut className="h-4 w-4" />
-        </Button>
+          <UserCircle className="h-6 w-6" />
+        </NavLink>
       </header>
 
-      <main className="flex-1 p-4 pb-20">
+      <main className="flex-1 p-4 pb-24">
         <Outlet />
       </main>
 
-      <nav className="fixed inset-x-0 bottom-0 flex h-16 border-t bg-background">
-        {NAV_ITEMS.map(({ to, label, icon: Icon, end }) => (
+      <nav className="fixed inset-x-0 bottom-0 grid h-16 grid-cols-4 border-t-2 bg-card shadow-[0_-3px_10px_rgba(45,43,43,.08)]">
+        {NAV_ITEMS.map(({ to, label, icon: Icon, end, badge }) => (
           <NavLink
             key={to}
             to={to}
             end={end}
             className={({ isActive }) =>
               cn(
-                'flex flex-1 flex-col items-center justify-center gap-1 text-xs font-medium text-muted-foreground',
-                isActive && 'text-foreground',
+                'relative flex flex-col items-center justify-center gap-1 text-[11px] font-medium text-muted-foreground',
+                isActive &&
+                  'font-bold text-foreground shadow-[inset_0_3px_0_theme(colors.neutral.950)]',
               )
             }
           >
-            <Icon className="h-5 w-5" />
+            <Icon className="h-[22px] w-[22px]" />
             {label}
+            {badge && (
+              <span className="absolute right-[calc(50%-22px)] top-2">
+                <UnreadBadge />
+              </span>
+            )}
           </NavLink>
         ))}
       </nav>

@@ -87,6 +87,7 @@ already been applied.
 | `0002_storage.sql`                         | The private `student-photos` bucket and its policies   |
 | `0003_scheduling.sql`                      | `holidays` table, `generate_sessions()`, `cancel_session()` |
 | `0004_attendance.sql`                      | 24-hour marking lock, coach session-complete policy, `save_attendance()` |
+| `0005_announcements.sql`                   | `notified_at`, `notifications.announcement_id`, `publish_due_announcements()`, realtime on notifications |
 
 Photo upload on the Add/Edit student screens will fail with a "bucket not
 found" error until `0002_storage.sql` has been run. "Generate schedule",
@@ -94,9 +95,11 @@ found" error until `0002_storage.sql` has been run. "Generate schedule",
 coach's Confirm on the attendance screen needs `0004_attendance.sql` —
 until then every save just sits in the coach's "to sync" queue with a
 "function not found" message, and syncs by itself once the migration is in.
+The admin Announcements page, unread badges, mark-as-read and live updates
+need `0005_announcements.sql`; the parent/coach feeds show posts without it.
 
 After running a migration that adds tables or functions, regenerate the
-TypeScript types (step 4 above). `0003` and `0004` were hand-mirrored into
+TypeScript types (step 4 above). `0003`, `0004` and `0005` were hand-mirrored into
 `database.ts` so the app compiles before you regenerate — regenerating
 produces the same thing.
 
@@ -123,6 +126,21 @@ Until it's deployed, "Add coach" and "Add student → New parent (send
 invite)" will fail with a "function not found" toast. Linking a student to
 an **existing** parent, and everything else on those screens, works
 without it.
+
+**Scheduled announcements** are sent out the next time anyone in the
+academy opens a feed after the scheduled time — there is no clock-driven
+job. If you ever need them to go at the exact minute, enable the
+`pg_cron` extension (Database → Extensions) and run once in the SQL
+Editor:
+
+```
+select cron.schedule('publish-announcements', '* * * * *',
+  $$select public.publish_due_announcements()$$);
+```
+
+(`publish_due_announcements()` uses the caller's academy, so under cron —
+no caller — it would need a small variant that loops all academies. Ask
+for that when the time comes; it's a five-line change.)
 
 **Invite emails** go out through Supabase's built-in email service, which
 is fine for testing but rate-limited (a few per hour). Before real use,

@@ -15,4 +15,6 @@ in the same session the feature is built or changed. Each file covers:
 - [coaches.md](./coaches.md) — coaching staff list, invite, deactivate (Phase 1.1)
 - [batches.md](./batches.md) — recurring classes, enrollment, capacity (Phase 1.2)
 - [schedule.md](./schedule.md) — session generation, weekly calendar, cancellations, coach today view (Phase 1.2)
-- [attendance.md](./attendance.md) — coach marking (offline-safe), admin views/override/CSV, parent history (Phase 1.3)
+- [attendance.md](./attendance.md) — coach marking (offline-safe), admin views/override/CSV (Phase 1.3)
+- [announcements.md](./announcements.md) — admin posts, audience fan-out, feeds with unread, realtime (Phase 1.4)
+- [parent.md](./parent.md) — the parent app: home, child profile, attendance, schedule, news, profile (Phase 1.4)

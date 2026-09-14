@@ -1,17 +1,19 @@
-import { useEffect, useState } from 'react'
-
-import { useAuth } from '@/features/auth'
+import {
+  attendanceLabel,
+  attendanceTone,
+  computeTotals,
+  pctColorClass,
+  totalsByMonth,
+  useStudentHistory,
+} from '@/features/attendance'
 import { addDays, formatDate, formatTime, todayIso } from '@/shared/lib/format'
 import { cn } from '@/shared/lib/utils'
 import { EmptyState } from '@/shared/ui/EmptyState'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/ui/select'
 import { Skeleton } from '@/shared/ui/skeleton'
 import { StatusBadge } from '@/shared/ui/StatusBadge'
 
-import { useStudentHistory } from '../api/adminQueries'
-import { useMyChildren } from '../api/myChildren'
-import { computeTotals, totalsByMonth } from '../hooks/attendancePct'
-import { attendanceLabel, attendanceTone, pctColorClass } from '../hooks/attendanceTone'
+import { useCurrentChild } from '../hooks/useSelectedChild'
+import { ChildSelector } from './ChildSelector'
 
 function monthLabel(yyyyMm: string) {
   return new Date(`${yyyyMm}-01T00:00:00`).toLocaleDateString(undefined, {
@@ -20,55 +22,29 @@ function monthLabel(yyyyMm: string) {
   })
 }
 
-/** Parent home: one child's attendance, last six months, month by month. */
-export function ParentAttendancePage() {
-  const { profile } = useAuth()
-  const { data: children, isLoading: loadingChildren } = useMyChildren(profile?.id)
-  const [childId, setChildId] = useState<string | null>(null)
-
-  useEffect(() => {
-    if (childId === null && children && children.length > 0) setChildId(children[0].id)
-  }, [children, childId])
-
+/** The child's attendance, last six months, month by month. */
+export function AttendanceHistoryPage() {
+  const { child, isLoading: loadingChild } = useCurrentChild()
   const today = todayIso()
-  const { data: rows, isLoading } = useStudentHistory(childId, addDays(today, -182), today)
+  const { data: rows, isLoading } = useStudentHistory(
+    child?.id ?? null,
+    addDays(today, -182),
+    today,
+  )
 
-  if (loadingChildren) return <Skeleton className="h-40 w-full rounded-lg" />
-  if (!children || children.length === 0) {
-    return (
-      <EmptyState
-        title="No skater linked to your account"
-        description="Ask the academy to link your child to this login."
-      />
-    )
-  }
+  if (loadingChild) return <Skeleton className="h-40 w-full rounded-lg" />
+  if (!child) return <EmptyState title="No skater linked to your account" />
 
   const overall = computeTotals((rows ?? []).map((r) => r.status))
   const months = totalsByMonth(rows ?? [])
-  const child = children.find((c) => c.id === childId)
 
   return (
     <div className="space-y-4">
-      {children.length > 1 ? (
-        <Select value={childId ?? ''} onValueChange={setChildId}>
-          <SelectTrigger className="h-12 text-base font-bold">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            {children.map((c) => (
-              <SelectItem key={c.id} value={c.id}>
-                {c.fullName}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      ) : (
-        <h1 className="text-2xl font-extrabold tracking-tight">{child?.fullName}</h1>
-      )}
+      <ChildSelector subtitle="Attendance" />
 
       <div className="rounded-lg bg-neutral-950 p-4 text-white">
         <div className="text-xs font-semibold uppercase tracking-wide text-neutral-400">
-          Attendance · last 6 months
+          Last 6 months
         </div>
         <div className="mt-1 flex items-baseline gap-2">
           <span className="text-4xl font-extrabold tracking-tight">

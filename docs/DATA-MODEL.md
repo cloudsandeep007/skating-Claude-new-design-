@@ -507,6 +507,15 @@ Every write to `attendance` — coach save or admin override — is recorded
 by the existing `audit_attendance` trigger with the actor, so "override
 written to audit_logs" needs no extra code.
 
+## Announcements fan-out (`0005_announcements.sql`)
+
+| Object                                  | Does                                                                                                                                                                  |
+| --------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `announcements.notified_at timestamptz` | Null until notifications have been created; set by the RPC. Partial index on `(academy_id, published_at) where notified_at is null` finds due posts cheaply.           |
+| `notifications.announcement_id uuid`    | FK → announcements (cascade). Lets a feed show read/unread per post and lets a delete clean up.                                                                        |
+| `publish_due_announcements()`           | `SECURITY DEFINER`, scoped to `current_academy_id()`. For each due, un-notified announcement: inserts one notification per recipient (audience rules in the feature doc; author excluded; inactive profiles excluded; `link` per role), then stamps `notified_at`. `for update skip locked` so two callers can't double-send. Returns how many posts it sent. |
+| Realtime                                | `notifications` added to the `supabase_realtime` publication. Clients subscribe with `profile_id=eq.<self>`; RLS still filters.                                        |
+
 ## Storage (`supabase/migrations/0002_storage.sql`)
 
 | Bucket           | Public | Object path                              | Policies                                                                                       |

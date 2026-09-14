@@ -70,6 +70,15 @@ Phase 1. Two rules that apply from day one:
   screen until it's confirmed. This is the one place Zustand holds
   something other than trivial UI state — it's still client-only state,
   not a cache of server data.
+- **Realtime** is used in one place: each coach/parent layout mounts
+  `<NotificationsLive/>`, one Supabase channel on `notifications` filtered
+  to the user's `profile_id`; an insert invalidates the badge/feed queries
+  and toasts. Everything else is request/response.
+- **Feature composition**: the parent app (`features/parent`) is a thin
+  feature that imports building blocks through other features' `index.ts`
+  (`useStudentHistory` and the percentage maths from attendance, the feed
+  and badge from announcements, batch options from batches). Each feature
+  still owns its own data access; parent only composes screens.
 - **Files** go to Supabase Storage. The `student-photos` bucket is
   private; the table stores the object path and the app signs a
   short-lived URL when it needs to display one.
@@ -82,6 +91,7 @@ Phase 1. Two rules that apply from day one:
 | Storage bucket + policies            | `supabase/migrations/0002_*.sql`  | same                             |
 | Scheduling RPCs + holidays           | `supabase/migrations/0003_*.sql`  | same                             |
 | Attendance lock + save RPC           | `supabase/migrations/0004_*.sql`  | same                             |
+| Announcement fan-out + realtime      | `supabase/migrations/0005_*.sql`  | same                             |
 | Account creation (`invite-user`)     | `supabase/functions/invite-user/` | `supabase functions deploy`      |
 
 Edge Functions run on Deno with their own tsconfig; they're excluded from

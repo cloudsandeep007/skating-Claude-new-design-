@@ -1,4 +1,7 @@
+export { useStudentHistory } from './api/adminQueries'
 export { AdminAttendancePage } from './components/AdminAttendancePage'
 export { MarkAttendancePage } from './components/MarkAttendancePage'
-export { ParentAttendancePage } from './components/ParentAttendancePage'
 export { PendingSavesIndicator } from './components/PendingSavesIndicator'
+export { computeTotals, totalsByMonth } from './hooks/attendancePct'
+export { attendanceLabel, attendanceTone, pctColorClass } from './hooks/attendanceTone'
+export type { AttendanceHistoryRow, AttendanceTotals } from './types'

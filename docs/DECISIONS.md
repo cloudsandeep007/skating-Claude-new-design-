@@ -17,6 +17,57 @@ Format:
 
 ---
 
+## 2026-09-14 — Announcement fan-out is lazy (on feed load), not a cron job
+
+**Decision:** `publish_due_announcements()` creates notification rows for
+every due, un-notified announcement in the caller's academy. The app calls
+it right after an admin publishes and at the top of every feed/admin-list
+load. `notified_at` makes it exactly-once.
+
+**Options considered:** (a) Fan out in the client at creation time — but
+then a *scheduled* post would have to be fanned out by whoever's browser
+happens to be open at the right moment, or not at all; (b) `pg_cron`
+every minute.
+
+**Why:** (b) needs the extension enabled per project and a variant of the
+function that loops academies; it's documented in RUNBOOK.md as the
+upgrade path. The lazy call costs one cheap indexed query per feed load
+and needs no infrastructure. For an academy whose parents open the app
+daily, "goes out when someone next opens the app" is indistinguishable
+from a cron for a message scheduled for the morning.
+
+**Trade-offs:** A scheduled post could be late by however long nobody
+opens the app. The function is `SECURITY DEFINER` (it writes rows for
+other users) but scoped to the caller's academy and to posts an admin
+already published — it can't be used to send anything new.
+
+## 2026-09-14 — TanStack Query runs in `networkMode: 'always'`
+
+**Decision:** Queries and mutations don't pause when the browser reports
+offline; they attempt the request and fail normally.
+
+**Why:** The default mode leaves a query at `status: 'pending'` with
+`fetchStatus: 'paused'` — no error, no data — which every list screen
+renders as "nothing here yet". That's actively misleading on rink wifi,
+where a parent would rather see "couldn't load, try again". The one write
+that must survive offline (attendance) has its own persisted queue.
+
+**Trade-offs:** Requests made while genuinely offline fail immediately
+instead of waiting for reconnect; TanStack's `retry: 1` softens that.
+
+## 2026-09-14 — Read state comes from the reader's own notification row
+
+**Decision:** "Unread" for an announcement means "this user has a
+`notifications` row for it with `read_at is null`". The feed joins the
+two; marking read updates that row. There is no separate
+`announcement_reads` table.
+
+**Why:** The notification row already exists per recipient and the
+unread nav badge already counts `read_at is null` across all types, so
+one mechanism serves cancelled-session notices and announcements alike.
+A post someone can *see* but wasn't *notified* about (published before
+they joined) simply has no dot — correct, and free.
+
 ## 2026-09-14 — Attendance saves are queued locally first, then synced
 
 **Decision:** Confirm on the coach's attendance screen writes the marks to

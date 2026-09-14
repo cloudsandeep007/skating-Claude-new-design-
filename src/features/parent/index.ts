@@ -1,0 +1,6 @@
+export { AttendanceHistoryPage } from './components/AttendanceHistoryPage'
+export { ChildProfilePage } from './components/ChildProfilePage'
+export { ChildSchedulePage } from './components/ChildSchedulePage'
+export { ParentAnnouncementsPage } from './components/ParentAnnouncementsPage'
+export { ParentHomePage } from './components/ParentHomePage'
+export { ParentProfilePage } from './components/ParentProfilePage'

@@ -88,6 +88,7 @@ export type Database = {
           created_by: string | null
           expires_at: string | null
           id: string
+          notified_at: string | null
           published_at: string | null
           title: string
           updated_at: string
@@ -101,6 +102,7 @@ export type Database = {
           created_by?: string | null
           expires_at?: string | null
           id?: string
+          notified_at?: string | null
           published_at?: string | null
           title: string
           updated_at?: string
@@ -114,6 +116,7 @@ export type Database = {
           created_by?: string | null
           expires_at?: string | null
           id?: string
+          notified_at?: string | null
           published_at?: string | null
           title?: string
           updated_at?: string
@@ -567,6 +570,7 @@ export type Database = {
       notifications: {
         Row: {
           academy_id: string
+          announcement_id: string | null
           body: string | null
           created_at: string
           id: string
@@ -578,6 +582,7 @@ export type Database = {
         }
         Insert: {
           academy_id: string
+          announcement_id?: string | null
           body?: string | null
           created_at?: string
           id?: string
@@ -589,6 +594,7 @@ export type Database = {
         }
         Update: {
           academy_id?: string
+          announcement_id?: string | null
           body?: string | null
           created_at?: string
           id?: string
@@ -599,6 +605,13 @@ export type Database = {
           type?: string
         }
         Relationships: [
+          {
+            foreignKeyName: 'notifications_announcement_id_fkey'
+            columns: ['announcement_id']
+            isOneToOne: false
+            referencedRelation: 'announcements'
+            referencedColumns: ['id']
+          },
           {
             foreignKeyName: 'notifications_academy_id_fkey'
             columns: ['academy_id']
@@ -1266,6 +1279,7 @@ export type Database = {
       is_super_admin: { Args: never; Returns: boolean }
       parent_batch_ids: { Args: never; Returns: string[] }
       parent_student_ids: { Args: never; Returns: string[] }
+      publish_due_announcements: { Args: never; Returns: number }
       request_ip: { Args: never; Returns: unknown }
       save_attendance: {
         Args: { p_marks: Json; p_session_id: string }

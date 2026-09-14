@@ -5,6 +5,35 @@ non-technical person can follow it. Newest first.
 
 ---
 
+## 2026-09-14 — The parent app, and announcements with live notifications
+
+Parents now have a proper app, not just an attendance page. **Home**
+shows their skater (a dropdown if they have more than one), the next
+session in a bold card, this month's attendance percentage, whether fees
+are paid or due, and the latest announcement. Tabs along the bottom go to
+the full **Schedule** (upcoming sessions, cancellations shown with the
+reason), **Attendance** (six months, month by month), and **News**; the
+icon top-right opens the parent's own **Profile** — edit name and phone,
+see the skaters linked to the account, change password, sign out — and
+from there the **child's profile** (level, age, batches, coach, and the
+emergency contact and medical notes the academy has on file).
+
+Admins can now post **announcements**: a title and message, who should
+see it (everyone, parents, coaches, or one batch's families and coach),
+publish now or schedule for a date and time, with an optional expiry.
+Publishing creates a notification for every recipient. Parents and
+coaches see the posts in a feed with a red dot on anything unread, the
+tab shows an unread count, and tapping a post marks it read. New
+notifications arrive live — no refresh — with a small toast.
+
+Under the hood: queries no longer silently "pause" when the browser
+thinks it's offline (which showed up as empty screens); they try and
+report an error instead.
+
+**Needs doing on Supabase:** run `0005_announcements.sql`. Parent and
+coach feeds show posts without it; the admin Announcements page, unread
+badges, mark-as-read and live updates need it.
+
 ## 2026-09-14 — Attendance: coach marking, admin tools, parent history
 
 The daily screen. A coach opens **Today**, taps a session and gets the

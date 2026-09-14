@@ -1,14 +1,19 @@
 import { createBrowserRouter } from 'react-router-dom'
 
-import {
-  AdminAttendancePage,
-  MarkAttendancePage,
-  ParentAttendancePage,
-} from '@/features/attendance'
+import { AdminAnnouncementsPage } from '@/features/announcements'
+import { AdminAttendancePage, MarkAttendancePage } from '@/features/attendance'
 import { ForgotPasswordPage, LoginPage, ProtectedRoute, ResetPasswordPage } from '@/features/auth'
 import { AddBatchPage, BatchDetailPage, BatchesListPage, EditBatchPage } from '@/features/batches'
 import { AddCoachPage, CoachDetailPage, CoachesListPage, EditCoachPage } from '@/features/coaches'
-import { CoachTodayPage, WeekCalendarPage } from '@/features/schedule'
+import {
+  AttendanceHistoryPage,
+  ChildProfilePage,
+  ChildSchedulePage,
+  ParentAnnouncementsPage,
+  ParentHomePage,
+  ParentProfilePage,
+} from '@/features/parent'
+import { CoachInboxPage, CoachTodayPage, WeekCalendarPage } from '@/features/schedule'
 import {
   AddStudentPage,
   EditStudentPage,
@@ -63,6 +68,7 @@ export const router = createBrowserRouter([
           { path: 'batches/:batchId/edit', element: <EditBatchPage /> },
           { path: 'schedule', element: <WeekCalendarPage /> },
           { path: 'attendance', element: <AdminAttendancePage /> },
+          { path: 'announcements', element: <AdminAnnouncementsPage /> },
         ],
       },
     ],
@@ -77,6 +83,7 @@ export const router = createBrowserRouter([
         children: [
           { index: true, element: <CoachTodayPage /> },
           { path: 'attendance/:sessionId', element: <MarkAttendancePage /> },
+          { path: 'inbox', element: <CoachInboxPage /> },
         ],
       },
     ],
@@ -88,7 +95,14 @@ export const router = createBrowserRouter([
       {
         path: '/parent',
         element: <ParentLayout />,
-        children: [{ index: true, element: <ParentAttendancePage /> }],
+        children: [
+          { index: true, element: <ParentHomePage /> },
+          { path: 'child', element: <ChildProfilePage /> },
+          { path: 'attendance', element: <AttendanceHistoryPage /> },
+          { path: 'schedule', element: <ChildSchedulePage /> },
+          { path: 'announcements', element: <ParentAnnouncementsPage /> },
+          { path: 'profile', element: <ParentProfilePage /> },
+        ],
       },
     ],
   },

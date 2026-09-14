@@ -3,6 +3,7 @@ import {
   Award,
   CalendarDays,
   ClipboardCheck,
+  Megaphone,
   Layers,
   LayoutDashboard,
   LogOut,
@@ -24,6 +25,7 @@ const NAV_ITEMS = [
   { to: '/admin/batches', label: 'Batches', icon: Layers, end: false },
   { to: '/admin/schedule', label: 'Schedule', icon: CalendarDays, end: false },
   { to: '/admin/attendance', label: 'Attendance', icon: ClipboardCheck, end: false },
+  { to: '/admin/announcements', label: 'Announcements', icon: Megaphone, end: false },
 ]
 
 function initials(name: string) {
