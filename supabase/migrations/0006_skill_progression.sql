@@ -53,7 +53,7 @@ begin
 
   select sequence into v_cur_seq from public.levels where id = v_student.current_level_id;
 
-  select count(*) into v_total from public.skills where level_id = v_student.current_level_id;
+  select count(*) into v_total from public.skills sk where sk.level_id = v_student.current_level_id;
   if v_total = 0 then
     raise exception 'This level has no skills set up yet';
   end if;
@@ -161,16 +161,17 @@ returns table (
 language sql stable
 as $$
   select
-    s.id,
-    s.full_name,
-    s.current_level_id,
-    l.name,
-    la.last_achieved_at,
-    extract(day from now() - coalesce(la.last_achieved_at, s.joined_date::timestamptz))::integer,
+    s.id                                                              as student_id,
+    s.full_name                                                       as full_name,
+    s.current_level_id                                                as level_id,
+    l.name                                                             as level_name,
+    la.last_achieved_at                                                as last_achieved_at,
+    extract(day from now() - coalesce(la.last_achieved_at, s.joined_date::timestamptz))::integer
+                                                                        as days_since,
     not exists (
       select 1 from public.levels nl
       where nl.academy_id = s.academy_id and nl.sequence = l.sequence + 1
-    )
+    )                                                                   as is_top_level
   from public.students s
   join public.levels l on l.id = s.current_level_id
   left join lateral (
