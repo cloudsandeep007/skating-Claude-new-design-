@@ -1,4 +1,4 @@
-import { CalendarDays, ClipboardCheck, Home, Megaphone, UserCircle } from 'lucide-react'
+import { CalendarDays, ClipboardCheck, Home, Megaphone, Trophy, UserCircle } from 'lucide-react'
 import { NavLink, Outlet } from 'react-router-dom'
 
 import { NotificationsLive, UnreadBadge } from '@/features/announcements'
@@ -7,6 +7,7 @@ import { cn } from '@/shared/lib/utils'
 
 const NAV_ITEMS = [
   { to: '/parent', label: 'Home', icon: Home, end: true, badge: false },
+  { to: '/parent/progress', label: 'Progress', icon: Trophy, end: false, badge: false },
   { to: '/parent/schedule', label: 'Schedule', icon: CalendarDays, end: false, badge: false },
   { to: '/parent/attendance', label: 'Attendance', icon: ClipboardCheck, end: false, badge: false },
   { to: '/parent/announcements', label: 'News', icon: Megaphone, end: false, badge: true },
@@ -39,7 +40,7 @@ export function ParentLayout() {
         <Outlet />
       </main>
 
-      <nav className="fixed inset-x-0 bottom-0 grid h-16 grid-cols-4 border-t-2 bg-card shadow-[0_-3px_10px_rgba(45,43,43,.08)]">
+      <nav className="fixed inset-x-0 bottom-0 grid h-16 grid-cols-5 border-t-2 bg-card shadow-[0_-3px_10px_rgba(45,43,43,.08)]">
         {NAV_ITEMS.map(({ to, label, icon: Icon, end, badge }) => (
           <NavLink
             key={to}

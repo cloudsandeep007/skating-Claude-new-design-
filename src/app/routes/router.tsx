@@ -12,7 +12,14 @@ import {
   ParentAnnouncementsPage,
   ParentHomePage,
   ParentProfilePage,
+  ParentProgressPage,
 } from '@/features/parent'
+import {
+  AdminProgressionPage,
+  BulkAssessPage,
+  CoachStudentSkillsPage,
+  LevelsManagePage,
+} from '@/features/progression'
 import { CoachInboxPage, CoachTodayPage, WeekCalendarPage } from '@/features/schedule'
 import {
   AddStudentPage,
@@ -69,6 +76,8 @@ export const router = createBrowserRouter([
           { path: 'schedule', element: <WeekCalendarPage /> },
           { path: 'attendance', element: <AdminAttendancePage /> },
           { path: 'announcements', element: <AdminAnnouncementsPage /> },
+          { path: 'progression', element: <AdminProgressionPage /> },
+          { path: 'levels', element: <LevelsManagePage /> },
         ],
       },
     ],
@@ -83,6 +92,8 @@ export const router = createBrowserRouter([
         children: [
           { index: true, element: <CoachTodayPage /> },
           { path: 'attendance/:sessionId', element: <MarkAttendancePage /> },
+          { path: 'skills/session/:sessionId', element: <BulkAssessPage /> },
+          { path: 'skills/:studentId', element: <CoachStudentSkillsPage /> },
           { path: 'inbox', element: <CoachInboxPage /> },
         ],
       },
@@ -98,6 +109,7 @@ export const router = createBrowserRouter([
         children: [
           { index: true, element: <ParentHomePage /> },
           { path: 'child', element: <ChildProfilePage /> },
+          { path: 'progress', element: <ParentProgressPage /> },
           { path: 'attendance', element: <AttendanceHistoryPage /> },
           { path: 'schedule', element: <ChildSchedulePage /> },
           { path: 'announcements', element: <ParentAnnouncementsPage /> },

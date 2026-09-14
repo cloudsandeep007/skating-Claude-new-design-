@@ -1,4 +1,4 @@
-import { ArrowLeft, Check, CloudOff, Lock, X } from 'lucide-react'
+import { ArrowLeft, Check, CloudOff, Lock, Sparkles, X } from 'lucide-react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { toast } from 'sonner'
 
@@ -123,16 +123,28 @@ export function MarkAttendancePage() {
     // Escape the layout's padding so the ink header runs edge to edge.
     <div className="-m-4 flex min-h-[calc(100vh-3.5rem)] flex-col pb-40">
       <header className="bg-neutral-950 px-4 pb-4 pt-3 text-white">
-        <button
-          type="button"
-          onClick={() => {
-            void navigate('/coach')
-          }}
-          className="-ml-2 mb-2 inline-flex h-11 items-center gap-1.5 rounded-lg px-2 text-sm font-bold text-neutral-300 hover:bg-white/10"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          Today
-        </button>
+        <div className="-ml-2 mb-2 flex items-center justify-between">
+          <button
+            type="button"
+            onClick={() => {
+              void navigate('/coach')
+            }}
+            className="inline-flex h-11 items-center gap-1.5 rounded-lg px-2 text-sm font-bold text-neutral-300 hover:bg-white/10"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Today
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              void navigate(`/coach/skills/session/${session.id}`)
+            }}
+            className="mr-2 inline-flex h-11 items-center gap-1.5 rounded-lg px-2.5 text-sm font-bold text-neutral-300 hover:bg-white/10"
+          >
+            <Sparkles className="h-4 w-4" />
+            Assess skills
+          </button>
+        </div>
         <div className="text-xs font-semibold uppercase tracking-wide text-neutral-400">
           {formatDate(session.sessionDate)} · {formatTime(session.startTime)}
           {session.venue && ` · ${session.venue}`}
@@ -224,6 +236,9 @@ export function MarkAttendancePage() {
             onAbsent={() => {
               draft.set(student.id, 'absent')
             }}
+            onSkills={() => {
+              void navigate(`/coach/skills/${student.id}`)
+            }}
           />
         ))}
       </ul>
@@ -267,6 +282,7 @@ function RosterRow({
   onCycle,
   onPresent,
   onAbsent,
+  onSkills,
 }: {
   student: RosterStudent
   status: AttendanceStatus | undefined
@@ -275,6 +291,7 @@ function RosterRow({
   onCycle: () => void
   onPresent: () => void
   onAbsent: () => void
+  onSkills: () => void
 }) {
   const style = ROW_STYLE[status ?? 'unmarked']
   const isPresent = status === 'present'
@@ -308,6 +325,17 @@ function RosterRow({
         </div>
       </div>
       <div className="flex shrink-0 gap-2">
+        <button
+          type="button"
+          aria-label={`${student.fullName} skills`}
+          onClick={(event) => {
+            event.stopPropagation()
+            onSkills()
+          }}
+          className="flex h-14 w-9 items-center justify-center rounded-lg border-[1.5px] border-neutral-400 bg-card text-neutral-600"
+        >
+          <Sparkles className="h-4 w-4" />
+        </button>
         <button
           type="button"
           aria-label={`${student.fullName} present`}

@@ -18,3 +18,4 @@ in the same session the feature is built or changed. Each file covers:
 - [attendance.md](./attendance.md) — coach marking (offline-safe), admin views/override/CSV (Phase 1.3)
 - [announcements.md](./announcements.md) — admin posts, audience fan-out, feeds with unread, realtime (Phase 1.4)
 - [parent.md](./parent.md) — the parent app: home, child profile, attendance, schedule, news, profile (Phase 1.4)
+- [progression.md](./progression.md) — levels & skills setup, coach assessment (single + bulk), promotion, parent progress screen, admin reports

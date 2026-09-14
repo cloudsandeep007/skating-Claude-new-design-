@@ -17,6 +17,38 @@ Format:
 
 ---
 
+## 2026-09-14 — Skill promotion is a SECURITY DEFINER RPC, not a wider RLS policy
+
+**Decision:** `promote_student()` runs as SECURITY DEFINER and re-checks
+the caller's role and academy internally, rather than adding a coach
+UPDATE policy on `students`. Reordering (`reorder_levels`/`reorder_skills`)
+and the two admin reports stay SECURITY INVOKER, relying entirely on the
+existing `levels`/`skills` RLS.
+
+**Options considered:** (a) add a narrow coach UPDATE policy on `students`
+restricted to `current_level_id`; (b) a SECURITY DEFINER function that
+re-validates permission and the "all skills achieved" business rule
+before writing.
+
+**Why:** Postgres RLS can't restrict an UPDATE to one column — a coach
+policy on `students` would, in practice, let a coach's client update any
+column on any student row in their academy (student status, medical
+notes, emergency contact) as long as the request also touched
+`current_level_id`, unless every other column were pinned to its old
+value in the policy's WITH CHECK, which is fragile and easy to break in
+a later migration. A SECURITY DEFINER function with an explicit
+permission check and an explicit single UPDATE statement has no such
+surface — it can only ever do the one thing it's written to do.
+
+**Trade-offs:** Business logic (the promotion gate) now lives in SQL
+instead of RLS+app code, which is less visible than a policy — the
+DATA-MODEL.md entry exists specifically to make it discoverable. The
+existing `audit_students` trigger still fires (it's a normal UPDATE
+inside the function), so promotions are still in the audit trail with no
+extra code.
+
+---
+
 ## 2026-09-14 — Design system is applied by retuning shadcn class strings, not by wrapping every primitive
 
 **Decision:** The class strings inside `src/shared/ui/*` (button, input,

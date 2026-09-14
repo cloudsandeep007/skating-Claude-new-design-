@@ -10,6 +10,7 @@ import {
   Megaphone,
   Menu,
   Search,
+  Trophy,
   Users,
 } from 'lucide-react'
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
@@ -37,6 +38,7 @@ const NAV_ITEMS = [
   { to: '/admin/batches', label: 'Batches', icon: Layers, end: false },
   { to: '/admin/schedule', label: 'Schedule', icon: CalendarDays, end: false },
   { to: '/admin/attendance', label: 'Attendance', icon: ClipboardCheck, end: false },
+  { to: '/admin/progression', label: 'Progress', icon: Trophy, end: false },
   { to: '/admin/announcements', label: 'Announcements', icon: Megaphone, end: false },
 ]
 

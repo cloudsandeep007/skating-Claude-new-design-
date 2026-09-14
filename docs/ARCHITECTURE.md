@@ -17,6 +17,7 @@ each fully isolated from the others' data.
 - React Hook Form + Zod — forms and validation
 - React Router — routing
 - Recharts — charts
+- @dnd-kit — drag-to-reorder (levels & skills admin screen)
 - Supabase — Postgres database, auth, storage
 - Vitest + Playwright — testing
 - Sentry — error tracking

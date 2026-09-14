@@ -1280,15 +1280,45 @@ export type Database = {
       is_coach: { Args: never; Returns: boolean }
       is_parent: { Args: never; Returns: boolean }
       is_super_admin: { Args: never; Returns: boolean }
+      level_distribution: {
+        Args: never
+        Returns: {
+          level_id: string
+          level_name: string
+          sequence: number
+          student_count: number
+        }[]
+      }
       parent_batch_ids: { Args: never; Returns: string[] }
       parent_student_ids: { Args: never; Returns: string[] }
+      promote_student: {
+        Args: { p_student_id: string }
+        Returns: { level_id: string; level_name: string }[]
+      }
       publish_due_announcements: { Args: never; Returns: number }
+      reorder_levels: { Args: { p_ids: string[] }; Returns: undefined }
+      reorder_skills: {
+        Args: { p_ids: string[]; p_level_id: string }
+        Returns: undefined
+      }
       request_ip: { Args: never; Returns: unknown }
       save_attendance: {
         Args: { p_marks: Json; p_session_id: string }
         Returns: number
       }
       session_is_editable: { Args: { p_session_id: string }; Returns: boolean }
+      stale_students: {
+        Args: { p_days?: number }
+        Returns: {
+          days_since: number
+          full_name: string
+          is_top_level: boolean
+          last_achieved_at: string | null
+          level_id: string
+          level_name: string
+          student_id: string
+        }[]
+      }
     }
     Enums: {
       academy_status: 'active' | 'suspended' | 'archived'

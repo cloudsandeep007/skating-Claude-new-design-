@@ -2,6 +2,8 @@ import { ArrowLeft, Pencil } from 'lucide-react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { toast } from 'sonner'
 
+import { useAuth } from '@/features/auth'
+import { AchievementHistoryList, SkillAssessmentPanel } from '@/features/progression'
 import { Avatar, AvatarFallback } from '@/shared/ui/avatar'
 import { Button } from '@/shared/ui/button'
 import {
@@ -35,6 +37,7 @@ function initials(name: string) {
 export function StudentDetailPage() {
   const { studentId = '' } = useParams<{ studentId: string }>()
   const navigate = useNavigate()
+  const { profile } = useAuth()
   const { data: student, isLoading } = useStudent(studentId)
   const setStatus = useSetStudentStatus()
 
@@ -216,8 +219,16 @@ export function StudentDetailPage() {
           <TabsContent value="attendance" className="p-5 text-sm text-muted-foreground">
             Not built yet — this comes with the attendance feature.
           </TabsContent>
-          <TabsContent value="progress" className="p-5 text-sm text-muted-foreground">
-            Not built yet — this comes with the skill progression feature.
+          <TabsContent value="progress" className="space-y-5 p-5">
+            {profile?.academy_id && (
+              <SkillAssessmentPanel studentId={student.id} academyId={profile.academy_id} />
+            )}
+            <div>
+              <h2 className="mb-2 text-sm font-bold uppercase tracking-wide text-muted-foreground">
+                History
+              </h2>
+              <AchievementHistoryList studentId={student.id} />
+            </div>
           </TabsContent>
           <TabsContent value="fees" className="p-5 text-sm text-muted-foreground">
             Not built yet — this comes with the fees feature.

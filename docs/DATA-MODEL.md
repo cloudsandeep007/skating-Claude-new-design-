@@ -516,6 +516,26 @@ written to audit_logs" needs no extra code.
 | `publish_due_announcements()`           | `SECURITY DEFINER`, scoped to `current_academy_id()`. For each due, un-notified announcement: inserts one notification per recipient (audience rules in the feature doc; author excluded; inactive profiles excluded; `link` per role), then stamps `notified_at`. `for update skip locked` so two callers can't double-send. Returns how many posts it sent. |
 | Realtime                                | `notifications` added to the `supabase_realtime` publication. Clients subscribe with `profile_id=eq.<self>`; RLS still filters.                                        |
 
+## Skill progression RPCs (`0006_skill_progression.sql`)
+
+`levels`, `skills`, `students.current_level_id`, and `student_skills`
+(with their RLS) already existed from `0001_initial_schema.sql` — see
+those table entries above. This migration adds only what plain
+RLS-guarded table writes can't express.
+
+| Function                                | Does                                                                                                                                                                                                          | Returns                                     |
+| ---------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------- |
+| `promote_student(p_student_id)`          | `SECURITY DEFINER` (coaches have no RLS write on `students`). Re-checks the caller is a coach or admin in the student's academy, requires every skill in the student's current level to be `achieved`, finds the level with `sequence + 1` in the same academy, updates `current_level_id`. Errors clearly if: no current level, no skills in the level, not all achieved, or already the highest level. The existing `audit_students` trigger logs the change (actor, old/new level, timestamp) automatically. | `(level_id, level_name)` of the new level    |
+| `reorder_levels(p_ids)` / `reorder_skills(p_level_id, p_ids)` | `SECURITY INVOKER` — each row update is subject to the existing `levels_admin_all` / `skills_admin_all` policies, so only an admin reordering their own academy's rows does anything. Sets `sequence` to the array position (1-based) of each id in order. | void                                        |
+| `level_distribution()`                   | `SECURITY INVOKER`. Active skaters per level, in ladder order.                                                                                                                                                | one row per level: `(level_id, level_name, sequence, student_count)` |
+| `stale_students(p_days=60)`              | `SECURITY INVOKER`. Active skaters with no skill marked `achieved` in the last `p_days` days — "last achieved" falls back to `joined_date` if nothing's ever been achieved. `is_top_level` flags a skater with no next level, so the UI can de-emphasize rather than hide them. | one row per skater: `(student_id, full_name, level_id, level_name, last_achieved_at, days_since, is_top_level)` |
+
+The coach/admin "assess a skill" action is a plain `student_skills`
+upsert (`onConflict: student_id,skill_id`) from the client — no RPC
+needed, since the existing `student_skills_coach_insert` / `_update`
+policies already permit it. The same upsert call, given several
+`student_id`s, is how bulk assess writes many skaters in one request.
+
 ## Storage (`supabase/migrations/0002_storage.sql`)
 
 | Bucket           | Public | Object path                              | Policies                                                                                       |

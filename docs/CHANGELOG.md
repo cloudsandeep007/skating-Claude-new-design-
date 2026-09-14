@@ -5,6 +5,31 @@ non-technical person can follow it. Newest first.
 
 ---
 
+## 2026-09-14 — Skill progression: the feature that isn't just attendance
+
+Skaters now climb a real progression ladder, not just get marked present
+or absent.
+
+- **Setup (admin)** — a "Levels & skills" screen to manage the ladder:
+  add, edit, delete and drag-reorder levels, and the skills inside each
+  one. Seeded with a realistic 9-level beginner-to-advanced ladder (45
+  skills — forward/backward skating, stops, crossovers, edges, turns,
+  spins, jumps) that was already in the sample data.
+- **Coach** — from a session or a skater, open skill assessment: every
+  skill in the skater's current level with a one-tap status (not
+  started / learning / achieved) and an optional note. **Bulk assess**
+  marks one skill across a whole batch at once. **Promote** appears once
+  every skill in the level is achieved, with a confirmation — the server
+  double-checks that before moving anyone on.
+- **Parent** — a new "Progress" tab: which level their skater is on and
+  how far along the ladder that is, the current level's skills as
+  colorful reward tiles (not a checklist), a locked preview of what's
+  next, and a history of what was achieved, when, and by which coach.
+- **Admin** — a "Progress" report: how many active skaters are on each
+  level (chart), and who hasn't achieved a skill in 30/60/90 days.
+
+---
+
 ## 2026-09-14 — Vercel hosting set up; database types refreshed
 
 - Added `vercel.json` so Vercel serves the app correctly on every URL
