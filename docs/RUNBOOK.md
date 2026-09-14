@@ -150,7 +150,54 @@ See [DATA-MODEL.md](./DATA-MODEL.md) for what the schema actually contains.
 
 ## Deploying
 
-_To be filled in once a hosting target is chosen._
+The web app is hosted on **Vercel**, connected to the GitHub repo
+(`cloudsandeep007/skating-claude`, branch `master`). Every push to
+`master` triggers a production deploy; pull requests get preview URLs.
+
+`vercel.json` in the repo root does two things: tells Vercel it's a Vite
+app (`npm run build` → `dist/`), and rewrites every URL to
+`index.html` so React Router can handle `/login`, `/admin/...`, the
+password-reset link, and page refreshes. Without that rewrite anything
+other than `/` is a 404.
+
+### One-time setup (Vercel dashboard → Project → Settings → Environment Variables)
+
+Add these for **Production** (and Preview if you want preview URLs to
+work). Values are the same ones in your local `.env`:
+
+| Name                     | Value                                                    |
+| ------------------------ | -------------------------------------------------------- |
+| `VITE_SUPABASE_URL`      | Supabase → Settings → API → Project URL                  |
+| `VITE_SUPABASE_ANON_KEY` | Supabase → Settings → API → `anon` `public` key          |
+| `VITE_APP_ENV`           | `production`                                             |
+| `VITE_SENTRY_DSN`        | optional — leave unset until Sentry is configured        |
+
+Env vars are baked in at build time (`VITE_` prefix), so after adding or
+changing one you must **Redeploy** (Deployments → ⋯ → Redeploy). The
+app throws on startup — blank white page — if the two Supabase values
+are missing.
+
+Never add the service-role key to Vercel. It belongs only in Supabase
+Edge Function secrets.
+
+### Supabase side
+
+In Supabase → Authentication → URL Configuration:
+
+- **Site URL**: the Vercel production URL (e.g. `https://skating-claude.vercel.app`)
+- **Redirect URLs**: add `https://<your-domain>/**` and, for previews,
+  `https://*-<team>.vercel.app/**`
+
+Otherwise password-reset and invite emails link back to `localhost`.
+
+### Symptoms → causes
+
+| Symptom                                       | Cause                                                        |
+| --------------------------------------------- | ------------------------------------------------------------ |
+| Blank white page, console says "Missing Supabase environment variables" | Env vars not set, or set after the last build — redeploy |
+| `/` works but `/login` or refresh gives 404   | `vercel.json` rewrite missing                                |
+| Reset-password email links to localhost       | Supabase Site URL not updated                                |
+| Build fails on Vercel but passes locally      | Vercel runs `tsc -b` — check the build log's first error     |
 
 ## Backups and restore
 

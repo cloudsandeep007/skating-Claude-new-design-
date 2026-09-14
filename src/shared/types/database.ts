@@ -606,17 +606,17 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: 'notifications_announcement_id_fkey'
-            columns: ['announcement_id']
-            isOneToOne: false
-            referencedRelation: 'announcements'
-            referencedColumns: ['id']
-          },
-          {
             foreignKeyName: 'notifications_academy_id_fkey'
             columns: ['academy_id']
             isOneToOne: false
             referencedRelation: 'academies'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'notifications_announcement_id_fkey'
+            columns: ['announcement_id']
+            isOneToOne: false
+            referencedRelation: 'announcements'
             referencedColumns: ['id']
           },
           {
@@ -1271,7 +1271,10 @@ export type Database = {
       }
       generate_sessions: {
         Args: { p_batch_id: string; p_from: string; p_to: string }
-        Returns: { day: string; outcome: string }[]
+        Returns: {
+          day: string
+          outcome: string
+        }[]
       }
       is_academy_admin: { Args: never; Returns: boolean }
       is_coach: { Args: never; Returns: boolean }

@@ -5,6 +5,18 @@ non-technical person can follow it. Newest first.
 
 ---
 
+## 2026-09-14 — Vercel hosting set up; database types refreshed
+
+- Added `vercel.json` so Vercel serves the app correctly on every URL
+  (not just the home page) and knows how to build it. The runbook now
+  has a "Deploying" section listing the environment variables Vercel
+  needs and the Supabase URL settings to update.
+- Migrations 0002–0005 and the invite Edge Function are now live on the
+  Supabase project; the generated database types were regenerated from
+  it and match what the code expected.
+
+---
+
 ## 2026-09-14 — The app now looks like the design handoff
 
 A visual pass over everything built so far, using the design files in
