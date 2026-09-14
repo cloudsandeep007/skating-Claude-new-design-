@@ -1,21 +1,25 @@
-import { CalendarCheck } from 'lucide-react'
+import { CalendarCheck, CheckCircle2, ChevronRight } from 'lucide-react'
+import { Link } from 'react-router-dom'
 
 import { useAuth } from '@/features/auth'
-import { formatTime, todayIso } from '@/shared/lib/format'
+import { addDays, formatDate, formatTime, todayIso } from '@/shared/lib/format'
 import { cn } from '@/shared/lib/utils'
 import { EmptyState } from '@/shared/ui/EmptyState'
 import { Skeleton } from '@/shared/ui/skeleton'
 
 import { useSessions } from '../api/listSessions'
 import { useMyCoachId } from '../api/myCoach'
+import type { SessionItem } from '../types'
 
-/** The coach's rink-side home: just today, biggest first thing on screen. */
+/** The coach's rink-side home: today first, then yesterday's sessions that
+ * are still inside the 24-hour marking window. Tap a session to mark it. */
 export function CoachTodayPage() {
   const { profile } = useAuth()
   const { data: coachId, isLoading: loadingCoach } = useMyCoachId(profile?.id)
   const today = todayIso()
+  const yesterday = addDays(today, -1)
   const { data: sessions, isLoading } = useSessions({
-    from: today,
+    from: yesterday,
     to: today,
     coachId: coachId ?? undefined,
   })
@@ -45,10 +49,13 @@ export function CoachTodayPage() {
     )
   }
 
-  const live = sessions?.filter((s) => s.status !== 'cancelled') ?? []
+  const todays = sessions?.filter((s) => s.sessionDate === today) ?? []
+  const yesterdays =
+    sessions?.filter((s) => s.sessionDate === yesterday && s.status !== 'cancelled') ?? []
+  const live = todays.filter((s) => s.status !== 'cancelled')
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-5">
       <div>
         <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
           Today
@@ -61,7 +68,7 @@ export function CoachTodayPage() {
         </div>
       </div>
 
-      {sessions?.length === 0 ? (
+      {todays.length === 0 ? (
         <EmptyState
           icon={CalendarCheck}
           title="Nothing on today"
@@ -69,48 +76,84 @@ export function CoachTodayPage() {
         />
       ) : (
         <div className="space-y-3">
-          {sessions?.map((session) => {
-            const cancelled = session.status === 'cancelled'
-            return (
-              <div
-                key={session.id}
-                className={cn(
-                  'rounded-lg p-4 shadow-sm',
-                  cancelled ? 'border bg-muted text-muted-foreground' : 'bg-neutral-950 text-white',
-                )}
-              >
-                <div
-                  className={cn(
-                    'text-xs font-semibold uppercase tracking-wide',
-                    cancelled ? 'text-muted-foreground' : 'text-neutral-400',
-                  )}
-                >
-                  {formatTime(session.startTime)} – {formatTime(session.endTime)}
-                  {session.venue && ` · ${session.venue}`}
-                </div>
-                <div
-                  className={cn(
-                    'mt-1 text-xl font-extrabold tracking-tight',
-                    cancelled && 'line-through',
-                  )}
-                >
-                  {session.batchName}
-                </div>
-                <div
-                  className={cn(
-                    'mt-3 text-sm font-semibold',
-                    cancelled ? 'text-muted-foreground' : 'text-neutral-300',
-                  )}
-                >
-                  {cancelled
-                    ? `Cancelled — ${session.cancellationReason}`
-                    : `${session.studentCount} skater${session.studentCount === 1 ? '' : 's'}`}
-                </div>
-              </div>
-            )
-          })}
+          {todays.map((session) => (
+            <SessionCard key={session.id} session={session} />
+          ))}
+        </div>
+      )}
+
+      {yesterdays.length > 0 && (
+        <div>
+          <div className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+            Yesterday · still open for changes
+          </div>
+          <div className="space-y-3">
+            {yesterdays.map((session) => (
+              <SessionCard key={session.id} session={session} muted />
+            ))}
+          </div>
         </div>
       )}
     </div>
+  )
+}
+
+function SessionCard({ session, muted = false }: { session: SessionItem; muted?: boolean }) {
+  const cancelled = session.status === 'cancelled'
+  const fullyMarked = session.markedCount >= session.studentCount && session.studentCount > 0
+
+  const inner = (
+    <>
+      <div
+        className={cn(
+          'text-xs font-semibold uppercase tracking-wide',
+          cancelled || muted ? 'text-muted-foreground' : 'text-neutral-400',
+        )}
+      >
+        {muted && `${formatDate(session.sessionDate)} · `}
+        {formatTime(session.startTime)} – {formatTime(session.endTime)}
+        {session.venue && ` · ${session.venue}`}
+      </div>
+      <div
+        className={cn('mt-1 text-xl font-extrabold tracking-tight', cancelled && 'line-through')}
+      >
+        {session.batchName}
+      </div>
+      <div className="mt-3 flex items-center gap-2 text-sm font-semibold">
+        <span className={cancelled || muted ? 'text-muted-foreground' : 'text-neutral-300'}>
+          {cancelled
+            ? `Cancelled — ${session.cancellationReason}`
+            : `${session.studentCount} skater${session.studentCount === 1 ? '' : 's'}`}
+        </span>
+        {!cancelled && session.markedCount > 0 && (
+          <span
+            className={cn(
+              'ml-auto inline-flex items-center gap-1 text-xs font-bold',
+              fullyMarked ? 'text-success-400' : 'text-warning-300',
+              muted && (fullyMarked ? 'text-success-700' : 'text-warning-800'),
+            )}
+          >
+            <CheckCircle2 className="h-3.5 w-3.5" />
+            {fullyMarked ? 'Marked' : `${session.markedCount}/${session.studentCount} marked`}
+          </span>
+        )}
+        {!cancelled && (
+          <ChevronRight className={cn('h-5 w-5', session.markedCount === 0 && 'ml-auto')} />
+        )}
+      </div>
+    </>
+  )
+
+  const className = cn(
+    'block rounded-lg p-4 shadow-sm',
+    cancelled || muted ? 'border bg-card text-foreground' : 'bg-neutral-950 text-white',
+    !cancelled && 'active:opacity-90',
+  )
+
+  if (cancelled) return <div className={className}>{inner}</div>
+  return (
+    <Link to={`/coach/attendance/${session.id}`} className={className}>
+      {inner}
+    </Link>
   )
 }

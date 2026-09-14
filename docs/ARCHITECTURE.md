@@ -63,6 +63,13 @@ Phase 1. Two rules that apply from day one:
   browser. They go through `supabase/functions/invite-user`, an Edge
   Function called via `shared/lib/invokeFunction`. It verifies the
   caller's JWT is an `academy_admin` before using the service-role key.
+- **Offline-tolerant writes** (coach attendance) go through a persisted
+  Zustand queue (`features/attendance/hooks/pendingSaves.ts`): the UI
+  commits locally first, a sync loop pushes to the server and retries on
+  reconnect/interval, and the queued copy overrides the server copy on
+  screen until it's confirmed. This is the one place Zustand holds
+  something other than trivial UI state — it's still client-only state,
+  not a cache of server data.
 - **Files** go to Supabase Storage. The `student-photos` bucket is
   private; the table stores the object path and the app signs a
   short-lived URL when it needs to display one.
@@ -74,6 +81,7 @@ Phase 1. Two rules that apply from day one:
 | Schema, RLS, views, triggers         | `supabase/migrations/*.sql`       | pasted into the SQL Editor       |
 | Storage bucket + policies            | `supabase/migrations/0002_*.sql`  | same                             |
 | Scheduling RPCs + holidays           | `supabase/migrations/0003_*.sql`  | same                             |
+| Attendance lock + save RPC           | `supabase/migrations/0004_*.sql`  | same                             |
 | Account creation (`invite-user`)     | `supabase/functions/invite-user/` | `supabase functions deploy`      |
 
 Edge Functions run on Deno with their own tsconfig; they're excluded from

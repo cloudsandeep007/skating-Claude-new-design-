@@ -1,3 +1,4 @@
+export { useBatchOptions } from './api/listBatchOptions'
 export { AddBatchPage } from './components/AddBatchPage'
 export { BatchDetailPage } from './components/BatchDetailPage'
 export { BatchesListPage } from './components/BatchesListPage'

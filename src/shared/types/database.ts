@@ -1267,6 +1267,11 @@ export type Database = {
       parent_batch_ids: { Args: never; Returns: string[] }
       parent_student_ids: { Args: never; Returns: string[] }
       request_ip: { Args: never; Returns: unknown }
+      save_attendance: {
+        Args: { p_marks: Json; p_session_id: string }
+        Returns: number
+      }
+      session_is_editable: { Args: { p_session_id: string }; Returns: boolean }
     }
     Enums: {
       academy_status: 'active' | 'suspended' | 'archived'

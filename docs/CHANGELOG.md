@@ -5,6 +5,42 @@ non-technical person can follow it. Newest first.
 
 ---
 
+## 2026-09-14 — Attendance: coach marking, admin tools, parent history
+
+The daily screen. A coach opens **Today**, taps a session and gets the
+roster with big ✓ / ✗ buttons per skater. The fastest path is one tap on
+**Mark all present** and then tapping only the exceptions — each tap on a
+row steps present → absent → late. A counter in the dark header shows
+"12 of 15 marked" with a progress bar, and the confirm button turns red
+once everyone is marked. Marks can be changed for 24 hours after the
+session (in the academy's own timezone), then they lock — admins can
+still correct them.
+
+Rink wifi is unreliable, so confirming never waits on the network: the
+marks are saved on the phone first, the coach sees "saved on this
+device", a small "1 to sync" badge appears in the header, and the app
+sends them as soon as it can — on its own, retrying every 20 seconds and
+whenever the connection returns. Reopening the session shows what the
+coach marked, even if it hasn't reached the server yet.
+
+Admins get an **Attendance** page: by date (expand any session and
+override a skater's mark from a dropdown — every change lands in the
+audit log with the admin's name), by batch (each skater's percentage
+over a date range, exportable to CSV), and by student (their full
+session history with percentage, also exportable).
+
+Parents now land on their child's attendance: overall percentage for the
+last six months, then each month with its own percentage, counts and
+session list — the same numbers the admin sees. If they have more than
+one child, a dropdown switches between them.
+
+The percentage rule is now covered by unit tests (present and late count
+as attended; excused is ignored; nothing counted shows "—", not 0%).
+
+**Needs doing on Supabase:** run `0004_attendance.sql`. Until then
+coaches' saves queue up (visibly) and sync once it's in; admin and
+parent views work now.
+
 ## 2026-09-14 — Batches and the weekly schedule
 
 Under **Batches**, the admin now sees every class with its coach, time,

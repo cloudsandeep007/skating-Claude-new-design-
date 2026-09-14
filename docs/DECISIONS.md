@@ -17,6 +17,61 @@ Format:
 
 ---
 
+## 2026-09-14 — Attendance saves are queued locally first, then synced
+
+**Decision:** Confirm on the coach's attendance screen writes the marks to
+a persisted Zustand store (`localStorage`) and returns immediately; a
+background loop pushes each queued session to the `save_attendance` RPC
+and retries on reconnect and every 20 s until the server confirms.
+
+**Options considered:** (a) A normal mutation with TanStack Query's
+`retry` — retries a few times, then the marks are gone if the tab closes;
+(b) full offline-first with a service worker and IndexedDB.
+
+**Why:** The brief is a rink with flaky wifi. (a) loses data exactly when
+it matters. (b) is the right long-term shape for Phase 4 (native shells)
+but is a lot of machinery for one screen today. A tiny persisted queue
+gets the important property — *a confirmed save is never lost* — with
+~60 lines, and the UI can honestly say "saved on this device".
+
+**Trade-offs:** Zustand now holds something more than trivial UI state
+(still client-only, not a server cache — the rule in CLAUDE.md holds). A
+permanently rejected save (e.g. synced after the 24 h lock) sits in the
+queue with its error; a discard control is a known gap.
+
+## 2026-09-14 — The 24-hour lock lives in RLS, in the academy's timezone
+
+**Decision:** `session_is_editable()` is the single source of truth,
+called from the coach `attendance` policies; the UI only mirrors it. It
+converts the session's date/time using `academies.settings->>'timezone'`.
+
+**Options considered:** Checking the window in the app only; comparing
+against `now()` in server time.
+
+**Why:** A client-only check is trivially bypassed and drifts. Server
+time is UTC — for a Kolkata evening session that silently adds 5½ hours
+to the window. Reading the academy's own timezone setting makes the rule
+mean what the admin thinks it means, per academy.
+
+**Trade-offs:** The function is `SECURITY DEFINER` so it can read
+`academies.settings` for the session's academy regardless of the caller;
+it only returns a boolean, so nothing leaks.
+
+## 2026-09-14 — One attendance rule, implemented twice, tested once
+
+**Decision:** `features/attendance/hooks/attendancePct.ts` re-implements
+the SQL views' percentage rule in TypeScript (for the parent's monthly
+summary and the "by student" admin view, where per-month grouping is
+easier client-side), with unit tests that pin the exact numbers.
+
+**Why:** The parent must see the same number the admin's roster shows.
+The tests encode the view definition (`(present+late)/(present+absent+late)`,
+excused excluded, one decimal, null when nothing counts) so a future
+change to either side is caught.
+
+**Trade-offs:** Two implementations to keep in step. If a third consumer
+appears, promote the per-month grouping to a view and delete the TS copy.
+
 ## 2026-09-14 — Schedule generation and cancellation are Postgres functions, not client loops
 
 **Decision:** `generate_sessions()` and `cancel_session()` live in

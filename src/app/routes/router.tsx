@@ -1,5 +1,10 @@
 import { createBrowserRouter } from 'react-router-dom'
 
+import {
+  AdminAttendancePage,
+  MarkAttendancePage,
+  ParentAttendancePage,
+} from '@/features/attendance'
 import { ForgotPasswordPage, LoginPage, ProtectedRoute, ResetPasswordPage } from '@/features/auth'
 import { AddBatchPage, BatchDetailPage, BatchesListPage, EditBatchPage } from '@/features/batches'
 import { AddCoachPage, CoachDetailPage, CoachesListPage, EditCoachPage } from '@/features/coaches'
@@ -57,6 +62,7 @@ export const router = createBrowserRouter([
           { path: 'batches/:batchId', element: <BatchDetailPage /> },
           { path: 'batches/:batchId/edit', element: <EditBatchPage /> },
           { path: 'schedule', element: <WeekCalendarPage /> },
+          { path: 'attendance', element: <AdminAttendancePage /> },
         ],
       },
     ],
@@ -68,7 +74,10 @@ export const router = createBrowserRouter([
       {
         path: '/coach',
         element: <CoachLayout />,
-        children: [{ index: true, element: <CoachTodayPage /> }],
+        children: [
+          { index: true, element: <CoachTodayPage /> },
+          { path: 'attendance/:sessionId', element: <MarkAttendancePage /> },
+        ],
       },
     ],
   },
@@ -79,7 +88,7 @@ export const router = createBrowserRouter([
       {
         path: '/parent',
         element: <ParentLayout />,
-        children: [{ index: true, element: <PlaceholderPage title="Parent home" /> }],
+        children: [{ index: true, element: <ParentAttendancePage /> }],
       },
     ],
   },

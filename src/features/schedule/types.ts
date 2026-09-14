@@ -19,6 +19,8 @@ export interface SessionItem {
   status: SessionStatus
   cancellationReason: string | null
   studentCount: number
+  /** Attendance rows saved for this session so far. */
+  markedCount: number
 }
 
 export type GenerateOutcome = 'created' | 'holiday' | 'exists' | 'coach_conflict'

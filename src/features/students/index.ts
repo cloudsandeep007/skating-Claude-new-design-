@@ -1,3 +1,4 @@
+export { useStudentOptions } from './api/listOptions'
 export { AddStudentPage } from './components/AddStudentPage'
 export { EditStudentPage } from './components/EditStudentPage'
 export { StudentDetailPage } from './components/StudentDetailPage'

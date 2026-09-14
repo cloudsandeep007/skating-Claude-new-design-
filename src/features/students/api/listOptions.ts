@@ -2,28 +2,12 @@ import { useQuery } from '@tanstack/react-query'
 
 import { supabase } from '@/shared/lib/supabase'
 
-// Batches and levels aren't their own feature yet (batches lands in Phase
-// 1.2) — these are minimal read-only lookups for the students form/filters
-// until that feature exists to own them.
+// Levels aren't their own feature — a minimal lookup for the students
+// form. Batch options come from @/features/batches.
 
 export interface Option {
   id: string
   name: string
-}
-
-export function useBatchOptions() {
-  return useQuery({
-    queryKey: ['batch-options'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('batches')
-        .select('id, name')
-        .eq('status', 'active')
-        .order('name')
-      if (error) throw error
-      return data
-    },
-  })
 }
 
 export function useLevelOptions() {
@@ -54,6 +38,27 @@ export function useParentOptions() {
         .order('full_name')
       if (error) throw error
       return data.map((p): ParentOption => ({ id: p.id, fullName: p.full_name, email: p.email }))
+    },
+  })
+}
+
+export interface StudentOption {
+  id: string
+  fullName: string
+}
+
+/** Active students, for pickers in other features (e.g. attendance by student). */
+export function useStudentOptions() {
+  return useQuery({
+    queryKey: ['student-options'],
+    queryFn: async (): Promise<StudentOption[]> => {
+      const { data, error } = await supabase
+        .from('students')
+        .select('id, full_name')
+        .eq('status', 'active')
+        .order('full_name')
+      if (error) throw error
+      return data.map((s) => ({ id: s.id, fullName: s.full_name }))
     },
   })
 }

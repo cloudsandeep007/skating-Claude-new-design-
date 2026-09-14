@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Plus, Search, Users } from 'lucide-react'
 import { Link, useNavigate } from 'react-router-dom'
 
+import { useBatchOptions } from '@/features/batches'
 import { useDebouncedValue } from '@/shared/hooks'
 import { Avatar, AvatarFallback } from '@/shared/ui/avatar'
 import { Button } from '@/shared/ui/button'
@@ -12,7 +13,6 @@ import { Skeleton } from '@/shared/ui/skeleton'
 import { StatusBadge } from '@/shared/ui/StatusBadge'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/shared/ui/table'
 
-import { useBatchOptions } from '../api/listOptions'
 import { useStudents } from '../api/listStudents'
 import {
   attendanceBarColorClass,

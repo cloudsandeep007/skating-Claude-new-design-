@@ -1,6 +1,7 @@
 import { Home, LogOut } from 'lucide-react'
 import { NavLink, Outlet } from 'react-router-dom'
 
+import { PendingSavesIndicator } from '@/features/attendance'
 import { useAuth } from '@/features/auth'
 import { Button } from '@/shared/ui/button'
 import { cn } from '@/shared/lib/utils'
@@ -14,6 +15,9 @@ export function CoachLayout() {
     <div className="flex min-h-screen flex-col">
       <header className="flex h-14 items-center justify-between border-b px-4">
         <span className="text-sm font-semibold">{profile?.full_name}</span>
+        <div className="ml-auto mr-2">
+          <PendingSavesIndicator />
+        </div>
         <Button
           variant="ghost"
           size="icon"

@@ -5,6 +5,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
 
 import { useAuth } from '@/features/auth'
+import { useBatchOptions } from '@/features/batches'
 import { Button } from '@/shared/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card'
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/shared/ui/form'
@@ -13,7 +14,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/shared/ui/textarea'
 
 import { useCreateStudent } from '../api/createStudent'
-import { useBatchOptions, useLevelOptions, useParentOptions } from '../api/listOptions'
+import { useLevelOptions, useParentOptions } from '../api/listOptions'
 import { StudentFormSchema, type StudentForm } from '../types'
 
 export function AddStudentPage() {

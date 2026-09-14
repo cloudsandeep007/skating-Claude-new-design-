@@ -43,7 +43,10 @@ async function fetchSessions({ from, to, coachId }: SessionFilters): Promise<Ses
   if (error) throw error
 
   const batchIds = [...new Set(data.map((s) => s.batch_id))]
-  const counts = await fetchStudentCounts(batchIds)
+  const [counts, marked] = await Promise.all([
+    fetchStudentCounts(batchIds),
+    fetchMarkedCounts(data.map((s) => s.id)),
+  ])
 
   return data.map((row) => ({
     id: row.id,
@@ -58,7 +61,19 @@ async function fetchSessions({ from, to, coachId }: SessionFilters): Promise<Ses
     status: row.status,
     cancellationReason: row.cancellation_reason,
     studentCount: counts.get(row.batch_id) ?? 0,
+    markedCount: marked.get(row.id) ?? 0,
   }))
+}
+
+async function fetchMarkedCounts(sessionIds: string[]) {
+  const map = new Map<string, number>()
+  if (sessionIds.length === 0) return map
+  const { data } = await supabase
+    .from('attendance')
+    .select('session_id')
+    .in('session_id', sessionIds)
+  for (const row of data ?? []) map.set(row.session_id, (map.get(row.session_id) ?? 0) + 1)
+  return map
 }
 
 async function fetchStudentCounts(batchIds: string[]) {

@@ -494,6 +494,19 @@ would fail on the first write).
 | `generate_sessions(p_batch_id, p_from, p_to)`   | For each date in range matching the batch's `days_of_week`: skip if a holiday, skip if the batch already has a session at that time, skip if the batch's coach has an overlapping non-cancelled session, else insert a `scheduled` session copying the batch's time and coach. Max 366 days. | one row per candidate day: `(day, outcome)` where outcome ∈ created / holiday / exists / coach_conflict |
 | `cancel_session(p_session_id, p_reason)`        | Sets status `cancelled` + reason on a `scheduled` session (errors otherwise), then inserts one `notifications` row (`type = 'session_cancelled'`, link `/parent`) per distinct parent of any active student in the batch. | void                                        |
 
+## Attendance rules (`0004_attendance.sql`)
+
+| Object                              | Does                                                                                                                                                                      |
+| ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `session_is_editable(p_session_id)` | `STABLE SECURITY DEFINER`. True from the start of the session's date until 24h after its `end_time`, evaluated in the academy's timezone (`academies.settings->>'timezone'`, default UTC). |
+| policies `attendance_coach_insert` / `_update` | Replaced: coaches may write attendance only while `session_is_editable()` is true and with `marked_by = auth.uid()`. Admin policies are unchanged (no lock).            |
+| policy `sessions_coach_complete`    | Coaches may update their own sessions (`coach_id` matches their `coaches` row) between `scheduled` and `completed`.                                                       |
+| `save_attendance(p_session_id, p_marks jsonb)` | `SECURITY INVOKER`. Upserts each `{student_id, status}` (conflict on `(session_id, student_id)`), stamps `marked_by`/`marked_at`, and sets the session `completed` if it was `scheduled`. Refuses cancelled sessions. Returns the number of marks written. |
+
+Every write to `attendance` — coach save or admin override — is recorded
+by the existing `audit_attendance` trigger with the actor, so "override
+written to audit_logs" needs no extra code.
+
 ## Storage (`supabase/migrations/0002_storage.sql`)
 
 | Bucket           | Public | Object path                              | Policies                                                                                       |

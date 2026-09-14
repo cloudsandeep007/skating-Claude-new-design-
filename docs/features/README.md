@@ -15,3 +15,4 @@ in the same session the feature is built or changed. Each file covers:
 - [coaches.md](./coaches.md) — coaching staff list, invite, deactivate (Phase 1.1)
 - [batches.md](./batches.md) — recurring classes, enrollment, capacity (Phase 1.2)
 - [schedule.md](./schedule.md) — session generation, weekly calendar, cancellations, coach today view (Phase 1.2)
+- [attendance.md](./attendance.md) — coach marking (offline-safe), admin views/override/CSV, parent history (Phase 1.3)

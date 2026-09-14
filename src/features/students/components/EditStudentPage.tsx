@@ -5,6 +5,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom'
 import { toast } from 'sonner'
 
 import { useAuth } from '@/features/auth'
+import { useBatchOptions } from '@/features/batches'
 import { Button } from '@/shared/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card'
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/shared/ui/form'
@@ -14,7 +15,7 @@ import { Skeleton } from '@/shared/ui/skeleton'
 import { Textarea } from '@/shared/ui/textarea'
 
 import { useStudentForEdit } from '../api/getStudentForEdit'
-import { useBatchOptions, useLevelOptions } from '../api/listOptions'
+import { useLevelOptions } from '../api/listOptions'
 import { useUpdateStudent } from '../api/updateStudent'
 import { StudentEditSchema, type StudentEdit } from '../types'
 

@@ -86,13 +86,17 @@ already been applied.
 | `0001_initial_schema.sql`                  | Every table, enum, index, RLS policy, trigger, view    |
 | `0002_storage.sql`                         | The private `student-photos` bucket and its policies   |
 | `0003_scheduling.sql`                      | `holidays` table, `generate_sessions()`, `cancel_session()` |
+| `0004_attendance.sql`                      | 24-hour marking lock, coach session-complete policy, `save_attendance()` |
 
 Photo upload on the Add/Edit student screens will fail with a "bucket not
 found" error until `0002_storage.sql` has been run. "Generate schedule",
-"Cancel session" and the Holidays card need `0003_scheduling.sql`.
+"Cancel session" and the Holidays card need `0003_scheduling.sql`. The
+coach's Confirm on the attendance screen needs `0004_attendance.sql` —
+until then every save just sits in the coach's "to sync" queue with a
+"function not found" message, and syncs by itself once the migration is in.
 
 After running a migration that adds tables or functions, regenerate the
-TypeScript types (step 4 above). `0003` was hand-mirrored into
+TypeScript types (step 4 above). `0003` and `0004` were hand-mirrored into
 `database.ts` so the app compiles before you regenerate — regenerating
 produces the same thing.
 
