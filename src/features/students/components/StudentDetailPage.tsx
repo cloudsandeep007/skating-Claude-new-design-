@@ -3,6 +3,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom'
 import { toast } from 'sonner'
 
 import { useAuth } from '@/features/auth'
+import { PaymentHistoryList } from '@/features/fees'
 import { AchievementHistoryList, SkillAssessmentPanel } from '@/features/progression'
 import { Avatar, AvatarFallback } from '@/shared/ui/avatar'
 import { Button } from '@/shared/ui/button'
@@ -230,8 +231,8 @@ export function StudentDetailPage() {
               <AchievementHistoryList studentId={student.id} />
             </div>
           </TabsContent>
-          <TabsContent value="fees" className="p-5 text-sm text-muted-foreground">
-            Not built yet — this comes with the fees feature.
+          <TabsContent value="fees" className="p-5">
+            <PaymentHistoryList studentId={student.id} studentName={student.fullName} canManage />
           </TabsContent>
           <TabsContent value="notes" className="p-5 text-sm text-muted-foreground">
             Not built yet.

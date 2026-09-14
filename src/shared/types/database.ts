@@ -959,6 +959,7 @@ export type Database = {
           status: Database['public']['Enums']['fee_status']
           student_id: string
           updated_at: string
+          waived_reason: string | null
         }
         Insert: {
           academy_id: string
@@ -972,6 +973,7 @@ export type Database = {
           status?: Database['public']['Enums']['fee_status']
           student_id: string
           updated_at?: string
+          waived_reason?: string | null
         }
         Update: {
           academy_id?: string
@@ -985,6 +987,7 @@ export type Database = {
           status?: Database['public']['Enums']['fee_status']
           student_id?: string
           updated_at?: string
+          waived_reason?: string | null
         }
         Relationships: [
           {
@@ -1082,6 +1085,7 @@ export type Database = {
           current_level_id: string | null
           date_of_birth: string | null
           emergency_contact: Json
+          fee_plan_id: string | null
           full_name: string
           gender: Database['public']['Enums']['gender'] | null
           id: string
@@ -1097,6 +1101,7 @@ export type Database = {
           current_level_id?: string | null
           date_of_birth?: string | null
           emergency_contact?: Json
+          fee_plan_id?: string | null
           full_name: string
           gender?: Database['public']['Enums']['gender'] | null
           id?: string
@@ -1112,6 +1117,7 @@ export type Database = {
           current_level_id?: string | null
           date_of_birth?: string | null
           emergency_contact?: Json
+          fee_plan_id?: string | null
           full_name?: string
           gender?: Database['public']['Enums']['gender'] | null
           id?: string
@@ -1134,6 +1140,13 @@ export type Database = {
             columns: ['current_level_id', 'academy_id']
             isOneToOne: false
             referencedRelation: 'levels'
+            referencedColumns: ['id', 'academy_id']
+          },
+          {
+            foreignKeyName: 'students_fee_plan_id_fkey'
+            columns: ['fee_plan_id', 'academy_id']
+            isOneToOne: false
+            referencedRelation: 'fee_plans'
             referencedColumns: ['id', 'academy_id']
           },
         ]
@@ -1276,6 +1289,29 @@ export type Database = {
           outcome: string
         }[]
       }
+      generate_upcoming_fees: {
+        Args: { p_academy_id?: string }
+        Returns: {
+          academy_id: string
+          amount: number
+          created_at: string
+          due_date: string
+          fee_plan_id: string | null
+          id: string
+          period_end: string
+          period_start: string
+          status: Database['public']['Enums']['fee_status']
+          student_id: string
+          updated_at: string
+          waived_reason: string | null
+        }[]
+        SetofOptions: {
+          from: '*'
+          to: 'student_fees'
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
       is_academy_admin: { Args: never; Returns: boolean }
       is_coach: { Args: never; Returns: boolean }
       is_parent: { Args: never; Returns: boolean }
@@ -1289,13 +1325,46 @@ export type Database = {
           student_count: number
         }[]
       }
+      mark_fees_overdue: { Args: never; Returns: number }
       parent_batch_ids: { Args: never; Returns: string[] }
       parent_student_ids: { Args: never; Returns: string[] }
       promote_student: {
         Args: { p_student_id: string }
-        Returns: { level_id: string; level_name: string }[]
+        Returns: {
+          level_id: string
+          level_name: string
+        }[]
       }
       publish_due_announcements: { Args: never; Returns: number }
+      record_payment: {
+        Args: {
+          p_amount: number
+          p_method?: Database['public']['Enums']['payment_method']
+          p_notes?: string
+          p_paid_date?: string
+          p_reference?: string
+          p_student_fee_id: string
+        }
+        Returns: {
+          academy_id: string
+          amount: number
+          created_at: string
+          id: string
+          method: Database['public']['Enums']['payment_method']
+          notes: string | null
+          paid_date: string
+          recorded_by: string | null
+          reference: string | null
+          student_fee_id: string
+          updated_at: string
+        }
+        SetofOptions: {
+          from: '*'
+          to: 'payments'
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       reorder_levels: { Args: { p_ids: string[] }; Returns: undefined }
       reorder_skills: {
         Args: { p_ids: string[]; p_level_id: string }
@@ -1313,9 +1382,30 @@ export type Database = {
           days_since: number
           full_name: string
           is_top_level: boolean
-          last_achieved_at: string | null
+          last_achieved_at: string
           level_id: string
           level_name: string
+          student_id: string
+        }[]
+      }
+      student_fees_list: {
+        Args: {
+          p_batch_id?: string
+          p_month?: string
+          p_status?: Database['public']['Enums']['fee_status']
+        }
+        Returns: {
+          amount: number
+          balance: number
+          batch_names: string
+          due_date: string
+          fee_plan_name: string
+          full_name: string
+          paid: number
+          period_end: string
+          period_start: string
+          status: Database['public']['Enums']['fee_status']
+          student_fee_id: string
           student_id: string
         }[]
       }

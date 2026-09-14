@@ -155,12 +155,13 @@ Indexes: `(academy_id)`, `(level_id, sequence)`.
 | photo_url         | text           | yes      |                   | Supabase Storage URL                                    |
 | joined_date       | date           | no       | current_date      |                                                         |
 | current_level_id  | uuid           | yes      |                   | composite FK → levels; set null on level delete         |
+| fee_plan_id       | uuid           | yes      |                   | composite FK → fee_plans; set null on plan delete; `0007_fees.sql` — which plan `generate_upcoming_fees()` bills them on, not a fee itself |
 | status            | student_status | no       | 'active'          | 'archived' = soft delete; never hard-delete             |
 | emergency_contact | jsonb          | no       | '{}'              | `{"name","phone","relationship"}`                       |
 | medical_notes     | text           | yes      |                   |                                                         |
 | created_at / updated_at | timestamptz | no    | now()             | trigger                                                 |
 
-Indexes: `(academy_id, status)`, `(academy_id, full_name)`, `(current_level_id)`.
+Indexes: `(academy_id, status)`, `(academy_id, full_name)`, `(current_level_id)`, `(fee_plan_id)`.
 Audit: insert/update/delete → `audit_logs`.
 **RLS:** super_admin all · academy_admin all in academy · coach select in
 academy · parent select own children.
@@ -320,10 +321,12 @@ Indexes: `(academy_id)`.
 | amount       | numeric(10,2) | no       |                   | ≥ 0; copied from the plan so plan edits don't rewrite history |
 | due_date     | date          | no       |                   |                                                    |
 | status       | fee_status    | no       | 'pending'         |                                                    |
+| waived_reason | text         | yes      |                   | set together with status='waived'; `0007_fees.sql` |
 | created_at / updated_at | timestamptz | no | now()       | trigger                                            |
 
+Unique `(student_id, period_start)` (`0007_fees.sql`) — a student can't have two periods starting the same day.
 Indexes: `(academy_id, status)`, `(academy_id, due_date)`, `(academy_id, period_start)`, `(student_id)`, `(fee_plan_id)`.
-Audit: insert/update/delete → `audit_logs`.
+Audit: insert/update/delete → `audit_logs` — waiving (status + waived_reason in one update) is logged automatically this way.
 **RLS:** super_admin all · academy_admin all in academy · parent select own children. Coaches: none.
 
 ### `payments`
@@ -536,6 +539,30 @@ needed, since the existing `student_skills_coach_insert` / `_update`
 policies already permit it. The same upsert call, given several
 `student_id`s, is how bulk assess writes many skaters in one request.
 
+## Fee management RPCs (`0007_fees.sql`)
+
+`fee_plans`, `student_fees`, `payments` (and their RLS) already existed
+from `0001_initial_schema.sql`. `students.fee_plan_id` and
+`student_fees.waived_reason` are new columns; see the table entries above.
+
+| Function                                | Does                                                                                                                                                                                                          | Returns                                     |
+| ----------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------- |
+| `generate_upcoming_fees(p_academy_id?)`   | `SECURITY INVOKER`. For every active student on a fee plan whose current period has ended (or who has none yet): inserts one `student_fees` row for the next period, `status = 'pending'`, `due_date = period_start`. Called two ways: an admin's "Generate now" button passes their own `academy_id` — RLS then only lets rows in their academy actually insert; the scheduled Edge Function calls it with no argument using the service-role key, which bypasses RLS and covers every academy in one run. | one row per fee created                      |
+| `mark_fees_overdue()`                     | `SECURITY INVOKER`. Flips every `pending` fee whose `due_date` has passed to `overdue`. Same academy-scoping story as above — an academy admin could call it for their own academy, but only the scheduled function actually does (see RUNBOOK). | count of fees flipped                        |
+| `record_payment(fee, amount, date?, method?, reference?, notes?)` | `SECURITY INVOKER`. Inserts one `payments` row, then flips the fee to `paid` if the sum of its payments now covers the full amount — otherwise leaves the status exactly as it was, which is how a partial payment works without a separate status. Refuses a waived fee or a non-positive amount. | the inserted payment row                     |
+| `student_fees_list(status?, month?, batch?)` | `SECURITY INVOKER`. The admin fee list: one row per fee matching the filters, with `paid` and `balance` pre-computed from its payments — the admin dashboard's table and CSV export both read this directly. `month` matches by `due_date`'s calendar month. | one row per matching fee                     |
+
+**Waiving** a fee is a plain `student_fees` update
+(`status = 'waived', waived_reason = '...'`) under the existing
+`student_fees_admin_all` policy — no RPC needed, and the existing
+`audit_student_fees` trigger logs the status change and the reason
+together automatically.
+
+**Assessing a skill** (progression feature) and **recording a payment**
+(this one) follow the same shape: a plain RLS-guarded write where
+possible, an RPC only where server-side validation or a bundled
+multi-step write earns its keep.
+
 ## Storage (`supabase/migrations/0002_storage.sql`)
 
 | Bucket           | Public | Object path                              | Policies                                                                                       |
@@ -559,6 +586,23 @@ email (same academy only) or calls `auth.admin.inviteUserByEmail` (which
 sends the invite email), inserts the `profiles` row with `status =
 'invited'`, and then inserts the `parents_students` or `coaches` row. See
 [RUNBOOK.md](./RUNBOOK.md) for deploying it.
+
+## Scheduled fee generation (Edge Function `generate-fees`)
+
+`supabase/functions/generate-fees` is the scheduled job behind fee
+generation and the pending → overdue transition, across every academy in
+one run. It runs server-side with the service-role key (which bypasses
+RLS) and calls `generate_upcoming_fees()` with no academy filter, then
+`mark_fees_overdue()`. It's meant to be invoked only by Supabase's own
+Cron trigger, which authenticates with the service-role key. Default JWT
+verification alone isn't enough here — it accepts the public anon key or
+any logged-in user's session token just as readily — so the function
+additionally checks the Authorization header is the exact service-role
+key before doing anything. See
+[RUNBOOK.md](./RUNBOOK.md) "Scheduled jobs" for deploying and scheduling
+it, and for the admin "Generate now" button, which calls
+`generate_upcoming_fees()` directly from the client instead (RLS scopes
+that path to the caller's own academy, so it doesn't need this function).
 
 ## Seed data (`supabase/seed.sql`)
 

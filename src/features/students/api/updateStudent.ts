@@ -26,6 +26,7 @@ async function updateStudent({ academyId, studentId, form, photoFile }: UpdateSt
       date_of_birth: emptyToNull(form.dateOfBirth),
       gender: form.gender,
       current_level_id: emptyToNull(form.currentLevelId),
+      fee_plan_id: emptyToNull(form.feePlanId),
       emergency_contact: form.emergencyContact,
       medical_notes: emptyToNull(form.medicalNotes),
       ...(photoPath ? { photo_url: photoPath } : {}),
@@ -39,6 +40,12 @@ async function updateStudent({ academyId, studentId, form, photoFile }: UpdateSt
     .eq('student_id', studentId)
     .eq('status', 'active')
   if (batchError) throw batchError
+
+  // Generate the first/next invoice right away rather than waiting for the
+  // scheduled job — harmless no-op if one's already current.
+  if (form.feePlanId) {
+    await supabase.rpc('generate_upcoming_fees', { p_academy_id: academyId })
+  }
 }
 
 export function useUpdateStudent() {
@@ -48,6 +55,7 @@ export function useUpdateStudent() {
     onSuccess: (_data, variables) => {
       void queryClient.invalidateQueries({ queryKey: ['students'] })
       void queryClient.invalidateQueries({ queryKey: ['students', 'detail', variables.studentId] })
+      void queryClient.invalidateQueries({ queryKey: ['fees'] })
     },
   })
 }

@@ -109,7 +109,7 @@ export function ParentHomePage() {
           </div>
         </Link>
 
-        <div className="rounded-lg border bg-card p-4 shadow-sm">
+        <Link to="/parent/fees" className="rounded-lg border bg-card p-4 shadow-sm">
           <div className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
             <IndianRupee className="h-3.5 w-3.5" />
             Fees
@@ -129,7 +129,7 @@ export function ParentHomePage() {
           ) : (
             <div className="mt-1.5 text-sm text-muted-foreground">No fees yet</div>
           )}
-        </div>
+        </Link>
       </div>
 
       <section>

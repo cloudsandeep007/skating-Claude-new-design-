@@ -93,7 +93,10 @@ Phase 1. Two rules that apply from day one:
 | Scheduling RPCs + holidays           | `supabase/migrations/0003_*.sql`  | same                             |
 | Attendance lock + save RPC           | `supabase/migrations/0004_*.sql`  | same                             |
 | Announcement fan-out + realtime      | `supabase/migrations/0005_*.sql`  | same                             |
+| Skill progression RPCs               | `supabase/migrations/0006_*.sql`  | same                             |
+| Fee management RPCs                  | `supabase/migrations/0007_*.sql`  | same                             |
 | Account creation (`invite-user`)     | `supabase/functions/invite-user/` | `supabase functions deploy`      |
+| Scheduled fee job (`generate-fees`)  | `supabase/functions/generate-fees/` | `supabase functions deploy` + cron (RUNBOOK) |
 
 Edge Functions run on Deno with their own tsconfig; they're excluded from
 the app's ESLint/tsc (see `eslint.config.js`).

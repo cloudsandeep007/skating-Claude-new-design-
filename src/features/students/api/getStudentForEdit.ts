@@ -8,7 +8,7 @@ async function fetchStudentForEdit(id: string): Promise<StudentEdit & { photoUrl
   const { data, error } = await supabase
     .from('students')
     .select(
-      `full_name, date_of_birth, gender, current_level_id, medical_notes, photo_url, emergency_contact,
+      `full_name, date_of_birth, gender, current_level_id, fee_plan_id, medical_notes, photo_url, emergency_contact,
        student_batches!inner(status, batch_id)`,
     )
     .eq('id', id)
@@ -24,6 +24,7 @@ async function fetchStudentForEdit(id: string): Promise<StudentEdit & { photoUrl
     gender: data.gender ?? undefined,
     batchId: data.student_batches[0]?.batch_id ?? '',
     currentLevelId: data.current_level_id ?? '',
+    feePlanId: data.fee_plan_id ?? '',
     emergencyContact: {
       name: contact.name ?? '',
       phone: contact.phone ?? '',

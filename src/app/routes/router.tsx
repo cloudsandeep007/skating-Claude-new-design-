@@ -5,11 +5,13 @@ import { AdminAttendancePage, MarkAttendancePage } from '@/features/attendance'
 import { ForgotPasswordPage, LoginPage, ProtectedRoute, ResetPasswordPage } from '@/features/auth'
 import { AddBatchPage, BatchDetailPage, BatchesListPage, EditBatchPage } from '@/features/batches'
 import { AddCoachPage, CoachDetailPage, CoachesListPage, EditCoachPage } from '@/features/coaches'
+import { FeeDashboardPage, FeePlansManagePage } from '@/features/fees'
 import {
   AttendanceHistoryPage,
   ChildProfilePage,
   ChildSchedulePage,
   ParentAnnouncementsPage,
+  ParentFeesPage,
   ParentHomePage,
   ParentProfilePage,
   ParentProgressPage,
@@ -78,6 +80,8 @@ export const router = createBrowserRouter([
           { path: 'announcements', element: <AdminAnnouncementsPage /> },
           { path: 'progression', element: <AdminProgressionPage /> },
           { path: 'levels', element: <LevelsManagePage /> },
+          { path: 'fees', element: <FeeDashboardPage /> },
+          { path: 'fee-plans', element: <FeePlansManagePage /> },
         ],
       },
     ],
@@ -110,6 +114,7 @@ export const router = createBrowserRouter([
           { index: true, element: <ParentHomePage /> },
           { path: 'child', element: <ChildProfilePage /> },
           { path: 'progress', element: <ParentProgressPage /> },
+          { path: 'fees', element: <ParentFeesPage /> },
           { path: 'attendance', element: <AttendanceHistoryPage /> },
           { path: 'schedule', element: <ChildSchedulePage /> },
           { path: 'announcements', element: <ParentAnnouncementsPage /> },

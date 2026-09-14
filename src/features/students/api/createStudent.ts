@@ -22,6 +22,7 @@ async function createStudent({ academyId, form, photoFile }: CreateStudentInput)
       date_of_birth: emptyToNull(form.dateOfBirth),
       gender: form.gender,
       current_level_id: emptyToNull(form.currentLevelId),
+      fee_plan_id: emptyToNull(form.feePlanId),
       emergency_contact: form.emergencyContact,
       medical_notes: emptyToNull(form.medicalNotes),
     })
@@ -43,6 +44,12 @@ async function createStudent({ academyId, form, photoFile }: CreateStudentInput)
     await supabase.from('students').update({ photo_url: path }).eq('id', student.id)
   }
 
+  // Generate their first invoice right away rather than waiting for the
+  // scheduled job.
+  if (form.feePlanId) {
+    await supabase.rpc('generate_upcoming_fees', { p_academy_id: academyId })
+  }
+
   return student.id
 }
 
@@ -52,6 +59,7 @@ export function useCreateStudent() {
     mutationFn: createStudent,
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['students'] })
+      void queryClient.invalidateQueries({ queryKey: ['fees'] })
     },
   })
 }

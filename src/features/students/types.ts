@@ -86,6 +86,7 @@ export const StudentFormSchema = z.object({
   gender: z.enum(['male', 'female', 'other']).optional(),
   batchId: z.string().min(1, 'Choose a batch'),
   currentLevelId: z.string().optional(),
+  feePlanId: z.string().optional(),
   emergencyContact: EmergencyContactSchema,
   medicalNotes: z.string().optional(),
   parent: ParentLinkSchema,

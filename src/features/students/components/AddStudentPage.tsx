@@ -6,10 +6,12 @@ import { toast } from 'sonner'
 
 import { useAuth } from '@/features/auth'
 import { useBatchOptions } from '@/features/batches'
+import { useFeePlanOptions } from '@/features/fees'
 import { Button } from '@/shared/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card'
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/shared/ui/form'
 import { Input } from '@/shared/ui/input'
+import { Label } from '@/shared/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/ui/select'
 import { Textarea } from '@/shared/ui/textarea'
 
@@ -25,6 +27,7 @@ export function AddStudentPage() {
 
   const { data: batches } = useBatchOptions()
   const { data: levels } = useLevelOptions()
+  const { data: feePlans } = useFeePlanOptions()
   const { data: parents } = useParentOptions()
 
   const form = useForm<StudentForm>({
@@ -34,6 +37,7 @@ export function AddStudentPage() {
       dateOfBirth: '',
       batchId: '',
       currentLevelId: '',
+      feePlanId: '',
       emergencyContact: { name: '', phone: '', relationship: '' },
       medicalNotes: '',
       parent: { mode: 'new', fullName: '', email: '', phone: '', relationship: 'guardian' },
@@ -176,18 +180,41 @@ export function AddStudentPage() {
                 />
               </div>
 
-              <FormItem>
-                <FormLabel>Photo (optional)</FormLabel>
-                <FormControl>
-                  <Input
-                    type="file"
-                    accept="image/*"
-                    onChange={(event) => {
-                      setPhotoFile(event.target.files?.[0] ?? null)
-                    }}
-                  />
-                </FormControl>
-              </FormItem>
+              <FormField
+                control={form.control}
+                name="feePlanId"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Fee plan (optional)</FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="No fee plan" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {feePlans?.map((plan) => (
+                          <SelectItem key={plan.id} value={plan.id}>
+                            {plan.name} — ₹{plan.amount.toLocaleString('en-IN')}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <div className="space-y-2">
+                <Label>Photo (optional)</Label>
+                <Input
+                  type="file"
+                  accept="image/*"
+                  onChange={(event) => {
+                    setPhotoFile(event.target.files?.[0] ?? null)
+                  }}
+                />
+              </div>
             </CardContent>
           </Card>
 

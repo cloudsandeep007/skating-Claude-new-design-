@@ -17,6 +17,68 @@ Format:
 
 ---
 
+## 2026-09-14 — Partial payments use balance math, not a fifth fee status
+
+**Decision:** `student_fees.status` stays the original four values
+(pending/paid/overdue/waived). A partial payment is fully recorded in
+`payments` and reflected in the computed balance everywhere it's shown;
+status only flips to `paid` once payments sum to the full amount.
+
+**Options considered:** (a) add a `partial` status, flipped on the first
+payment; (b) leave status alone and derive "how much is left" from
+`payments` at read time.
+
+**Why:** A `partial` status doesn't actually carry more information than
+`amount - sum(payments)` already does, and it opens a bug class: does a
+second partial payment reaching 100% need explicit code to flip
+`partial → paid`, and does an admin correcting an over-recorded payment
+need code to flip back? (b) has one rule ("paid once fully covered") that
+both the generation RPC and the UI apply identically, instead of a status
+machine with more states than the business actually needed.
+
+**Trade-offs:** Every screen showing a fee's status must also fetch/sum
+its payments to show the balance correctly (`student_fees_list()` and
+`useStudentFees()` both pre-compute this so no screen does it by hand).
+A quick "show me all partially-paid fees" filter isn't a single `WHERE
+status = 'partial'` — it's `WHERE status IN ('pending','overdue') AND
+paid > 0`, which the admin fee list doesn't currently expose as a filter
+(revisit if it's asked for).
+
+---
+
+## 2026-09-14 — One fee RPC serves both the admin's manual trigger and the scheduled job
+
+**Decision:** `generate_upcoming_fees(p_academy_id default null)` and
+`mark_fees_overdue()` are both `SECURITY INVOKER` with no internal
+academy check. The admin's "Generate now" button calls the first with
+their own `academy_id`; the scheduled Edge Function calls both with the
+service-role key and no academy filter.
+
+**Options considered:** (a) two separate functions — one `SECURITY
+DEFINER` for the cron path with its own academy-loop, one plain one for
+the admin button; (b) one function, relying on RLS to scope the admin
+path and the service-role key's RLS bypass to cover every academy for
+the cron path.
+
+**Why:** (b) means the generation *logic* — which students are eligible,
+what period comes next — exists in exactly one place, so a future rule
+change can't accidentally diverge between "admin clicks a button" and
+"the nightly job runs". The two callers differ only in *auth context*,
+which RLS already exists to handle; writing a second function to
+re-implement that would just be duplicating what Postgres does for free.
+
+**Trade-offs:** Anyone reading `generate_upcoming_fees()` in isolation
+might assume it's always academy-scoped, since there's no visible check
+— the DATA-MODEL.md entry and the function's own comment exist
+specifically to make the dual-purpose design discoverable. The
+scheduling step itself (wiring an actual cron trigger to the Edge
+Function) is a one-time manual step in the Supabase Dashboard or a SQL
+snippet the user fills in with their own key — see RUNBOOK.md — rather
+than something this migration can set up unattended, since that would
+require embedding a service-role key in a committed file.
+
+---
+
 ## 2026-09-14 — Skill promotion is a SECURITY DEFINER RPC, not a wider RLS policy
 
 **Decision:** `promote_student()` runs as SECURITY DEFINER and re-checks

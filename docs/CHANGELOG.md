@@ -5,6 +5,37 @@ non-technical person can follow it. Newest first.
 
 ---
 
+## 2026-09-14 — Fee management: plans, generation, and manual payment recording
+
+No payment gateway yet — every payment is recorded by an admin after
+money changes hands some other way (cash, UPI, bank transfer, etc.).
+
+- **Setup (admin)** — a "Fee plans" screen: name, amount, billing cycle
+  (monthly/quarterly/annual), description. A plan is assigned to a
+  skater right from their Add/Edit form, and their first invoice is
+  generated immediately rather than waiting for the nightly job.
+- **Generation** — a scheduled job (a new Edge Function, `generate-fees`,
+  on a daily cron once you wire it up — see the runbook) creates each
+  skater's next billing period once their current one has ended, and
+  flips overdue fees automatically. Admins also get a "Generate now"
+  button on the Fees screen for on-demand use.
+- **Admin dashboard** (`/admin/fees`) — collected this month / pending /
+  overdue, each with a count and an amount; a filterable fee list
+  (status, month, batch); **Record payment** (supports paying less than
+  the full amount — a partial payment — with the balance carried
+  forward); **Waive** a fee with a required reason (kept on record);
+  per-skater payment history; **Export CSV**.
+- **Parent** — a new Fees screen (via the Fees card on Home): current
+  dues with a status badge, and every past fee with its payments listed
+  underneath like receipts.
+
+Also fixed while testing this: the skater Add/Edit forms' Photo field was
+crashing both screens outright (a leftover from Phase 1.1) — it's a plain
+label now instead of a form-managed one, since a file input was never
+part of the form's own validated state.
+
+---
+
 ## 2026-09-14 — Skill progression: the feature that isn't just attendance
 
 Skaters now climb a real progression ladder, not just get marked present

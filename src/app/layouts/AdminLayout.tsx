@@ -4,6 +4,7 @@ import {
   Bell,
   CalendarDays,
   ClipboardCheck,
+  IndianRupee,
   Layers,
   LayoutDashboard,
   LogOut,
@@ -39,6 +40,7 @@ const NAV_ITEMS = [
   { to: '/admin/schedule', label: 'Schedule', icon: CalendarDays, end: false },
   { to: '/admin/attendance', label: 'Attendance', icon: ClipboardCheck, end: false },
   { to: '/admin/progression', label: 'Progress', icon: Trophy, end: false },
+  { to: '/admin/fees', label: 'Fees', icon: IndianRupee, end: false },
   { to: '/admin/announcements', label: 'Announcements', icon: Megaphone, end: false },
 ]
 
