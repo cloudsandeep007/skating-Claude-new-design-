@@ -370,6 +370,11 @@ student via `parent_student_ids()` themselves.
   attendance, the booking is permanent history and the credit is truly
   spent, matching "credit exhausted when the academy marks attendance."
   Sets the row to `'cancelled'`, freeing the credit.
+- `class_credit_balances(p_student_ids[])` (`0015_class_credit_balances_bulk.sql`)
+  — `stable` SQL, `SECURITY INVOKER`. Same value as `class_credit_balance()`,
+  for a whole page of students in one round trip instead of one RPC call
+  per row — the "Credits" column on the admin students list
+  (`/admin/students`).
 - `class_credit_summary(p_student_id)` (`0014_credits_require_payment.sql`)
   — `stable` SQL, `SECURITY INVOKER`. Same math as
   `class_credit_balance()`, broken into `(granted, booked, bonus,

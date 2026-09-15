@@ -19,7 +19,9 @@ non-technical person can follow it. Newest first.
 - **Admins can now see a skater's credit balance too**, not just their
   bookings. The skater's profile shows a "N credits left" badge, and a
   full breakdown (granted, booked, bonus from make-up credits, available)
-  on the Attendance tab.
+  on the Attendance tab. The academy-wide student list also gained a
+  **Credits** column, right next to Fee status, so you can see who's
+  running low without opening each profile.
 
 ## 2026-09-15 — Weekly class booking and credits, for every plan type
 

@@ -140,7 +140,10 @@ gives each coach a rink-side view of what they're teaching today.
   specific "Pay this period's fee to unlock class credits" error when
   that's the actual reason. `class_credit_summary()` gives the admin
   side the same breakdown (granted/booked/bonus/available) instead of a
-  single opaque number — shown on the student's profile.
+  single opaque number — shown on the student's profile. The academy-wide
+  students list (`/admin/students`) also shows a **Credits** column,
+  backed by a batched `class_credit_balances()` call so a page of
+  students costs one round trip, not one per row.
 
 ## Edge cases
 

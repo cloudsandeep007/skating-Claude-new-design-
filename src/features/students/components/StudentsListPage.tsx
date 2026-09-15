@@ -219,6 +219,7 @@ export function StudentsListPage() {
                     <TableHead>Level</TableHead>
                     <TableHead>Attendance</TableHead>
                     <TableHead>Fee status</TableHead>
+                    <TableHead>Credits</TableHead>
                     <TableHead>
                       <button
                         type="button"
@@ -280,6 +281,19 @@ export function StudentsListPage() {
                         <StatusBadge tone={feeStatusTone(student.feeStatus)}>
                           {feeStatusLabel(student.feeStatus)}
                         </StatusBadge>
+                      </TableCell>
+                      <TableCell>
+                        {student.creditsAvailable === null ? (
+                          <span className="text-muted-foreground">—</span>
+                        ) : (
+                          <span
+                            className={
+                              student.creditsAvailable > 0 ? 'font-bold' : 'font-bold text-brand-400'
+                            }
+                          >
+                            {student.creditsAvailable} left
+                          </span>
+                        )}
                       </TableCell>
                       <TableCell className="text-muted-foreground">
                         {formatLastActive(student.lastActiveAt)}

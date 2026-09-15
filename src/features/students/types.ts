@@ -27,6 +27,9 @@ export interface StudentListItem {
   feeStatus: Enums<'fee_status'> | null
   lastActiveAt: string | null
   parentName: string | null
+  /** Class credits left to book — null if this student isn't on a
+   * batch-scoped plan (nothing to show). */
+  creditsAvailable: number | null
 }
 
 export type StudentSortColumn = 'full_name' | 'joined_date'

@@ -38,12 +38,13 @@ async function fetchStudentsPage(params: StudentListParams) {
 
   const ids = data.map((row) => row.id)
 
-  const [attendanceByStudent, feeByStudent, lastActiveByStudent, parentByStudent] =
+  const [attendanceByStudent, feeByStudent, lastActiveByStudent, parentByStudent, creditsByStudent] =
     await Promise.all([
       fetchAttendancePcts(ids),
       fetchLatestFeeStatuses(ids),
       fetchLastActive(ids),
       fetchPrimaryParentNames(ids),
+      fetchCreditBalances(ids),
     ])
 
   const items: StudentListItem[] = data.map((row) => ({
@@ -58,6 +59,7 @@ async function fetchStudentsPage(params: StudentListParams) {
     feeStatus: feeByStudent.get(row.id) ?? null,
     lastActiveAt: lastActiveByStudent.get(row.id) ?? null,
     parentName: parentByStudent.get(row.id) ?? null,
+    creditsAvailable: creditsByStudent.get(row.id) ?? null,
   }))
 
   return { items, total: count ?? 0 }
@@ -101,6 +103,16 @@ async function fetchLastActive(studentIds: string[]) {
   for (const row of data ?? []) {
     if (!map.has(row.student_id)) map.set(row.student_id, row.marked_at)
   }
+  return map
+}
+
+/** class_credit_balances() RPC — one round trip for the whole page, instead
+ * of one class_credit_balance() call per row. */
+async function fetchCreditBalances(studentIds: string[]) {
+  const map = new Map<string, number | null>()
+  if (studentIds.length === 0) return map
+  const { data } = await supabase.rpc('class_credit_balances', { p_student_ids: studentIds })
+  for (const row of data ?? []) map.set(row.student_id, row.available)
   return map
 }
 

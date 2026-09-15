@@ -1483,6 +1483,13 @@ export type Database = {
         Returns: undefined
       }
       class_credit_balance: { Args: { p_student_id: string }; Returns: number }
+      class_credit_balances: {
+        Args: { p_student_ids: string[] }
+        Returns: {
+          available: number
+          student_id: string
+        }[]
+      }
       class_credit_summary: {
         Args: { p_student_id: string }
         Returns: {
