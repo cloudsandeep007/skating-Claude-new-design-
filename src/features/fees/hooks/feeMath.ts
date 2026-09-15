@@ -28,26 +28,86 @@ export interface Period {
   periodEnd: string
 }
 
-/** Mirrors generate_upcoming_fees()'s period math in the database exactly:
- * the next period starts the day after the last one ended (or on the
- * student's join date, for a first invoice) and runs one full billing
- * cycle, inclusive. Used both to preview "next fee" in the UI and to keep
- * this rule under a unit test — fee math is where quiet bugs cost money. */
+/** Defaults for the two per-academy billing settings
+ * (`academies.settings.fee_generate_lead_days` / `.fee_grace_days`). */
+export const DEFAULT_LEAD_DAYS = 7
+export const DEFAULT_GRACE_DAYS = 5
+
+function dayOfMonth(isoDate: string): number {
+  return Number(isoDate.slice(8, 10))
+}
+
+function daysInMonth(isoDate: string): number {
+  const d = new Date(`${isoDate}T00:00:00`)
+  return new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate()
+}
+
+function endOfMonth(isoDate: string): string {
+  return `${isoDate.slice(0, 8)}${String(daysInMonth(isoDate)).padStart(2, '0')}`
+}
+
+/** A period that doesn't start on the 1st is a short "stub" that runs to
+ * the end of its month, so every period after it lines up with the
+ * calendar. Happens for a first invoice after a mid-month join, and once
+ * for any student whose previous period was on the old join-date
+ * anniversary scheme. */
+export function isStubPeriod(periodStart: string): boolean {
+  return dayOfMonth(periodStart) !== 1
+}
+
+/** Mirrors generate_upcoming_fees()'s period math in the database exactly.
+ * `lastPeriodEnd` is the student's latest period on ANY plan — switching
+ * plans continues from where the old one stopped, never restarts. The next
+ * period starts the day after it (or on the join date for a first
+ * invoice); a start on the 1st runs one full billing cycle, anything else
+ * is a stub to month end. Under a unit test because fee math is where
+ * quiet bugs cost money. */
 export function nextPeriod(
   billingCycle: BillingCycle,
   lastPeriodEnd: string | null,
   joinedDate: string,
 ): Period {
   const periodStart = lastPeriodEnd ? addDays(lastPeriodEnd, 1) : joinedDate
-  const periodEnd = addDays(addMonths(periodStart, CYCLE_MONTHS[billingCycle]), -1)
+  const periodEnd = isStubPeriod(periodStart)
+    ? endOfMonth(periodStart)
+    : addDays(addMonths(periodStart, CYCLE_MONTHS[billingCycle]), -1)
   return { periodStart, periodEnd }
 }
 
-/** Mirrors generate_upcoming_fees()'s "due" rule: generate a new period
- * only once the current one has ended (or none exists yet) — never
- * further ahead than the coming period. */
-export function isPeriodDue(lastPeriodEnd: string | null, today: string): boolean {
-  return lastPeriodEnd === null || lastPeriodEnd < today
+/** Mirrors generate_upcoming_fees()'s "due" rule: the coming period is
+ * generated `leadDays` before the current one ends (or right away when
+ * none exists yet), so a bill exists before it's due — and never further
+ * ahead than that one period. */
+export function isPeriodDue(
+  lastPeriodEnd: string | null,
+  today: string,
+  leadDays = DEFAULT_LEAD_DAYS,
+): boolean {
+  return lastPeriodEnd === null || lastPeriodEnd < addDays(today, leadDays)
+}
+
+/** Mirrors generate_upcoming_fees()'s due-date rule: `graceDays` after the
+ * period starts, or after today if the period already started (a late
+ * run) — a fee is never overdue on the day it's created. */
+export function dueDate(periodStart: string, today: string, graceDays = DEFAULT_GRACE_DAYS): string {
+  return addDays(periodStart > today ? periodStart : today, graceDays)
+}
+
+/** Mirrors generate_upcoming_fees()'s cycle-plan pricing: a full period is
+ * the plan amount; a stub is the monthly-equivalent amount pro-rated by
+ * the days it covers. (Per-class plans don't need this — their class
+ * count only ever covers the period's own days.) */
+export function prorateCycleAmount(
+  amount: number,
+  billingCycle: BillingCycle,
+  period: Period,
+): number {
+  if (!isStubPeriod(period.periodStart)) return amount
+  const monthly = amount / CYCLE_MONTHS[billingCycle]
+  const start = new Date(`${period.periodStart}T00:00:00`)
+  const end = new Date(`${period.periodEnd}T00:00:00`)
+  const daysCovered = Math.round((end.getTime() - start.getTime()) / 86_400_000) + 1
+  return round2((monthly * daysCovered) / daysInMonth(period.periodStart))
 }
 
 /** Mirrors mark_fees_overdue(): only a still-pending fee whose due date

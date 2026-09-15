@@ -72,14 +72,22 @@ function invalidateBookings(queryClient: ReturnType<typeof useQueryClient>) {
   void queryClient.invalidateQueries({ queryKey: ['parent', 'upcoming'] })
 }
 
-/** book_class_slot() RPC — reserves a credit against a specific upcoming
- * session in the caller's child's assigned batch. */
+export interface BookingSlotInput {
+  sessionId: string
+  /** Which child — a parent with two children in the same batch must say
+   * whose credit is being spent. */
+  studentId: string
+}
+
+/** book_class_slot() RPC — reserves one of the named child's credits
+ * against a specific upcoming session in their batch. */
 export function useBookClassSlot() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: async (sessionId: string) => {
+    mutationFn: async ({ sessionId, studentId }: BookingSlotInput) => {
       const { data, error } = await supabase.rpc('book_class_slot', {
         p_session_id: sessionId,
+        p_student_id: studentId,
       })
       if (error) throw error
       return data
@@ -95,9 +103,10 @@ export function useBookClassSlot() {
 export function useCancelClassSlot() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: async (sessionId: string) => {
+    mutationFn: async ({ sessionId, studentId }: BookingSlotInput) => {
       const { data, error } = await supabase.rpc('cancel_class_slot', {
         p_session_id: sessionId,
+        p_student_id: studentId,
       })
       if (error) throw error
       return data

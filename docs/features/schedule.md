@@ -144,6 +144,17 @@ gives each coach a rink-side view of what they're teaching today.
   students list (`/admin/students`) also shows a **Credits** column,
   backed by a batched `class_credit_balances()` call so a page of
   students costs one round trip, not one per row.
+- **The parent says which child; one booking at a time per child.**
+  (2026-09-15, audit Phase 0.) `book_class_slot(session, student)` and
+  `cancel_class_slot(session, student)` take the child explicitly — the
+  schedule page passes the child it's showing — and verify that child is
+  linked to the caller's account, so a parent with two children in the
+  same batch always books for the right one. Booking also locks the
+  child's row for the moment it takes, so two requests racing for the
+  last credit (a double tap on slow Wi-Fi, two phones) queue up and the
+  second is refused instead of both succeeding and the balance going
+  to −1. A booked session outside the 7-day booking window still shows
+  as **Booked** on the page.
 
 ## Edge cases
 

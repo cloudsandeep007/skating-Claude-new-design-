@@ -17,6 +17,98 @@ Format:
 
 ---
 
+## 2026-09-15 — Billing periods: continue from the last period on any plan; stub-then-align; generate ahead with grace
+
+**Decision:** Three linked rules in `generate_upcoming_fees()` (migration
+0019, Phase 0 of the payments audit), replacing the calendar-alignment
+rule from earlier today:
+1. The next period is anchored on the student's latest `period_end`
+   across **all** their fees (any plan, or a deleted plan's null
+   `fee_plan_id`), and starts the day after it — never earlier.
+2. A period whose start isn't the 1st is a **stub** to the end of that
+   month; cycle plans are priced pro-rata (`amount / months_in_cycle ×
+   days_covered / days_in_month`), per-class plans are pro-rata by
+   construction. Every subsequent period starts on the 1st and runs a
+   full cycle.
+3. The coming period is generated `fee_generate_lead_days` (default 7)
+   before the current one ends, and `due_date = greatest(period_start,
+   today) + fee_grace_days` (default 5). Both are read from
+   `academies.settings`.
+
+**Options considered:**
+- *Keep the per-plan anchor* — rejected: it's the direct cause of billing
+  silently stopping after a plan switch (audit F-01), because the fallback
+  to the join month always collides with an existing period.
+- *Snap back to the 1st of the month* (this afternoon's 0017) — rejected:
+  double-bills the days between an old anniversary-style period's end
+  and the 1st (F-04). Snapping forward with a stub is the standard
+  "align on next renewal" pattern and never re-bills a day.
+- *Bill the first period from the 1st of the join month at full price*
+  (0017's accepted trade-off) — replaced by the stub: a student joining
+  on the 15th now pays for the 15th–30th only, which is both fairer and
+  what the per-class plan was already doing.
+- *Generate after the period ends, due on period start* (all prior
+  versions) — rejected: with 1st-of-month starts, that makes every fee
+  overdue on creation (F-03, seen live). Generating ahead is also what
+  lets a family see a bill before it's due.
+- *Hard-coded 7/5 days vs. settings* — settings chosen so a second
+  academy on the platform can differ without a deploy; defaults apply
+  when the key is absent.
+
+**Why:** Each rule closes a reproducible money bug from the audit, and
+together they make the period sequence for any student a clean chain
+with no gaps, no overlaps, and no fee that's overdue on the day it
+appears — invariants I-5 and I-6 in the audit report.
+
+**Trade-offs:** The first invoice for a mid-month join is now smaller
+than the plan amount, which an admin might not expect if they're used
+to "first month is full price" — the period dates on the fee make it
+obvious. A quarterly/annual plan joined mid-month gets a one-month stub
+before its first full cycle. `feeMath.ts` mirrors all three rules under
+unit tests (it had silently drifted from the database after 0017; that's
+fixed and the tests now assert the current rules).
+
+## 2026-09-15 — Credit balances can't be pushed negative by a delete; periods with payments can't be deleted
+
+**Decision:** `delete_payment()` and `delete_student_fee()` now (a)
+refuse when the student's credit balance would end up below zero *and*
+lower than before the action, naming the number of upcoming bookings to
+cancel; and (b) `delete_student_fee()` refuses outright when any payment
+exists on the period. `book_class_slot()` takes the student explicitly
+and locks the student row (`select … for update`) for the duration of
+the check-and-insert.
+
+**Options considered:**
+- *Absolute "balance ≥ 0" guard* — rejected for now: skaters who already
+  had a negative balance from before the guard (S1 had −6 today) would
+  be un-cleanable; the "no worse than before" form lets unrelated
+  periods be deleted while still blocking any action that takes credits
+  away from spent bookings. The absolute invariant arrives with the
+  credit ledger in Phase 2, after existing negatives are resolved.
+- *Auto-cancel bookings on delete* (the eventual Phase 2 clawback
+  policy) — deferred: it needs a notification to the parent and a
+  preview in the admin's confirm dialog to be safe; refusing with a
+  clear count is the honest interim.
+- *Cascade-delete payments with the period* (0016's behaviour) — rejected
+  (audit F-07): a payment is a record of money received and must never
+  disappear as a side effect of something else. Phase 1 replaces
+  payment deletion with voiding altogether.
+- *Advisory lock vs. row lock for booking* — row lock on `students`
+  chosen: simplest, scoped exactly to one skater, released at commit.
+- *Keep `limit 1` child selection* — rejected (F-05): a parent with two
+  children in one batch was booking for an arbitrary one.
+
+**Why:** These are the audit's I-1 (never negative) and I-3 (payments are
+never destroyed) invariants, in their smallest safe form.
+
+**Trade-offs:** An admin who genuinely needs to reverse a payment for a
+skater with bookings has to cancel those bookings first (from the
+parent's side today — there's no admin cancel-booking UI yet; Phase 2).
+The lock serialises bookings per skater, which is imperceptible at this
+scale. Changing `book_class_slot`/`cancel_class_slot`'s signature means
+any client on the old one-argument form breaks — only
+`ChildSchedulePage` called it, and it's updated.
+
 ## 2026-09-15 — Unpaid fees stay live-synced to plan/batch/holiday changes
 
 **Decision:** Refined the "amounts are a locked-in historical snapshot"

@@ -5,6 +5,54 @@ non-technical person can follow it. Newest first.
 
 ---
 
+## 2026-09-15 — Payments & credits audit, Phase 0: nothing loses money or goes negative
+
+A full audit of the fees, payments and class-credit system found four
+critical problems and several serious ones. This release closes the ones
+that can lose money or leave a skater with negative credits. (The audit
+report lists all 22 findings and the remaining phases.)
+
+- **Switching a skater's fee plan no longer stops their billing.** Before,
+  moving a skater to a different plan (or deleting a plan and assigning a
+  new one) meant no further fees were ever generated for them — the next
+  period kept trying to restart at their join month, found a fee already
+  there, and gave up, forever. Now the next period always continues from
+  wherever their last one ended, on any plan.
+- **A new fee is never born overdue.** The due date used to be the first
+  day of the period, which — now that periods start on the 1st — was
+  usually already in the past when the fee was created, so it showed
+  "Overdue" before the parent had seen it. Now the coming period is
+  generated 7 days before the current one ends, and the due date is
+  5 days after the period starts (or after today, if it's created late).
+  Both numbers are per-academy settings (`fee_generate_lead_days`,
+  `fee_grace_days`).
+- **This afternoon's calendar-month change no longer double-bills.** A
+  skater whose previous period ended mid-month (the old join-date scheme)
+  now gets a short "stub" period from the day after it to the end of that
+  month, priced for those days only — then clean calendar months. It never
+  snaps back over days already billed. The same applies to a mid-month
+  join: the first fee covers join date → month end, pro-rata.
+- **Two taps can't spend one credit twice.** Booking a class now locks the
+  skater for the moment it takes, so two requests racing for the last
+  credit queue up and the second is refused instead of both succeeding.
+- **A parent with two children in one batch books for the right child.**
+  The booking used to guess; it now takes the child from the page you're
+  on and checks they're linked to your account.
+- **Deleting a payment or a period can't leave a skater short of credits.**
+  If removing it would leave them with more booked classes than credits,
+  it's refused with the exact number of upcoming bookings to cancel first.
+  (A skater whose balance was already negative from before this rule can
+  still have unrelated periods cleaned up.)
+- **A period with payments can't be deleted.** Money that was received is
+  never removed as a side effect — delete each payment deliberately
+  first, then the period. The dialog now says so instead of offering a
+  delete button.
+- **Fixed: "Delete payment" never actually worked** — a type mismatch in
+  the status recalculation made every call fail. It works now, with the
+  guard above.
+- Booked sessions beyond the 7-day booking window now still show as
+  Booked on the parent's schedule (they were hidden before).
+
 ## 2026-09-15 — Unpaid fees now stay in sync with plan and batch edits
 
 - **Fixed: editing a batch's schedule or a fee plan's rate after a fee

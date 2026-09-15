@@ -69,11 +69,15 @@ collected some other way (cash, UPI, bank transfer, etc.).
   payment** / **Waive** actions per fee period — the natural place to
   handle one student's fee without leaving their profile.
 - **Delete payment** (a small trash icon on each payment line) and
-  **Delete period** (removes the whole fee period, and any payments on
-  it, in one action) — for correcting a mistake, e.g. a fee generated
+  **Delete period** — for correcting a mistake, e.g. a fee generated
   before its plan was finished being configured. Both ask for
-  confirmation first and can't be undone; use "Delete period" then
-  **Generate now** to get a clean, correctly-priced replacement.
+  confirmation and can't be undone. Two guards (2026-09-15, audit
+  Phase 0): a period that has any payment on it **can't be deleted** —
+  the dialog says to delete each payment first (money received is never
+  removed as a side effect); and either delete is **refused if it would
+  leave the skater with more booked classes than credits**, with the
+  exact number of upcoming bookings to cancel first. Use "Delete period"
+  then **Generate now** to get a clean, correctly-priced replacement.
 
 **Parent** (`/parent/fees`, reached from the Fees card on Home)
 - Current dues (amount, due date, status badge) and a receipt-style
@@ -125,19 +129,31 @@ collected some other way (cash, UPI, bank transfer, etc.).
   nothing about status — this is the whole mechanism for supporting
   partial payments without a fifth enum value. (`hooks/feeMath.ts`,
   unit-tested: `remainingBalance`, `isFullyPaid`.)
-- **Generation is just-in-time.** `generate_upcoming_fees()` creates a
-  student's *next* period only once their current one has ended (or they
-  have none yet) — never further ahead than the coming period, and never
-  a duplicate (`unique(student_id, period_start)` is the backstop).
-  (`hooks/feeMath.ts`: `nextPeriod`, `isPeriodDue`, unit-tested including
-  the Postgres month-clamping edge case — see DECISIONS.)
-- **Periods are calendar-month-aligned, not tied to join date.** Every
-  period starts on the 1st of a month and ends on a month's last day
-  (Sep 1 – Sep 30), regardless of when the student joined — a student
-  joining Sep 15 gets a Sep 1–30 first period, not Sep 15–Oct 14. This
-  only affects periods generated from now on; already-generated fees
-  keep their original dates (see DECISIONS, 2026-09-15). No proration —
-  a mid-month join's first period is still billed at the full amount.
+- **Generation runs a week ahead, never a duplicate.**
+  `generate_upcoming_fees()` creates a student's *next* period once their
+  current one is within `fee_generate_lead_days` (default 7) of ending —
+  or immediately if they have none yet — so the bill exists before it's
+  due. Never further ahead than that one period; never a duplicate
+  (`unique(student_id, period_start)` is the backstop). (`hooks/feeMath.ts`:
+  `nextPeriod`, `isPeriodDue`, unit-tested.)
+- **Periods chain from the last one, on any plan.** The next period starts
+  the day after the student's latest period — whichever plan it was on,
+  including a plan that has since been deleted. Switching plans continues
+  billing from where the old plan stopped; it never restarts at the join
+  date. (Before 2026-09-15 it did, and that silently stopped billing —
+  see DECISIONS.)
+- **Stub, then calendar months.** A period that doesn't start on the 1st
+  (a mid-month join, or the one-time transition from the old join-date
+  scheme) runs only to the end of that month and is priced pro-rata —
+  per-class plans by counting the classes in range, cycle plans as
+  `monthly amount × days covered / days in month`. Every period after it
+  is a full calendar month / quarter / year starting on the 1st. Already-
+  generated fees keep their dates. (`hooks/feeMath.ts`: `isStubPeriod`,
+  `prorateCycleAmount`, unit-tested.)
+- **A fee is never overdue on the day it's created.** `due_date` is
+  `fee_grace_days` (default 5) after the period starts — or after today,
+  if generated late. Both day-counts are per-academy settings
+  (`academies.settings`); see DATA-MODEL. (`hooks/feeMath.ts`: `dueDate`.)
 - **Overdue is a one-way, pending-only flip.** `mark_fees_overdue()` only
   ever moves `pending` → `overdue`; paid and waived fees are untouched
   regardless of their due date, and a fee due *today* is not yet overdue

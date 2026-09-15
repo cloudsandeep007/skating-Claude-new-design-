@@ -107,22 +107,27 @@ export function ChildSchedulePage() {
                   </div>
                 </div>
                 {cancelled && <StatusBadge tone="danger">Cancelled</StatusBadge>}
-                {onBookingPlan && !cancelled && s.sessionDate <= bookableUntil && (
+                {onBookingPlan &&
+                  !cancelled &&
+                  (s.sessionDate <= bookableUntil || bookedIds?.has(s.id)) && (
                   <BookingControl
                     booked={bookedIds?.has(s.id) ?? false}
                     canBook={balance > 0}
                     unpaid={unpaidBlocksBooking}
                     onBook={() => {
-                      bookSlot.mutate(s.id, {
-                        onError: (error) => {
-                          toast.error(
-                            error instanceof Error ? error.message : 'Could not book this class.',
-                          )
+                      bookSlot.mutate(
+                        { sessionId: s.id, studentId: child.id },
+                        {
+                          onError: (error) => {
+                            toast.error(
+                              error instanceof Error ? error.message : 'Could not book this class.',
+                            )
+                          },
                         },
-                      })
+                      )
                     }}
                     onCancel={() => {
-                      cancelSlot.mutate(s.id, {
+                      cancelSlot.mutate({ sessionId: s.id, studentId: child.id }, {
                         onError: (error) => {
                           toast.error(
                             error instanceof Error

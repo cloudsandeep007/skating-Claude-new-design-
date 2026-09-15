@@ -1408,6 +1408,10 @@ export type Database = {
       }
     }
     Functions: {
+      assert_credits_not_negative: {
+        Args: { p_action: string; p_student_id: string }
+        Returns: undefined
+      }
       at_risk_students_for: {
         Args: { p_days?: number; p_min_sessions?: number; p_threshold?: number }
         Returns: {
@@ -1443,7 +1447,7 @@ export type Database = {
         }[]
       }
       book_class_slot: {
-        Args: { p_session_id: string }
+        Args: { p_session_id: string; p_student_id: string }
         Returns: {
           academy_id: string
           booked_at: string
@@ -1461,7 +1465,7 @@ export type Database = {
         }
       }
       cancel_class_slot: {
-        Args: { p_session_id: string }
+        Args: { p_session_id: string; p_student_id: string }
         Returns: {
           academy_id: string
           booked_at: string
@@ -1667,6 +1671,10 @@ export type Database = {
         }[]
       }
       publish_due_announcements: { Args: never; Returns: number }
+      recompute_open_fees_for_plan: {
+        Args: { p_fee_plan_id: string }
+        Returns: undefined
+      }
       record_payment: {
         Args: {
           p_amount: number

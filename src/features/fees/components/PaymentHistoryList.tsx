@@ -166,31 +166,43 @@ export function PaymentHistoryList({
                   </AlertDialogTrigger>
                   <AlertDialogContent>
                     <AlertDialogHeader>
-                      <AlertDialogTitle>Delete this fee period?</AlertDialogTitle>
+                      <AlertDialogTitle>
+                        {fee.payments.length > 0
+                          ? "This period can't be deleted yet"
+                          : 'Delete this fee period?'}
+                      </AlertDialogTitle>
                       <AlertDialogDescription>
                         {formatDate(fee.periodStart)} – {formatDate(fee.periodEnd)},{' '}
-                        {formatRupees(fee.amount)}.
-                        {fee.payments.length > 0 &&
-                          ` This also deletes its ${fee.payments.length} payment${fee.payments.length === 1 ? '' : 's'} (${formatRupees(paid)}).`}{' '}
-                        This can't be undone.
+                        {formatRupees(fee.amount)}.{' '}
+                        {fee.payments.length > 0
+                          ? `It has ${fee.payments.length} payment${fee.payments.length === 1 ? '' : 's'} recorded (${formatRupees(paid)}). Money that was received is never removed as a side effect — delete ${fee.payments.length === 1 ? 'that payment' : 'each payment'} first, then the period.`
+                          : "This can't be undone."}
                       </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
-                      <AlertDialogCancel>Keep it</AlertDialogCancel>
-                      <AlertDialogAction
-                        onClick={() => {
-                          deleteFee.mutate(fee.id, {
-                            onSuccess: () => {
-                              toast.success('Fee period deleted.')
-                            },
-                            onError: () => {
-                              toast.error('Could not delete this fee period.')
-                            },
-                          })
-                        }}
-                      >
-                        Delete period
-                      </AlertDialogAction>
+                      <AlertDialogCancel>
+                        {fee.payments.length > 0 ? 'Got it' : 'Keep it'}
+                      </AlertDialogCancel>
+                      {fee.payments.length === 0 && (
+                        <AlertDialogAction
+                          onClick={() => {
+                            deleteFee.mutate(fee.id, {
+                              onSuccess: () => {
+                                toast.success('Fee period deleted.')
+                              },
+                              onError: (error) => {
+                                toast.error(
+                                  error instanceof Error
+                                    ? error.message
+                                    : 'Could not delete this fee period.',
+                                )
+                              },
+                            })
+                          }}
+                        >
+                          Delete period
+                        </AlertDialogAction>
+                      )}
                     </AlertDialogFooter>
                   </AlertDialogContent>
                 </AlertDialog>
@@ -234,7 +246,9 @@ export function PaymentHistoryList({
                             <AlertDialogDescription>
                               {formatRupees(p.amount)} recorded {formatDate(p.paidDate)} via{' '}
                               {PAYMENT_METHOD_LABEL[p.method]}. The fee's status will be
-                              recalculated from what's left. This can't be undone.
+                              recalculated from what's left. If this would take away credits
+                              the skater has already booked with, it will be refused. This
+                              can't be undone.
                             </AlertDialogDescription>
                           </AlertDialogHeader>
                           <AlertDialogFooter>
@@ -245,8 +259,12 @@ export function PaymentHistoryList({
                                   onSuccess: () => {
                                     toast.success('Payment deleted.')
                                   },
-                                  onError: () => {
-                                    toast.error('Could not delete this payment.')
+                                  onError: (error) => {
+                                    toast.error(
+                                      error instanceof Error
+                                        ? error.message
+                                        : 'Could not delete this payment.',
+                                    )
                                   },
                                 })
                               }}
