@@ -24,7 +24,12 @@ import {
   CoachStudentSkillsPage,
   LevelsManagePage,
 } from '@/features/progression'
-import { CoachInboxPage, CoachTodayPage, WeekCalendarPage } from '@/features/schedule'
+import {
+  CoachInboxPage,
+  CoachTodayPage,
+  UpcomingBookingsPage,
+  WeekCalendarPage,
+} from '@/features/schedule'
 import {
   AddStudentPage,
   EditStudentPage,
@@ -78,6 +83,7 @@ export const router = createBrowserRouter([
           { path: 'batches/:batchId', element: <BatchDetailPage /> },
           { path: 'batches/:batchId/edit', element: <EditBatchPage /> },
           { path: 'schedule', element: <WeekCalendarPage /> },
+          { path: 'schedule/coming-up', element: <UpcomingBookingsPage /> },
           { path: 'attendance', element: <AdminAttendancePage /> },
           { path: 'announcements', element: <AdminAnnouncementsPage /> },
           { path: 'progression', element: <AdminProgressionPage /> },

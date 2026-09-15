@@ -134,6 +134,25 @@ Plus the admin's view/override/export tools and the parent's history.
   of `MarkAttendancePage` changed — only where the roster query pulls
   its student list from.
 
+## Credits and the roster (2026-09-16)
+
+- The marking roster lists **every** actively-enrolled skater in the
+  batch, each tagged **BOOKED** or **NOT BOOKED** when they're on a
+  credit plan (legacy academy-wide-plan skaters have no tag). A booked
+  skater is who the coach expects; an un-booked one can still be marked
+  — a walk-in.
+- **"Everyone present" only pre-marks the booked skaters** (and legacy
+  ones). Un-booked credit-plan skaters are left for the coach to mark
+  deliberately, because marking them present spends one of their credits.
+- **Attendance is the source of truth for credits.** Present/late spends
+  a credit (creating the booking if there wasn't one); absent/excused
+  returns a booked credit; a booking left unmarked when the session is
+  completed is returned. Corrections later (within the 24-hour window
+  for coaches, any time for admins) move the credit the other way.
+- **Make-up credits** are now only granted to skaters *outside* the
+  credit system (academy-wide plans). For everyone else the returned
+  credit is the make-up.
+
 ## Edge cases
 
 - **Two coaches mark the same session** — last write wins per student

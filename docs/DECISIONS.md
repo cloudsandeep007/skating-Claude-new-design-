@@ -17,6 +17,81 @@ Format:
 
 ---
 
+## 2026-09-16 — Credits live in a ledger; pay-per-class is prepaid top-ups with a term; attendance is the source of truth
+
+**Decision:** (Migrations 0021–0023, replacing the derived-balance
+formula from 0012/0014.) Three linked changes, driven by the client's
+description of how they actually sell classes:
+
+1. **`credit_ledger`** — an append-only table of credit movements
+   (`grant`, `clawback`, `spend`, `refund`, `expire`, `adjust`); balance
+   = `sum(delta)`. Written only by SECURITY DEFINER functions/triggers:
+   a fee becoming paid/waived grants `credits_granted` (and un-paying
+   claws it back); a booking becoming `booked` spends 1 and `cancelled`
+   refunds it; nightly expiry; manual `adjust_class_credits()`. Seeded
+   from the pre-existing state so no balance moved on deploy.
+2. **Pay-per-class = top-ups with a term.** `generate_upcoming_fees()`
+   no longer creates periods for `per_class` plans. Instead
+   `record_credit_topup(student, classes, …)` creates a `student_fees`
+   row of `kind = 'topup'` (amount = classes × rate, `credits_granted` =
+   classes) and pays it through `record_payment()`. Its `period_start/
+   period_end` are the **term**: a top-up ≥ the cycle minimum
+   (`topup_min_classes` setting; defaults 8 / 24 / 96) starts a term of
+   one cycle from the payment date, or — if a term is still active —
+   the next term follows on from its end; a smaller top-up inside an
+   active term keeps the term's dates. The current term is the latest
+   paid credit-bearing fee (`credit_plan_status()`); when it ends with
+   nothing newer paid, `expire_lapsed_credits()` writes an `expire` line
+   for the remaining balance.
+3. **Attendance is truth.** A trigger on `attendance` upserts a
+   `booked` booking (source `'attendance'`) on present/late and cancels
+   the booking on absent/excused; `save_attendance()` ends by cancelling
+   any still-`booked` booking with no mark. The ledger triggers do the
+   rest. Make-up credits are no longer created for credit-plan skaters.
+   A present mark with no credits left takes the balance negative on
+   purpose ("owes N classes") — booking is refused until topped up.
+
+**Options considered:**
+- *Keep the derived formula and bolt on expiry/walk-ins* — rejected:
+  "expire what's left" and "reverse a spend on correction" are
+  impossible to express as a subtraction over three tables without
+  special-case rows; a ledger makes each of them one insert and makes
+  the statement screen free. This was already the audit's Phase 2 plan.
+- *A separate wallet/top-up table* — rejected in favour of `kind =
+  'topup'` on `student_fees`: the receipt number, idempotency key,
+  void-with-reason, guard trigger and audit trail from Phase 1 all apply
+  unchanged, and "credits come from a paid fee" stays the one rule.
+- *Term semantics: extend from today vs. from the current end* — from
+  the current end (chosen), so renewing early is never penalised. Extra
+  classes inside a term don't move the term, so a parent can't stretch
+  a monthly plan by buying one class a month.
+- *Absence = spend + make-up bonus (the 0011/0012 design) vs. absence =
+  refund* — refund (chosen): same net effect for the family, one
+  mechanism instead of two competing ones (audit F-13), no make-up row
+  to manually "fulfil". Legacy academy-wide-plan skaters keep the
+  make-up mechanism because they have no bookings to refund.
+- *Refuse to mark a walk-in present when they have no credits* —
+  rejected: the coach shouldn't be arguing about money at the rink;
+  record the truth, show the debt, let the admin collect.
+- *Flat-fee plans exempt from expiry* — rejected: the client asked for
+  "one active plan"; a flat period that isn't renewed (paid) by the time
+  it ends lapses the same way. In practice the next period is generated
+  a week ahead, so paying on time keeps the term continuous.
+
+**Why:** It matches how the academy sells (blocks of classes, valid for
+a period), removes the fake ₹15,000 pending amounts, and closes audit
+findings F-02 (full clawback policy), F-11, F-12, F-13, F-16 (expiry)
+and F-19 in one coherent model whose every movement is visible on a
+statement.
+
+**Trade-offs:** Legacy per-class period fees already generated stay as
+history and still count as a term. The `class_credit_summary()` shape
+changed (breakdown by ledger kind instead of granted/booked/bonus) —
+its two callers were updated. `useMakeupCredits`/`MakeupCreditsCard`
+still exist for legacy skaters. The Edge Function must be redeployed for
+nightly expiry (done 2026-09-16). "Everyone present" deliberately skips
+un-booked credit-plan skaters, so a coach marks walk-ins one by one.
+
 ## 2026-09-15 — Payments are an append-only ledger; fee status is derived, never typed
 
 **Decision:** (Audit Phase 1, migration 0020.) `payments` rows are never

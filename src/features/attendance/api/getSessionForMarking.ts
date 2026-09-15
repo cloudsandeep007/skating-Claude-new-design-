@@ -41,11 +41,11 @@ interface BookedRow {
   }
 }
 
-/** A session's roster is: actively-enrolled students whose current plan
- * has no batch (legacy/academy-wide, unaffected by the credit system) —
- * union — actively-enrolled students with an active booking for THIS
- * session. A batch-scoped-plan student who never booked simply isn't
- * expected that day. */
+/** A session's roster is every actively-enrolled student in the batch,
+ * flagged with whether they booked this session. Booked skaters are who
+ * the coach expects; the rest can still be marked — attendance is the
+ * final word on credits, so a walk-in marked present spends a credit
+ * exactly as if they'd booked. */
 async function fetchMarkingData(sessionId: string): Promise<MarkingData> {
   const { data: session, error } = await supabase
     .from('schedule_sessions')
@@ -77,10 +77,24 @@ async function fetchMarkingData(sessionId: string): Promise<MarkingData> {
   if (bookedResult.error) throw bookedResult.error
   if (marksResult.error) throw marksResult.error
 
-  const legacyRoster = enrolledResult.data.filter((r) => r.student.fee_plan?.batch_id == null)
-  const rosterById = new Map<string, RosterRow['student'] | BookedRow['student']>()
-  for (const r of legacyRoster) rosterById.set(r.student.id, r.student)
-  for (const r of bookedResult.data) rosterById.set(r.student.id, r.student)
+  const bookedIds = new Set(bookedResult.data.map((r) => r.student.id))
+  const rosterById = new Map<
+    string,
+    (RosterRow['student'] | BookedRow['student']) & { booked: boolean; onCreditPlan: boolean }
+  >()
+  for (const r of enrolledResult.data) {
+    rosterById.set(r.student.id, {
+      ...r.student,
+      booked: bookedIds.has(r.student.id),
+      onCreditPlan: r.student.fee_plan?.batch_id != null,
+    })
+  }
+  // A booking from a skater no longer enrolled (moved batch) still shows.
+  for (const r of bookedResult.data) {
+    if (!rosterById.has(r.student.id)) {
+      rosterById.set(r.student.id, { ...r.student, booked: true, onCreditPlan: true })
+    }
+  }
 
   const saved: Marks = {}
   for (const row of marksResult.data) saved[row.student_id] = row.status
@@ -107,8 +121,15 @@ async function fetchMarkingData(sessionId: string): Promise<MarkingData> {
         fullName: s.full_name,
         photoUrl: s.photo_url,
         levelName: s.current_level?.name ?? null,
+        booked: s.booked,
+        onCreditPlan: s.onCreditPlan,
       }))
-      .sort((a, b) => a.fullName.localeCompare(b.fullName)),
+      .sort(
+        (a, b) =>
+          Number(b.booked) - Number(a.booked) ||
+          Number(b.onCreditPlan) - Number(a.onCreditPlan) ||
+          a.fullName.localeCompare(b.fullName),
+      ),
     saved,
   }
 }

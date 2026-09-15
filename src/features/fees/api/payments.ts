@@ -7,6 +7,8 @@ import type { FeeStatus, PaymentForm, PaymentMethod, StudentFeeWithPayments } fr
 
 interface FeeRow {
   id: string
+  kind: 'period' | 'topup'
+  credits_granted: number | null
   period_start: string
   period_end: string
   due_date: string
@@ -39,7 +41,7 @@ export function useStudentFees(studentId: string | null) {
       const { data, error } = await supabase
         .from('student_fees')
         .select(
-          `id, period_start, period_end, due_date, amount, status, waived_reason,
+          `id, kind, credits_granted, period_start, period_end, due_date, amount, status, waived_reason,
            fee_plan:fee_plans(name),
            payments(id, amount, paid_date, method, reference, notes, receipt_no, voided_at, void_reason,
                     recorded_by:profiles!payments_recorded_by_fkey(full_name))`,
@@ -50,6 +52,8 @@ export function useStudentFees(studentId: string | null) {
       if (error) throw error
       return data.map((f) => ({
         id: f.id,
+        kind: f.kind,
+        creditsGranted: f.credits_granted,
         periodStart: f.period_start,
         periodEnd: f.period_end,
         dueDate: f.due_date,

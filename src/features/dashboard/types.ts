@@ -58,6 +58,24 @@ export interface NeedsAttentionRow {
   hasOverdueFee: boolean
 }
 
+export interface RenewalDueRow {
+  studentId: string
+  fullName: string
+  photoUrl: string | null
+  batchNames: string | null
+  pricingMode: 'cycle' | 'per_class' | null
+  billingCycle: 'monthly' | 'quarterly' | 'annual' | null
+  termEnd: string | null
+  daysLeft: number | null
+  termStatus: 'none' | 'active' | 'expiring' | 'expired'
+  available: number | null
+  minTopup: number | null
+  rate: number | null
+  parentName: string | null
+  parentPhone: string | null
+  lastRemindedAt: string | null
+}
+
 /** How many months of history the trend charts (attendance, revenue,
  * retention) look back over — the dashboard's one date-range selector. */
 export const MONTH_RANGE_OPTIONS = [3, 6, 12] as const

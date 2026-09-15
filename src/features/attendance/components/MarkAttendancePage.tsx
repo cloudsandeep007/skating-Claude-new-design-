@@ -327,8 +327,22 @@ function RosterRow({
       )}
       <div className="min-w-0 flex-1">
         <div className="truncate text-base font-bold leading-tight">{student.fullName}</div>
-        <div className={cn('text-[13px]', style.meta)}>
-          {style.label !== '' ? style.label : (student.levelName ?? 'Tap to mark')}
+        <div className={cn('flex items-center gap-1.5 text-[13px]', style.meta)}>
+          {student.onCreditPlan && (
+            <span
+              className={cn(
+                'rounded px-1.5 py-px text-[10px] font-bold uppercase tracking-wide',
+                student.booked
+                  ? 'bg-success-500/15 text-success-300'
+                  : 'bg-secondary text-muted-foreground',
+              )}
+            >
+              {student.booked ? 'Booked' : 'Not booked'}
+            </span>
+          )}
+          <span className="truncate">
+            {style.label !== '' ? style.label : (student.levelName ?? 'Tap to mark')}
+          </span>
         </div>
       </div>
       <div className="flex shrink-0 gap-2">

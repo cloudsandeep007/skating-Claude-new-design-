@@ -23,15 +23,21 @@ export function useClassCreditBalance(studentId: string | null) {
 
 export interface ClassCreditSummary {
   granted: number
-  booked: number
-  bonus: number
+  spent: number
+  refunded: number
+  expired: number
+  adjusted: number
   available: number | null
+  termEnd: string | null
+  termStatus: TermStatus | null
 }
 
-/** class_credit_summary() RPC — the same balance as class_credit_balance(),
- * broken into its parts (granted from paid fees, spent on bookings, bonus
- * from pending make-up credits) for the admin side, where a plain number
- * isn't enough to explain "why is this 0". */
+export type TermStatus = 'none' | 'active' | 'expiring' | 'expired'
+
+/** class_credit_summary() RPC — the ledger totalled by kind (granted from
+ * paid fees and top-ups, spent on classes, refunded, expired, adjusted)
+ * plus the balance and the current term, for the admin side where a plain
+ * number isn't enough to explain "why is this 0". */
 export function useClassCreditSummary(studentId: string | null) {
   return useQuery({
     queryKey: ['bookings', 'summary', studentId],
@@ -42,7 +48,148 @@ export function useClassCreditSummary(studentId: string | null) {
         .rpc('class_credit_summary', { p_student_id: studentId })
         .single()
       if (error) throw error
-      return { granted: data.granted, booked: data.booked, bonus: data.bonus, available: data.available }
+      return {
+        granted: data.granted,
+        spent: data.spent,
+        refunded: data.refunded,
+        expired: data.expired,
+        adjusted: data.adjusted,
+        available: data.available,
+        termEnd: data.term_end,
+        termStatus: data.term_status as TermStatus | null,
+      }
+    },
+  })
+}
+
+export interface CreditPlanStatus {
+  usesCredits: boolean
+  pricingMode: 'cycle' | 'per_class' | null
+  billingCycle: 'monthly' | 'quarterly' | 'annual' | null
+  rate: number | null
+  /** Classes a top-up must be to start or renew a term (8 / 24 / 96). */
+  minTopup: number | null
+  termStart: string | null
+  termEnd: string | null
+  daysLeft: number | null
+  termStatus: TermStatus
+  available: number | null
+}
+
+/** credit_plan_status() RPC — the skater's current plan term: when it ends,
+ * whether it's lapsed, the top-up minimum, and the balance. Drives the
+ * parent's credits card, the admin's credits card and the Top-up dialog. */
+export function useCreditPlanStatus(studentId: string | null) {
+  return useQuery({
+    queryKey: ['bookings', 'plan-status', studentId],
+    enabled: studentId !== null,
+    queryFn: async (): Promise<CreditPlanStatus | null> => {
+      if (!studentId) return null
+      const { data, error } = await supabase
+        .rpc('credit_plan_status', { p_student_id: studentId })
+        .single()
+      if (error) throw error
+      return {
+        usesCredits: data.uses_credits,
+        pricingMode: data.pricing_mode,
+        billingCycle: data.billing_cycle,
+        rate: data.rate,
+        minTopup: data.min_topup,
+        termStart: data.term_start,
+        termEnd: data.term_end,
+        daysLeft: data.days_left,
+        termStatus: data.term_status as TermStatus,
+        available: data.available,
+      }
+    },
+  })
+}
+
+export type CreditLedgerKind = 'grant' | 'clawback' | 'spend' | 'refund' | 'expire' | 'adjust'
+
+export interface CreditLedgerEntry {
+  id: string
+  delta: number
+  kind: CreditLedgerKind
+  reason: string | null
+  createdAt: string
+  actorName: string | null
+}
+
+/** Every credit movement for a skater, newest first — the statement. */
+export function useCreditLedger(studentId: string | null) {
+  return useQuery({
+    queryKey: ['bookings', 'ledger', studentId],
+    enabled: studentId !== null,
+    queryFn: async (): Promise<CreditLedgerEntry[]> => {
+      if (!studentId) return []
+      const { data, error } = await supabase
+        .from('credit_ledger')
+        .select('id, delta, kind, reason, created_at, actor:profiles!credit_ledger_actor_id_fkey(full_name)')
+        .eq('student_id', studentId)
+        .order('created_at', { ascending: false })
+        .overrideTypes<
+          {
+            id: string
+            delta: number
+            kind: CreditLedgerKind
+            reason: string | null
+            created_at: string
+            actor: { full_name: string } | null
+          }[],
+          { merge: false }
+        >()
+      if (error) throw error
+      return data.map((r) => ({
+        id: r.id,
+        delta: r.delta,
+        kind: r.kind,
+        reason: r.reason,
+        createdAt: r.created_at,
+        actorName: r.actor?.full_name ?? null,
+      }))
+    },
+  })
+}
+
+export interface UpcomingBooking {
+  sessionId: string
+  sessionDate: string
+  startTime: string
+  endTime: string
+  batchId: string
+  batchName: string
+  venue: string | null
+  coachName: string | null
+  studentId: string
+  fullName: string
+  photoUrl: string | null
+  /** 'parent' booked it; 'attendance' means a walk-in recorded at marking. */
+  source: 'parent' | 'attendance'
+}
+
+/** upcoming_bookings() RPC — every active booking on a scheduled session in
+ * the next N days, for the admin's "who's coming" view. */
+export function useUpcomingBookings(days = 7) {
+  return useQuery({
+    queryKey: ['bookings', 'upcoming', days],
+    queryFn: async (): Promise<UpcomingBooking[]> => {
+      const { data, error } = await supabase.rpc('upcoming_bookings', { p_days: days })
+      if (error) throw error
+      return data.map((r) => ({
+        sessionId: r.session_id,
+        sessionDate: r.session_date,
+        startTime: r.start_time,
+        endTime: r.end_time,
+        batchId: r.batch_id,
+        batchName: r.batch_name,
+        venue: r.venue,
+        coachName: r.coach_name,
+        studentId: r.student_id,
+        fullName: r.full_name,
+        photoUrl: r.photo_url,
+        source: r.source as 'parent' | 'attendance',
+      }))
     },
   })
 }

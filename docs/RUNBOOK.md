@@ -169,8 +169,12 @@ See [DATA-MODEL.md](./DATA-MODEL.md) for what the schema actually contains.
 
 ## Scheduled jobs
 
-**Fee generation and overdue transitions** (`generate-fees`) should run
-once a day. After deploying it (above), set up its schedule — either
+**Fee generation, overdue transitions and credit expiry** (`generate-fees`)
+should run once a day. Since 2026-09-16 the same run also calls
+`expire_lapsed_credits()`, which writes off the unused classes of any
+skater whose plan term has ended without a renewal — so if the job isn't
+scheduled, lapsed credits stay on the books until it is (they're still
+unbookable, because `book_class_slot` checks the term itself). After deploying it (above), set up its schedule — either
 works, no code change needed either way:
 
 **Option A — Supabase Dashboard (no SQL):** Project → Edge Functions →
@@ -214,6 +218,8 @@ when a key is absent:
   this many days before the current one ends.
 - `fee_grace_days` (default `5`) — a fee is due this many days after its
   period starts (or after the day it was generated, if that's later).
+- `topup_min_classes` (default `{"monthly": 8, "quarterly": 24, "annual": 96}`)
+  — the smallest top-up that starts or renews a pay-per-class plan term.
 - `receipt_prefix` (default: the first four letters/digits of the academy
   name, upper-cased — "PRSA") — the start of every receipt number,
   e.g. `PRSA-2026-000012`. Change it before the first payment of a year

@@ -98,6 +98,10 @@ export interface PaymentRecord {
 
 export interface StudentFeeWithPayments {
   id: string
+  /** A 'period' is a flat-fee billing period; a 'topup' is a block of
+   * classes bought on a pay-per-class plan (already paid when created). */
+  kind: 'period' | 'topup'
+  creditsGranted: number | null
   periodStart: string
   periodEnd: string
   dueDate: string
@@ -143,6 +147,15 @@ export const WaiveFormSchema = z.object({
   reason: z.string().min(1, 'A reason is required to waive a fee'),
 })
 export type WaiveForm = z.infer<typeof WaiveFormSchema>
+
+export const TopupFormSchema = z.object({
+  classes: z.number().int('Whole classes only').min(1, 'At least 1 class'),
+  paidDate: z.string().min(1, 'Pick a date'),
+  method: z.enum(['cash', 'upi', 'card', 'bank_transfer', 'cheque', 'other']),
+  reference: z.string().optional(),
+  notes: z.string().optional(),
+})
+export type TopupForm = z.infer<typeof TopupFormSchema>
 
 export const VoidPaymentFormSchema = z.object({
   reason: z.string().trim().min(1, 'A reason is required to void a payment'),

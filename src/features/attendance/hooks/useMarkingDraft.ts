@@ -35,11 +35,17 @@ export function useMarkingDraft(
     })
   }
 
-  /** The default fast path: everyone present, then fix the exceptions. */
+  /** The default fast path: everyone expected is present, then fix the
+   * exceptions. A credit-plan skater who didn't book isn't expected —
+   * marking them present would spend a credit for a class they may not
+   * have come to, so they're left for the coach to mark deliberately. */
   const markAllPresent = () => {
     setMarks((m) => {
       const next = { ...m }
-      for (const student of roster) next[student.id] ??= 'present'
+      for (const student of roster) {
+        if (student.onCreditPlan && !student.booked) continue
+        next[student.id] ??= 'present'
+      }
       return next
     })
   }

@@ -340,6 +340,7 @@ export type Database = {
           cancelled_at: string | null
           id: string
           session_id: string
+          source: string
           status: string
           student_id: string
         }
@@ -349,6 +350,7 @@ export type Database = {
           cancelled_at?: string | null
           id?: string
           session_id: string
+          source?: string
           status?: string
           student_id: string
         }
@@ -358,6 +360,7 @@ export type Database = {
           cancelled_at?: string | null
           id?: string
           session_id?: string
+          source?: string
           status?: string
           student_id?: string
         }
@@ -433,6 +436,81 @@ export type Database = {
             isOneToOne: true
             referencedRelation: "profiles"
             referencedColumns: ["id"]
+          },
+        ]
+      }
+      credit_ledger: {
+        Row: {
+          academy_id: string
+          actor_id: string | null
+          booking_id: string | null
+          created_at: string
+          delta: number
+          fee_id: string | null
+          id: string
+          kind: string
+          reason: string | null
+          student_id: string
+        }
+        Insert: {
+          academy_id: string
+          actor_id?: string | null
+          booking_id?: string | null
+          created_at?: string
+          delta: number
+          fee_id?: string | null
+          id?: string
+          kind: string
+          reason?: string | null
+          student_id: string
+        }
+        Update: {
+          academy_id?: string
+          actor_id?: string | null
+          booking_id?: string | null
+          created_at?: string
+          delta?: number
+          fee_id?: string | null
+          id?: string
+          kind?: string
+          reason?: string | null
+          student_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "credit_ledger_academy_id_fkey"
+            columns: ["academy_id"]
+            isOneToOne: false
+            referencedRelation: "academies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "credit_ledger_actor_id_fkey"
+            columns: ["actor_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "credit_ledger_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "class_bookings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "credit_ledger_fee_id_fkey"
+            columns: ["fee_id"]
+            isOneToOne: false
+            referencedRelation: "student_fees"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "credit_ledger_student_id_academy_id_fkey"
+            columns: ["student_id", "academy_id"]
+            isOneToOne: false
+            referencedRelation: "students"
+            referencedColumns: ["id", "academy_id"]
           },
         ]
       }
@@ -1155,6 +1233,7 @@ export type Database = {
           due_date: string
           fee_plan_id: string | null
           id: string
+          kind: Database["public"]["Enums"]["fee_kind"]
           last_reminded_at: string | null
           period_end: string
           period_start: string
@@ -1171,6 +1250,7 @@ export type Database = {
           due_date: string
           fee_plan_id?: string | null
           id?: string
+          kind?: Database["public"]["Enums"]["fee_kind"]
           last_reminded_at?: string | null
           period_end: string
           period_start: string
@@ -1187,6 +1267,7 @@ export type Database = {
           due_date?: string
           fee_plan_id?: string | null
           id?: string
+          kind?: Database["public"]["Enums"]["fee_kind"]
           last_reminded_at?: string | null
           period_end?: string
           period_start?: string
@@ -1457,6 +1538,27 @@ export type Database = {
     }
     Functions: {
       academy_today: { Args: { p_academy_id: string }; Returns: string }
+      adjust_class_credits: {
+        Args: { p_delta: number; p_reason: string; p_student_id: string }
+        Returns: {
+          academy_id: string
+          actor_id: string | null
+          booking_id: string | null
+          created_at: string
+          delta: number
+          fee_id: string | null
+          id: string
+          kind: string
+          reason: string | null
+          student_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "credit_ledger"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       assert_credits_not_negative: {
         Args: { p_action: string; p_before: number; p_student_id: string }
         Returns: undefined
@@ -1503,6 +1605,7 @@ export type Database = {
           cancelled_at: string | null
           id: string
           session_id: string
+          source: string
           status: string
           student_id: string
         }
@@ -1521,6 +1624,7 @@ export type Database = {
           cancelled_at: string | null
           id: string
           session_id: string
+          source: string
           status: string
           student_id: string
         }
@@ -1546,10 +1650,14 @@ export type Database = {
       class_credit_summary: {
         Args: { p_student_id: string }
         Returns: {
+          adjusted: number
           available: number
-          bonus: number
-          booked: number
+          expired: number
           granted: number
+          refunded: number
+          spent: number
+          term_end: string
+          term_status: string
         }[]
       }
       coach_activity_report: {
@@ -1570,6 +1678,21 @@ export type Database = {
           coach_name: string
           session_count: number
           student_count: number
+        }[]
+      }
+      credit_plan_status: {
+        Args: { p_student_id: string }
+        Returns: {
+          available: number
+          billing_cycle: Database["public"]["Enums"]["billing_cycle"]
+          days_left: number
+          min_topup: number
+          pricing_mode: Database["public"]["Enums"]["fee_pricing_mode"]
+          rate: number
+          term_end: string
+          term_start: string
+          term_status: string
+          uses_credits: boolean
         }[]
       }
       current_academy_id: { Args: never; Returns: string }
@@ -1597,6 +1720,7 @@ export type Database = {
         Args: { p_batch_id: string; p_from: string; p_to: string }
         Returns: number
       }
+      expire_lapsed_credits: { Args: never; Returns: number }
       fee_collection_report: {
         Args: { p_batch_id?: string; p_from: string; p_to: string }
         Returns: {
@@ -1650,6 +1774,7 @@ export type Database = {
           due_date: string
           fee_plan_id: string | null
           id: string
+          kind: Database["public"]["Enums"]["fee_kind"]
           last_reminded_at: string | null
           period_end: string
           period_start: string
@@ -1669,6 +1794,14 @@ export type Database = {
       is_coach: { Args: never; Returns: boolean }
       is_parent: { Args: never; Returns: boolean }
       is_super_admin: { Args: never; Returns: boolean }
+      ledger_sync_booking: {
+        Args: { p_booking_id: string }
+        Returns: undefined
+      }
+      ledger_sync_fee: {
+        Args: { p_fee_id: string; p_reason?: string }
+        Returns: undefined
+      }
       level_distribution: {
         Args: never
         Returns: {
@@ -1724,6 +1857,40 @@ export type Database = {
         Args: { p_fee_plan_id: string }
         Returns: undefined
       }
+      record_credit_topup: {
+        Args: {
+          p_classes: number
+          p_idempotency_key?: string
+          p_method?: Database["public"]["Enums"]["payment_method"]
+          p_notes?: string
+          p_paid_date?: string
+          p_reference?: string
+          p_student_id: string
+        }
+        Returns: {
+          academy_id: string
+          amount: number
+          created_at: string
+          credits_granted: number | null
+          due_date: string
+          fee_plan_id: string | null
+          id: string
+          kind: Database["public"]["Enums"]["fee_kind"]
+          last_reminded_at: string | null
+          period_end: string
+          period_start: string
+          status: Database["public"]["Enums"]["fee_status"]
+          student_id: string
+          updated_at: string
+          waived_reason: string | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "student_fees"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       record_payment: {
         Args: {
           p_amount: number
@@ -1760,12 +1927,36 @@ export type Database = {
         }
       }
       rederive_fee_status: { Args: { p_fee_id: string }; Returns: undefined }
+      renewals_due: {
+        Args: { p_within_days?: number }
+        Returns: {
+          available: number
+          batch_names: string
+          billing_cycle: Database["public"]["Enums"]["billing_cycle"]
+          days_left: number
+          full_name: string
+          last_reminded_at: string
+          min_topup: number
+          parent_name: string
+          parent_phone: string
+          photo_url: string
+          pricing_mode: Database["public"]["Enums"]["fee_pricing_mode"]
+          rate: number
+          student_id: string
+          term_end: string
+          term_status: string
+        }[]
+      }
       reorder_levels: { Args: { p_ids: string[] }; Returns: undefined }
       reorder_skills: {
         Args: { p_ids: string[]; p_level_id: string }
         Returns: undefined
       }
       request_ip: { Args: never; Returns: unknown }
+      resolve_session_bookings: {
+        Args: { p_session_id: string }
+        Returns: number
+      }
       save_attendance: {
         Args: { p_marks: Json; p_session_id: string }
         Returns: number
@@ -1800,6 +1991,10 @@ export type Database = {
       }
       send_fee_reminders: {
         Args: { p_student_fee_ids: string[] }
+        Returns: number
+      }
+      send_renewal_reminders: {
+        Args: { p_student_ids: string[] }
         Returns: number
       }
       session_is_editable: { Args: { p_session_id: string }; Returns: boolean }
@@ -1849,6 +2044,24 @@ export type Database = {
           student_id: string
         }[]
       }
+      student_uses_credits: { Args: { p_student_id: string }; Returns: boolean }
+      upcoming_bookings: {
+        Args: { p_days?: number }
+        Returns: {
+          batch_id: string
+          batch_name: string
+          coach_name: string
+          end_time: string
+          full_name: string
+          photo_url: string
+          session_date: string
+          session_id: string
+          source: string
+          start_time: string
+          student_id: string
+          venue: string
+        }[]
+      }
       void_payment: {
         Args: { p_payment_id: string; p_reason: string }
         Returns: {
@@ -1886,6 +2099,7 @@ export type Database = {
           due_date: string
           fee_plan_id: string | null
           id: string
+          kind: Database["public"]["Enums"]["fee_kind"]
           last_reminded_at: string | null
           period_end: string
           period_start: string
@@ -1912,6 +2126,7 @@ export type Database = {
       coach_status: "active" | "inactive"
       enrollment_status: "active" | "inactive"
       error_level: "debug" | "info" | "warning" | "error" | "fatal"
+      fee_kind: "period" | "topup"
       fee_pricing_mode: "cycle" | "per_class"
       fee_status: "pending" | "paid" | "overdue" | "waived"
       gender: "male" | "female" | "other"
@@ -2067,6 +2282,7 @@ export const Constants = {
       coach_status: ["active", "inactive"],
       enrollment_status: ["active", "inactive"],
       error_level: ["debug", "info", "warning", "error", "fatal"],
+      fee_kind: ["period", "topup"],
       fee_pricing_mode: ["cycle", "per_class"],
       fee_status: ["pending", "paid", "overdue", "waived"],
       gender: ["male", "female", "other"],

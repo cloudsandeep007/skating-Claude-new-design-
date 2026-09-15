@@ -167,6 +167,11 @@ export function FeePlanFormDialog({
                           }}
                         />
                       </FormControl>
+                      <FormDescription>
+                        Families top up in classes, not per period. A monthly plan starts
+                        with at least 8 classes, quarterly 24, annual 96; unused classes
+                        expire when the term ends without a renewal.
+                      </FormDescription>
                       <FormMessage />
                     </FormItem>
                   )}

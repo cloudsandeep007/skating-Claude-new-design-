@@ -26,6 +26,10 @@ export interface RosterStudent {
   fullName: string
   photoUrl: string | null
   levelName: string | null
+  /** Reserved a place for this session (or was recorded as a walk-in). */
+  booked: boolean
+  /** On a batch-scoped plan: marking present spends a class credit. */
+  onCreditPlan: boolean
 }
 
 /** studentId → status. A student missing from the map is unmarked. */

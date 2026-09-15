@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import { CalendarX2, ChevronLeft, ChevronRight, Users } from 'lucide-react'
+import { CalendarCheck, CalendarX2, ChevronLeft, ChevronRight, Users } from 'lucide-react'
+import { Link } from 'react-router-dom'
 
 import { addDays, formatDate, formatTime, toIsoDate, todayIso } from '@/shared/lib/format'
 import { cn } from '@/shared/lib/utils'
@@ -85,6 +86,12 @@ export function WeekCalendarPage() {
             }}
           >
             <ChevronRight className="h-4 w-4" />
+          </Button>
+          <Button variant="outline" asChild>
+            <Link to="/admin/schedule/coming-up">
+              <CalendarCheck className="h-4 w-4" />
+              Coming up
+            </Link>
           </Button>
           <AddSessionDialog defaultDate={monday >= today ? monday : today} />
         </div>

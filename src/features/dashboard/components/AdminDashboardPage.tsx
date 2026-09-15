@@ -14,6 +14,7 @@ import { RetentionChart } from './charts/RetentionChart'
 import { RevenueChart } from './charts/RevenueChart'
 import { SkillDistributionChart } from './charts/SkillDistributionChart'
 import { NeedsAttentionPanel } from './NeedsAttentionPanel'
+import { RenewalsDuePanel } from './RenewalsDuePanel'
 import { StatCard } from '@/shared/ui/StatCard'
 import { computeTrend } from '../hooks/trend'
 import { MONTH_RANGE_OPTIONS, type MonthRange } from '../types'
@@ -155,6 +156,8 @@ export function AdminDashboardPage() {
           <RetentionChart months={months} />
           <CoachLoadChart days={months * 30} />
         </div>
+
+        <RenewalsDuePanel />
 
         <NeedsAttentionPanel />
       </div>

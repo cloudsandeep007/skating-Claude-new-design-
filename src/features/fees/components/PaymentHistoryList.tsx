@@ -1,7 +1,8 @@
-import { Ban, Receipt, Trash2 } from 'lucide-react'
+import { Ban, Coins, Receipt, Trash2 } from 'lucide-react'
 import { useState } from 'react'
 import { toast } from 'sonner'
 
+import { useCreditPlanStatus } from '@/features/schedule'
 import { formatDate } from '@/shared/lib/format'
 import { cn } from '@/shared/lib/utils'
 import {
@@ -25,6 +26,7 @@ import { canWaive, paidTotal, remainingBalance } from '../hooks/feeMath'
 import { feeStatusLabel, feeStatusTone, formatRupees } from '../hooks/feeTone'
 import { PAYMENT_METHOD_LABEL } from '../types'
 import { RecordPaymentDialog, type PaymentTarget } from './RecordPaymentDialog'
+import { TopupDialog, type TopupTarget } from './TopupDialog'
 import { VoidPaymentDialog, type VoidTarget } from './VoidPaymentDialog'
 import { WaiveFeeDialog, type WaiveTarget } from './WaiveFeeDialog'
 
@@ -48,7 +50,10 @@ export function PaymentHistoryList({
   const [payTarget, setPayTarget] = useState<PaymentTarget | null>(null)
   const [waiveTarget, setWaiveTarget] = useState<WaiveTarget | null>(null)
   const [voidTarget, setVoidTarget] = useState<VoidTarget | null>(null)
+  const [topupTarget, setTopupTarget] = useState<TopupTarget | null>(null)
   const deleteFee = useDeleteFee()
+  const { data: plan } = useCreditPlanStatus(canManage ? studentId : null)
+  const canTopup = canManage && plan?.pricingMode === 'per_class'
 
   if (isError) {
     return (
@@ -81,17 +86,45 @@ export function PaymentHistoryList({
     )
   }
 
+  const topupButton = canTopup ? (
+    <Button
+      size="sm"
+      onClick={() => {
+        setTopupTarget({ studentId, studentName })
+      }}
+    >
+      <Coins className="h-4 w-4" />
+      Top up classes
+    </Button>
+  ) : null
+
   if (!fees || fees.length === 0) {
     return (
-      <EmptyState
-        title="No fees yet"
-        description="Fees show up here once a plan is assigned and generated."
-      />
+      <div className="space-y-3">
+        {topupButton && <div className="flex justify-end">{topupButton}</div>}
+        <EmptyState
+          title={canTopup ? 'No top-ups yet' : 'No fees yet'}
+          description={
+            canTopup
+              ? "Record the first top-up to start this skater's plan."
+              : 'Fees show up here once a plan is assigned and generated.'
+          }
+        />
+        <TopupDialog
+          target={topupTarget}
+          onClose={() => {
+            setTopupTarget(null)
+          }}
+        />
+      </div>
     )
   }
 
   return (
     <ul className="space-y-3">
+      {topupButton && (
+        <li className="flex justify-end">{topupButton}</li>
+      )}
       {fees.map((fee) => {
         const paid = paidTotal(fee.payments)
         const balance = remainingBalance(fee.amount, paid)
@@ -100,10 +133,14 @@ export function PaymentHistoryList({
             <div className="flex flex-wrap items-center gap-2.5">
               <div className="min-w-0 flex-1">
                 <div className="font-bold">
-                  {formatDate(fee.periodStart)} – {formatDate(fee.periodEnd)}
+                  {fee.kind === 'topup'
+                    ? `Top-up · ${fee.creditsGranted ?? 0} class${fee.creditsGranted === 1 ? '' : 'es'}`
+                    : `${formatDate(fee.periodStart)} – ${formatDate(fee.periodEnd)}`}
                 </div>
                 <div className="text-xs text-muted-foreground">
-                  {fee.feePlanName ?? 'Fee'} · due {formatDate(fee.dueDate)}
+                  {fee.kind === 'topup'
+                    ? `${fee.feePlanName ?? 'Pay per class'} · valid ${formatDate(fee.periodStart)} – ${formatDate(fee.periodEnd)}`
+                    : `${fee.feePlanName ?? 'Fee'} · due ${formatDate(fee.dueDate)}`}
                 </div>
               </div>
               <StatusBadge tone={feeStatusTone(fee.status)}>
@@ -304,6 +341,12 @@ export function PaymentHistoryList({
             payment={voidTarget}
             onClose={() => {
               setVoidTarget(null)
+            }}
+          />
+          <TopupDialog
+            target={topupTarget}
+            onClose={() => {
+              setTopupTarget(null)
             }}
           />
         </>

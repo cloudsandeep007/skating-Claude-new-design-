@@ -14,23 +14,23 @@ async function login(page: Page, email: string) {
 test('super_admin lands on the dev console', async ({ page }) => {
   await login(page, 'super@skating.test')
   await expect(page).toHaveURL('/dev')
-  await expect(page.getByText('Dev overview')).toBeVisible()
+  await expect(page.getByRole('main').getByText('Overview')).toBeVisible()
 })
 
 test('academy_admin lands on the admin dashboard', async ({ page }) => {
   await login(page, 'admin@skating.test')
   await expect(page).toHaveURL('/admin')
-  await expect(page.getByText('Admin dashboard')).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Dashboard' })).toBeVisible()
 })
 
 test('coach lands on the coach home', async ({ page }) => {
   await login(page, 'coach1@skating.test')
   await expect(page).toHaveURL('/coach')
-  await expect(page.getByText('Coach home')).toBeVisible()
+  await expect(page.getByRole('link', { name: 'Inbox' })).toBeVisible()
 })
 
 test('parent lands on the parent home', async ({ page }) => {
-  await login(page, 'rajesh.sharma1@skating.test')
+  await login(page, 'ravi.bhat11@skating.test')
   await expect(page).toHaveURL('/parent')
-  await expect(page.getByText('Parent home')).toBeVisible()
+  await expect(page.getByText('Next session')).toBeVisible()
 })

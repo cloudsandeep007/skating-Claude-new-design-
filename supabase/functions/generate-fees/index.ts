@@ -9,6 +9,9 @@
 //      admin's academy.
 //   2. Flips any pending fee whose due date has passed to 'overdue' —
 //      mark_fees_overdue(), same reasoning.
+//   3. Expires the remaining class credits of any skater whose plan term
+//      has ended without a renewal — expire_lapsed_credits(). Recorded as
+//      a visible 'expire' line on the skater's credit statement.
 //
 // Both RPCs are SECURITY INVOKER; it's the service-role key (which bypasses
 // RLS) that lets this one call cover every academy in one run. An admin's
@@ -64,9 +67,13 @@ Deno.serve(async (req) => {
     const { data: overdueCount, error: overdueError } = await admin.rpc('mark_fees_overdue')
     if (overdueError) return json({ error: overdueError.message }, 500)
 
+    const { data: expiredCount, error: expireError } = await admin.rpc('expire_lapsed_credits')
+    if (expireError) return json({ error: expireError.message }, 500)
+
     return json({
       generated: generated?.length ?? 0,
       markedOverdue: overdueCount ?? 0,
+      creditsExpiredFor: expiredCount ?? 0,
     })
   } catch {
     return json({ error: 'Unexpected error' }, 500)

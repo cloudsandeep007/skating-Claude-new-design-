@@ -5,6 +5,55 @@ non-technical person can follow it. Newest first.
 
 ---
 
+## 2026-09-16 — Pay-per-class becomes top-ups; attendance is the final word on credits
+
+The credit system is now a proper ledger, and pay-per-class works the way
+the academy actually sells it.
+
+- **Pay-per-class is bought in blocks of classes, not billed monthly.**
+  No more ₹15,000 "pending" for a 30-class month. When a family pays, the
+  admin records a **top-up** of N classes on the skater's Fees tab; the
+  amount is N × the plan's rate and the classes are usable immediately.
+  Each top-up gets a receipt number and can be voided like any payment.
+- **A top-up starts or renews a plan term.** The first top-up (or a
+  top-up after the plan lapsed) must be at least **8 classes on a monthly
+  plan, 24 on quarterly, 96 on annual** and starts a term of one cycle.
+  Renewing before the term ends extends it straight on, and unused
+  classes carry forward. Smaller top-ups inside an active term just add
+  classes. The dialog shows exactly what a number of classes will do
+  before you record it.
+- **Unused classes expire when a term ends without renewal.** The nightly
+  job zeroes them, as a visible "Expired" line on the skater's statement —
+  never silently.
+- **Renewals due** — a new dashboard panel lists skaters whose term ends
+  within 7 days or has lapsed, grouped monthly / quarterly / annual, with
+  how many classes are at risk and a **Remind** button that notifies the
+  parents ("plan ends 30 Sep — top up before then to carry 12 unused
+  classes forward").
+- **Attendance is the final word.** Marked present or late → one credit
+  spent, whether or not the skater had booked (a walk-in is recorded as a
+  booking). Marked absent, excused, or not marked at all when the coach
+  completes the session → the booked credit is returned. Correcting a
+  mark later moves the credit the other way. A walk-in with no credits
+  left goes negative and the profile says "owes 2 classes" until they top
+  up. Make-up credits are no longer created for skaters on a credit plan —
+  the refund on absence replaces them.
+- **The coach's roster shows everyone enrolled**, with a BOOKED / NOT
+  BOOKED tag. "Everyone present" only pre-marks the booked skaters, so a
+  no-show can't be charged by accident.
+- **Coming up** — a new page off the admin Schedule listing, for the next
+  7 days, every session and the skaters who've booked it by name.
+- **Credit statement** on the skater's Attendance tab: every credit
+  movement (added, spent, returned, expired, adjusted) with the reason and
+  who did it. Admins can also adjust credits by hand, with a reason.
+- Booking messages now say the real cause: "Top up first", "The plan
+  ended on 31 Jul — top up to renew", "owes 2 classes from attending
+  without credits".
+- The parent's credits card shows the term ("Valid till Sat, Oct 31") and
+  no longer offers Book on a session that's already been marked.
+- End-to-end tests updated to the current UI (they still asserted the
+  pre-redesign headings); all 7 pass.
+
 ## 2026-09-15 — Payments & credits audit, Phase 1: an immutable payment ledger
 
 Every rupee ever recorded now stays visible, with its history, forever.

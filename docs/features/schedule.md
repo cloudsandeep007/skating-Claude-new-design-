@@ -36,10 +36,14 @@ gives each coach a rink-side view of what they're teaching today.
   greyed with the reason. Empty state when nothing's on.
 - **Class bookings — parent** (`/parent/schedule`, the skater's Schedule
   page) — for a skater on any batch-scoped fee plan: a credit-balance
-  card ("6 of 16 classes left") and a **Book** / **Cancel** control on
-  each of the next 7 days' upcoming sessions. Disabled once credits hit
-  0. A skater on a legacy academy-wide plan sees the page exactly as
-  before this feature — no credit card, no booking controls.
+  card ("12 classes left to book · Valid till Sat, Oct 31", or "2 classes
+  owed" in red) and a **Book** / **Cancel** control on each of the next 7
+  days' upcoming sessions (a booked session further out still shows
+  **Booked**). The button says why when it can't book: "Pay first"
+  (flat-fee period unpaid), "Top up first" (pay-per-class, no classes or
+  lapsed), "No credits left". A skater on a legacy academy-wide plan sees
+  the page exactly as before this feature — no credit card, no booking
+  controls.
 
 ## Data touched
 
@@ -98,31 +102,25 @@ gives each coach a rink-side view of what they're teaching today.
   docs/features/attendance.md. The two mechanisms are deliberately
   separate: nobody else in the batch missed anything when only one
   student is absent.
-- **Class bookings run on one running credit balance, not a per-period
-  ledger.** Every time `generate_upcoming_fees()` creates a period for a
-  batch-scoped plan, it sets `student_fees.credits_granted` from
-  `expected_classes_from_schedule()`. `class_credit_balance()` sums that
-  across every period the student has ever had, subtracts every active
-  booking they've ever made, and adds back every still-pending make-up
-  credit. Nothing resets at a period boundary — an unused credit from an
-  old period is still spendable later, which is the entire mechanism for
-  "leftover carries forward if you re-enroll," with no extra rollover
-  code. See docs/DECISIONS.md for the full reasoning.
-- **A credit is "spent" the moment it's booked**, not when it's marked —
-  a booking's row stays `'booked'` permanently once the session has
-  happened, so nothing needs to change at marking time. The only thing
-  that can still move the balance after booking is the existing
-  absent→make-up-credit trigger, which nets a missed booked class back
-  to a wash (the booking's `-1` plus the make-up credit's `+1`) —
-  functionally the credit was never lost, just moved to a different day.
-  A booking can only be cancelled — freeing the credit — while its
-  session is still `scheduled`; once marked, it's permanent.
+- **Class bookings spend from one running balance** (the
+  `credit_ledger` since 2026-09-16 — before that, a derived sum). Nothing
+  resets at a period boundary while the plan is renewed on time: an
+  unused credit from an old term is still spendable in the next, which is
+  the mechanism for "leftover carries forward". What *does* end a balance
+  is a lapsed term — see "Attendance is the final word" and
+  docs/features/fees.md "Top-ups and terms".
+- **A credit is reserved the moment it's booked, and settled by
+  attendance.** Booking writes a `spend`; cancelling before the session
+  is marked writes a `refund`. Once the coach marks the session, the
+  mark decides: present/late keeps the spend, anything else refunds it.
+  A booking can only be cancelled by the parent while its session is
+  still `scheduled`.
 - **Booking follows the roster, not the other way round.** A booking can
   only target a session in the student's own currently-enrolled batch.
   It never changes what's on the schedule (sessions are still generated
   from the batch's `days_of_week` exactly as before) — only who's
-  expected shows up as "booked," which is what the coach's attendance
-  screen now rosters from for a batch-scoped-plan student (see
+  expected shows up as "booked" on the coach's roster, which lists every
+  enrolled skater with a BOOKED / NOT BOOKED tag (see
   docs/features/attendance.md).
 - **A legacy academy-wide (no-batch) plan opts a student out of
   everything above.** `expected_classes_from_schedule` needs a specific
@@ -130,11 +128,29 @@ gives each coach a rink-side view of what they're teaching today.
   never see the booking UI (`class_credit_balance()` returns `null`, not
   `0`), and they keep showing on every session's roster exactly as
   before this feature.
-- **A credit only counts once its fee is paid.** `class_credit_balance()`
-  sums `credits_granted` only from `student_fees` rows with
-  `status in ('paid', 'waived')` — a `pending`/`overdue` period
-  contributes zero credits until it's settled, so booking is gated
-  behind payment. The booking UI still shows up for an unpaid student
+- **Credits are a ledger (2026-09-16).** Every movement is a row in
+  `credit_ledger` — added when a fee/top-up is paid, spent when a class
+  is booked, returned when a booking is cancelled or the skater didn't
+  attend, expired when a plan term lapses, adjusted by an admin with a
+  reason. The balance is the sum. The skater's Attendance tab shows the
+  full **credit statement**; the credits card shows the term ("Active ·
+  monthly", "Ending soon", "Lapsed") and its end date.
+- **Attendance is the final word.** Present/late → one credit spent,
+  booked or not (a walk-in gets a booking with `source = 'attendance'`).
+  Absent/excused → the booked credit is returned. Still booked but never
+  marked when the coach completes the session → returned. A later
+  correction moves the credit the other way. A walk-in with no credits
+  goes **negative** — the profile and the parent's card say "owes N
+  classes" and booking is refused until a top-up clears it. Make-up
+  credits are no longer created for credit-plan skaters; the refund is
+  the make-up.
+- **A term must be active to book.** A lapsed plan ("The plan ended on
+  31 Jul — top up at the academy to renew it") refuses bookings even if
+  the nightly expiry hasn't run yet. See docs/features/fees.md "Top-ups
+  and terms".
+- **A credit only counts once its fee is paid.** A `pending`/`overdue`
+  period grants nothing until it's settled, so booking on a flat-fee
+  plan is gated behind payment. The booking UI still shows up for an unpaid student
   (so they can see *why* they're at 0), with "Pay first" on each class
   instead of a plain "No credits left", and `book_class_slot()` raises a
   specific "Pay this period's fee to unlock class credits" error when
@@ -155,6 +171,11 @@ gives each coach a rink-side view of what they're teaching today.
   second is refused instead of both succeeding and the balance going
   to −1. A booked session outside the 7-day booking window still shows
   as **Booked** on the page.
+
+**Admin — Coming up** (`/admin/schedule/coming-up`, from the Schedule
+header): the next 7 days, grouped day → session, with every skater who
+has booked a place shown by name (linked to their profile) and a count
+per session. What the admin and coach plan the rink around.
 
 ## Edge cases
 

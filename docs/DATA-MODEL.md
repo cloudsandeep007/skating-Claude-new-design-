@@ -86,7 +86,7 @@ feature_flags (global, no academy_id)
 | email      | text             | yes      |                    |                                        |
 | plan_tier  | plan_tier        | no       | 'free'             |                                        |
 | status     | academy_status   | no       | 'active'           |                                        |
-| settings   | jsonb            | no       | '{}'               | per-academy settings. Keys in use: `timezone` (IANA name, default UTC — attendance lock window), `currency` (informational), `fee_generate_lead_days` (int, default 7 — how many days before a period ends the next one is generated), `fee_grace_days` (int, default 5 — days after a period starts, or after generation if later, before a fee is due). Absent keys fall back to the defaults; update with a merge, never a replace, so other keys survive. |
+| settings   | jsonb            | no       | '{}'               | per-academy settings. Keys in use: `timezone` (IANA name, default UTC — attendance lock window), `currency` (informational), `fee_generate_lead_days` (int, default 7 — how many days before a period ends the next one is generated), `fee_grace_days` (int, default 5 — days after a period starts, or after generation if later, before a fee is due), `receipt_prefix` (text — start of every receipt number; default: first 4 alphanumerics of the name), `topup_min_classes` (object `{"monthly": 8, "quarterly": 24, "annual": 96}` — the smallest top-up that starts or renews a pay-per-class term). Absent keys fall back to the defaults; update with a merge, never a replace, so other keys survive. |
 | created_at | timestamptz      | no       | now()              |                                        |
 | updated_at | timestamptz      | no       | now()              | trigger                                |
 
@@ -336,58 +336,95 @@ own children. Written only by the `attendance_makeup_credit` trigger and
 | status       | text        | no       | 'booked'          | check in ('booked', 'cancelled') — not a Postgres enum |
 | booked_at    | timestamptz | no       | now()             |                                                     |
 | cancelled_at | timestamptz | yes      |                   |                                                     |
+| source       | text        | no       | 'parent'          | `0021` — 'parent' (booked from the schedule page) or 'attendance' (created/re-activated by a present/late mark — a walk-in) |
 
 Unique `(student_id, session_id)`. Indexes: `(student_id, status)`,
 `(session_id, status)`. Audit: insert/update/delete → `audit_logs`.
+**Triggers (`0021`):** `class_bookings_ledger` / `_delete` keep the
+`credit_ledger` in step — a `booked` row has spent exactly one credit, a
+`cancelled` one none, a deleted one is refunded first. Attendance drives
+status too: `attendance_credit_truth` (on `attendance`) upserts a
+`booked` row on present/late and cancels it on absent/excused;
+`resolve_session_bookings()` (called by `save_attendance`) cancels any
+still-`booked` row with no mark once the session is completed.
 **RLS:** super_admin all · academy_admin all in academy · coach select in
 academy · parent select own children. No parent insert/update policy —
 writes only happen through `book_class_slot()` / `cancel_class_slot()`
 below, which are `SECURITY DEFINER` and re-check the caller owns the
 student via `parent_student_ids()` themselves.
 
-`0012_class_bookings.sql` (balance formula updated in
-`0014_credits_require_payment.sql` — see below):
-- `class_credit_balance(p_student_id)` — `stable` SQL,
-  `SECURITY INVOKER`. The one running, never-reset balance:
-  `Σ student_fees.credits_granted (paid/waived only) − count(class_bookings
-  'booked') + count(makeup_credits 'pending')`. Nothing here is
-  period-scoped — unused credits from an old period are still in the sum
-  the next time a new period is generated, so "leftover carries forward"
-  needs no separate rollover step. Returns **null** (not 0) for a student
-  who has never had a single `credits_granted` row (regardless of that
-  row's payment status) — the frontend's "does this student even use the
-  booking system" check; a student with an unpaid period instead sees a
-  real **0**, so the UI can explain *why*.
+Credit functions (rewritten on the ledger in `0021_credit_ledger_topups_and_attendance_truth.sql`):
+- `class_credit_balance(p_student_id)` — `stable` SQL. `sum(delta)` over
+  `credit_ledger`, or **null** for a student outside the credit system
+  (`student_uses_credits()`: no batch-scoped plan, no ledger rows, no
+  credit-bearing fee) — the frontend's "does this student even book"
+  check. Can be **negative**: a present/late mark with no credits left
+  spends one anyway (attendance is the truth) and the profile shows
+  "owes N classes".
+- `student_uses_credits(p_student_id)` — `stable` SQL, the definition above.
+- `credit_plan_status(p_student_id)` — `stable` SQL. The skater's plan
+  term: `pricing_mode`, `billing_cycle`, `rate`, `min_topup` (from
+  `academies.settings->'topup_min_classes'->>cycle`, defaults 8 / 24 /
+  96), `term_start`/`term_end` (the latest paid/waived credit-bearing
+  `student_fees` row, period or top-up), `days_left`, `term_status`
+  (`none` · `active` · `expiring` ≤ 7 days · `expired`) and `available`.
+- `class_credit_summary(p_student_id)` — `stable` SQL. The ledger
+  totalled by kind: `(granted, spent, refunded, expired, adjusted,
+  available, term_end, term_status)`. Return shape changed in 0021 (was
+  granted/booked/bonus/available); both callers updated.
+- `class_credit_balances(p_student_ids[])` (`0015`) — unchanged wrapper
+  around `class_credit_balance()` for the admin students list.
+- `record_credit_topup(p_student_id, p_classes, p_paid_date?, p_method?,
+  p_reference?, p_notes?, p_idempotency_key?)` — `SECURITY DEFINER`,
+  admin of the skater's academy only; refuses a skater not on a
+  `per_class` plan, a future date, or a replayed idempotency key (returns
+  the existing top-up). Decides the term: active/expiring term and
+  classes < minimum → same term dates (extra classes); active/expiring and
+  ≥ minimum → next term from `term_end + 1` for one cycle; no term or
+  lapsed → must be ≥ minimum ("A new monthly plan needs at least 8
+  classes (₹4,000)") and starts on the payment date. Inserts a
+  `kind = 'topup'` fee (amount = classes × `per_class_rate`,
+  `credits_granted` = classes) and pays it via `record_payment()`, so the
+  receipt number, void and audit behaviour are identical to any payment.
+  Mirrored in TS by `planTopup()` (`schedule/hooks/creditTerm.ts`,
+  unit-tested) so the dialog can preview the outcome.
+- `adjust_class_credits(p_student_id, p_delta, p_reason)` (`0023`) —
+  `SECURITY DEFINER`, admin only, reason required, delta ≠ 0. The one
+  manual lever; appends an `adjust` row.
+- `expire_lapsed_credits()` — `SECURITY DEFINER`; the nightly job (via
+  the `generate-fees` Edge Function). For every active credit-plan
+  skater whose `term_status = 'expired'` and balance > 0, appends
+  `expire` of −balance ("Plan ended 31 Jul 2026 without renewal").
+  Idempotent — a second run finds balance 0.
+- `renewals_due(p_within_days = 7)` — `stable` SQL. Skaters whose term
+  ends within N days or has lapsed, with cycle, term end, days left,
+  balance, minimum, rate, first parent's name/phone and the last
+  `renewal_due` notification time. The dashboard's Renewals panel.
+- `send_renewal_reminders(p_student_ids[])` — `SECURITY DEFINER`, admin
+  only. One `notifications` row (type `renewal_due`, link
+  `/parent/fees`) per linked parent, wording depending on lapsed vs.
+  ending and whether unused classes would carry forward.
+- `upcoming_bookings(p_days = 7)` — `stable` SQL. Every `booked` booking
+  on a `scheduled` session between today and today + N days, with
+  session, batch, coach and skater — the admin's "Coming up" page.
 - `book_class_slot(p_session_id, p_student_id)` — `SECURITY DEFINER`.
-  (Two arguments since `0019`; the one-argument form that guessed the
-  child with `limit 1` is dropped.) Validates `p_student_id` is one of
-  the caller's children (`parent_student_ids()`), is actively enrolled
-  in the session's batch, the session is `scheduled` and today-or-future;
-  then takes `select … from students where id = p_student_id for update`
-  so two concurrent bookings for the same skater serialise, and only then
-  checks `class_credit_balance(...) > 0` — the second of two racing
-  requests re-reads the balance after the first commits and is refused.
-  Raises "Pay this period's fee to unlock class credits" specifically
-  when an unpaid/overdue credit-bearing fee is the reason, vs. a generic
-  "No class credits remaining" otherwise. Inserts (or reactivates a
-  cancelled) the booking.
+  Validates the caller owns `p_student_id`, active enrolment in the
+  session's batch, the session is `scheduled` and today-or-future; locks
+  the student row; then reads `credit_plan_status()`: refuses a lapsed
+  term ("The plan ended on 31 Jul — top up at the academy to renew it"),
+  a non-positive balance on a per-class plan ("owes N classes …" or "No
+  classes left — top up at the academy to book"), an unpaid period on a
+  flat plan ("Pay this period's fee …"), else "No class credits
+  remaining". Inserts (or re-activates) the booking with `source =
+  'parent'`; the ledger trigger records the spend.
 - `cancel_class_slot(p_session_id, p_student_id)` — `SECURITY DEFINER`.
-  Same ownership check. Only works while the session is still
-  `scheduled` — once the academy marks attendance, the booking is
-  permanent history and the credit is truly spent. Sets the row to
-  `'cancelled'`, freeing the credit.
-- `class_credit_balances(p_student_ids[])` (`0015_class_credit_balances_bulk.sql`)
-  — `stable` SQL, `SECURITY INVOKER`. Same value as `class_credit_balance()`,
-  for a whole page of students in one round trip instead of one RPC call
-  per row — the "Credits" column on the admin students list
-  (`/admin/students`).
-- `class_credit_summary(p_student_id)` (`0014_credits_require_payment.sql`)
-  — `stable` SQL, `SECURITY INVOKER`. Same math as
-  `class_credit_balance()`, broken into `(granted, booked, bonus,
-  available)` — the admin side's view, since a bare number doesn't
-  explain "why is this 0" the way the parts do. Used on the student
-  profile (Overview badge from `class_credit_balance()`, full breakdown
-  card on the Attendance tab from this function).
+  Same ownership check; only while the session is still `scheduled`.
+  Sets `'cancelled'`; the ledger trigger records the refund.
+- `attendance_credit_truth()` (trigger on `attendance`, `SECURITY
+  DEFINER`) and `resolve_session_bookings(p_session_id)` — see the
+  `class_bookings` trigger note above. `grant_or_revoke_makeup_credit()`
+  now returns early for any skater `student_uses_credits()` says is in
+  the credit system.
 
 `cancel_session()` (`0003_scheduling.sql`) gained one line in
 `0012_class_bookings.sql`: cancelling a session also cancels every active
@@ -395,10 +432,10 @@ booking on it, so nobody's credit is held hostage by a class that never
 happened — they can book the make-up session (or any other day) with the
 freed credit.
 
-`generate_upcoming_fees()` (`0007_fees.sql`) sets `credits_granted` for
-every plan that has a `batch_id` (cycle or per_class alike) alongside its
-existing `amount` calculation — see the `student_fees.credits_granted`
-row above and `fee_plans` below. Billing math itself is unchanged.
+`generate_upcoming_fees()` sets `credits_granted` for every **cycle**
+plan that has a `batch_id` alongside its `amount` calculation — see the
+`student_fees.credits_granted` row above. Since `0021` it skips
+`per_class` plans entirely: those are billed only by top-ups.
 
 The attendance-marking roster (`getSessionForMarking.ts`,
 `0004_attendance.sql`'s domain) changed to match: a session's roster is
@@ -448,7 +485,7 @@ must be batch-scoped and priced.
 Indexes: `(academy_id)`, `(batch_id)`.
 **RLS:** super_admin all · academy_admin all in academy · members select.
 
-### `student_fees` — one billable period for one student
+### `student_fees` — one billable period, or one top-up, for one student
 
 | Column       | Type          | Nullable | Default           | Notes                                              |
 | ------------ | ------------- | -------- | ----------------- | -------------------------------------------------- |
@@ -456,8 +493,9 @@ Indexes: `(academy_id)`, `(batch_id)`.
 | academy_id   | uuid          | no       |                   | FK → academies cascade                             |
 | student_id   | uuid          | no       |                   | composite FK → students cascade                    |
 | fee_plan_id  | uuid          | yes      |                   | composite FK → fee_plans; set null on plan delete  |
-| period_start | date          | no       |                   |                                                    |
-| period_end   | date          | no       |                   | ≥ period_start                                     |
+| kind         | fee_kind      | no       | 'period'          | `0021` — `period` (a flat-fee billing period from `generate_upcoming_fees`) or `topup` (a block of classes bought on a pay-per-class plan via `record_credit_topup`, created already paid). |
+| period_start | date          | no       |                   | For a `topup`: the **term** the classes belong to (see `credit_plan_status`) |
+| period_end   | date          | no       |                   | ≥ period_start. The latest paid/waived credit-bearing row's `period_end` is when the skater's plan lapses |
 | amount       | numeric(10,2) | no       |                   | ≥ 0; copied from the plan at generation time. Frozen once the fee is `paid`/`waived`; while still `pending`/`overdue`, kept in sync with the plan/batch by `recompute_open_fees_for_plan()` — see the trigger note below and `0018_sync_open_fees_with_plan_and_schedule.sql` |
 | due_date     | date          | no       |                   |                                                    |
 | status       | fee_status    | no       | 'pending'         |                                                    |
@@ -466,7 +504,7 @@ Indexes: `(academy_id)`, `(batch_id)`.
 | credits_granted | integer      | yes      |                   | `0012_class_bookings.sql` — how many classes this period paid for (`expected_classes_from_schedule` for the plan's batch, null for an academy-wide/no-batch plan); copied at generation time, same live-while-unpaid / frozen-once-paid rule as `amount` above |
 | created_at / updated_at | timestamptz | no | now()       | trigger                                            |
 
-Unique `(student_id, period_start)` (`0007_fees.sql`) — a student can't have two periods starting the same day.
+Unique `(student_id, period_start)` **where kind = 'period'** (`0007`, narrowed in `0021`) — a student can't have two billing periods starting the same day; several top-ups can share a term.
 Indexes: `(academy_id, status)`, `(academy_id, due_date)`, `(academy_id, period_start)`, `(student_id)`, `(fee_plan_id)`.
 **Trigger:** `fee_plans_sync_open_fees` (on `fee_plans`), `batches_sync_open_fees`
 (on `batches`), and `holidays_sync_open_fees` (on `holidays`) — all call
@@ -521,6 +559,28 @@ through `record_payment()` / `void_payment()` (both `SECURITY DEFINER`
 with their own admin-of-this-academy check). Because `payments` now has
 two FKs to `profiles`, a PostgREST embed must name the one it means:
 `recorded_by:profiles!payments_recorded_by_fkey(full_name)`.
+
+### `credit_ledger` — every class-credit movement, append-only
+
+`0021_credit_ledger_topups_and_attendance_truth.sql`. A skater's credit
+balance is `sum(delta)`; nothing here is ever updated or deleted.
+
+| Column     | Type        | Nullable | Default           | Notes                                                                 |
+| ---------- | ----------- | -------- | ----------------- | --------------------------------------------------------------------- |
+| id         | uuid        | no       | gen_random_uuid() |                                                                       |
+| academy_id | uuid        | no       |                   | FK → academies cascade                                                |
+| student_id | uuid        | no       |                   | composite FK → students cascade                                       |
+| delta      | integer     | no       |                   | ≠ 0; positive adds credits, negative spends/removes                   |
+| kind       | text        | no       |                   | `grant` (fee paid/waived) · `clawback` (fee un-paid/deleted) · `spend` (booking) · `refund` (booking cancelled/refunded) · `expire` (term lapsed) · `adjust` (admin, with reason) |
+| fee_id     | uuid        | yes      |                   | FK → student_fees set null — grant/clawback                           |
+| booking_id | uuid        | yes      |                   | FK → class_bookings set null — spend/refund                           |
+| reason     | text        | yes      |                   | shown on the statement                                                |
+| actor_id   | uuid        | yes      |                   | FK → profiles set null; `auth.uid()` or null for the nightly job      |
+| created_at | timestamptz | no       | now()             |                                                                       |
+
+Indexes: `(student_id, created_at desc)`, `(fee_id)`, `(booking_id)`.
+Written only by: `ledger_sync_fee()` (trigger `student_fees_ledger` after insert/update of status or credits_granted, and `student_fees_ledger_delete` before delete), `ledger_sync_booking()` (trigger `class_bookings_ledger` / `_delete`), `expire_lapsed_credits()`, `adjust_class_credits()`. Both sync functions are idempotent — they bring the ledger's net for that fee/booking to the target (credits_granted or 0; −1 or 0) and write nothing if it already matches.
+**RLS:** super_admin all · academy_admin select in academy · parent select own children. No write policies for anyone.
 
 ### `receipt_counters` — per-academy, per-year receipt numbering
 

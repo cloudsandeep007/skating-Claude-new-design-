@@ -15,9 +15,13 @@
 > Also 2026-09-15: any batch-scoped plan (cycle or per-class) now grants
 > the student class credits, spent by booking specific upcoming sessions
 > a week ahead — see docs/features/schedule.md's "Class bookings"
-> section. Billing itself (what's charged) is unchanged by this. A
-> credit only counts once its fee is **paid** (or waived) — recording a
-> payment is what actually unlocks a period's classes for booking.
+> section. A credit only counts once its fee is **paid** (or waived).
+>
+> **2026-09-16: pay-per-class is no longer billed by period.** A
+> per-class skater buys classes in **top-ups** recorded by the admin; a
+> top-up of at least the cycle minimum starts or renews a **term**, and
+> unused classes expire when the term ends without renewal. See "Top-ups
+> and terms" below. Flat-fee (cycle) plans are unchanged.
 
 ## Purpose
 
@@ -86,6 +90,22 @@ collected some other way (cash, UPI, bank transfer, etc.).
   field is capped, the form validates, and the database refuses); a
   date in the future is refused the same way.
 
+**Admin — top-ups** (skater profile → Fees tab, pay-per-class skaters only)
+- **Top up classes** — "the family paid for N classes". The dialog shows
+  the plan's rate, the current term, and — as you type the number —
+  exactly what it will do: add classes to the current term, renew it
+  (next term follows on, unused classes carry forward), or start a new
+  term (needs the minimum). Amount = N × rate; method/reference/notes as
+  for any payment; a receipt number is issued. Each top-up appears in the
+  list as "Top-up · 8 classes · valid Oct 1 – Oct 31" and can be voided.
+
+**Admin — dashboard, "Renewals due" panel** (`/admin`)
+- Skaters whose plan term ends within 7 days or has already lapsed,
+  grouped monthly / quarterly / annual, with the term end, unused classes
+  at risk, the parent's phone, and when they were last reminded.
+  **Remind** (per row or bulk-selected) sends an in-app notification to
+  the parents.
+
 **Parent** (`/parent/fees`, reached from the Fees card on Home)
 - Current dues (amount, due date, status badge) and a receipt-style
   payment history — every fee period with its payments underneath, read
@@ -106,6 +126,10 @@ collected some other way (cash, UPI, bank transfer, etc.).
 | RPC `void_payment`                    |      | ✓     | admin-only; marks a payment void with a reason, re-derives status  |
 | RPC `waive_fee`                       |      | ✓     | admin-only; the Waive dialog                                       |
 | RPC `delete_student_fee`               |      | ✓     | admin-only; removes a period that has no payment history            |
+| RPC `record_credit_topup`             |      | ✓     | admin-only; a `kind = 'topup'` fee + its payment in one call        |
+| RPC `credit_plan_status`              | ✓    |       | the term shown in the Top-up dialog (via the schedule feature)      |
+| RPC `renewals_due` / `send_renewal_reminders` | ✓ | ✓ | dashboard "Renewals due" panel (dashboard feature)                 |
+| `credit_ledger`                       |      | (auto)| grant/clawback rows follow a fee's status — see docs/features/schedule.md |
 | RPC `student_fees_list`               | ✓    |       | admin dashboard table + CSV export; also returns `last_reminded_at` |
 | RPC `send_fee_reminders`              |      | ✓     | per-row Remind button + bulk "Send reminder"                       |
 | view `monthly_collection_totals`      | ✓    |       | dashboard's "Collected this month" card only                       |
