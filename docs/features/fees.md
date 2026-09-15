@@ -103,9 +103,21 @@ collected some other way (cash, UPI, bank transfer, etc.).
 | RPC `expected_classes_from_schedule`  | ✓    |       | called by `generate_upcoming_fees` for a per-class plan's amount, and for every batch-scoped plan's `credits_granted` |
 | `student_fees.credits_granted`        |      | ✓     | set by `generate_upcoming_fees`; feeds `class_credit_balance()` — see docs/features/schedule.md |
 | `audit_logs`                          |      | (auto)| existing `audit_student_fees` / `audit_payments` triggers          |
+| RPC `recompute_open_fees_for_plan`    |      | (auto)| fired by triggers on `fee_plans`/`batches`/`holidays` writes, never called from the UI — see "Fees stay in sync" below |
+| `batches.days_of_week`                | ✓    |       | read by `recompute_open_fees_for_plan` via `expected_classes_from_schedule`, same as generation |
+| `holidays`                            | ✓    |       | same — an added/removed academy holiday can change a batch-scoped plan's open fees |
 
 ## Business rules
 
+- **Fees stay in sync with plan/batch changes — until they're paid.** A
+  `pending`/`overdue` fee's `amount` and `credits_granted` automatically
+  recalculate the instant its fee plan's rate/amount/pricing mode/batch,
+  the batch's schedule, or an academy holiday changes — no need to
+  delete and regenerate. A fee that's already `paid` or `waived` is
+  never touched by this; that's money already collected, and it stays
+  exactly as recorded (see DECISIONS, 2026-09-15). A rate change that
+  suddenly fully covers a fee with an existing partial payment flips it
+  straight to Paid.
 - **No "partial" status.** A fee is `pending` or `overdue` until payments
   covering its full `amount` have been recorded, at which point
   `record_payment()` flips it to `paid`. A partial payment is fully

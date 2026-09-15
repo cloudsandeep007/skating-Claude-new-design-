@@ -17,6 +17,62 @@ Format:
 
 ---
 
+## 2026-09-15 — Unpaid fees stay live-synced to plan/batch/holiday changes
+
+**Decision:** Refined the "amounts are a locked-in historical snapshot"
+rule (see the per-class-billing and credits-require-payment entries
+below) to apply only *after* a fee is settled. Added
+`recompute_open_fees_for_plan(p_fee_plan_id)` plus three triggers —
+`AFTER UPDATE` on `fee_plans` (amount/per_class_rate/pricing_mode/
+batch_id), `AFTER UPDATE` on `batches` (days_of_week), `AFTER INSERT OR
+DELETE` on `holidays` — that recompute `amount` and `credits_granted`
+for every `student_fees` row still in `pending`/`overdue`, then
+re-derive `status` against the recomputed amount and whatever's already
+been paid.
+
+**Options considered:**
+1. *Leave the snapshot rule absolute, as before* (previous behavior) —
+   rejected per client report: a fee generated off a 5-day batch kept
+   billing ₹8,800 after the batch was edited to weekends-only, with no
+   automatic path back to a correct number — the admin's only recourse
+   was `delete_student_fee()` + "Generate now" (0016), which is fine as
+   a manual escape hatch but shouldn't be required for something the
+   system caused.
+2. *Recompute on read* (compute the "current" amount live in
+   `student_fees_list`/the student profile query, instead of writing it
+   back) — rejected: `amount` is used directly by `record_payment()`
+   and the credits math (`class_credit_balance`, `class_credit_summary`)
+   elsewhere, so a read-time-only number would disagree with what those
+   RPCs see; keeping one source of truth in the row itself avoids a
+   second parallel calculation to keep in sync.
+3. *Trigger-based recompute, scoped to unpaid fees only* (chosen) —
+   keeps the existing "paid/waived is permanent history" guarantee
+   completely intact (nothing about `record_payment()`, `delete_payment()`,
+   or the credits-require-payment gate changes), while making the
+   *unpaid* number track reality automatically, which is what an admin
+   actually expects for money not yet collected.
+
+**Why:** A pending or overdue fee is a quoted future obligation, not a
+receipt — there's no reason it should freeze at a value that was only
+ever an artifact of *when* the admin happened to click "Generate now"
+relative to *when* they finished configuring the plan or batch. Once
+money changes hands, freezing is exactly the right behavior (that's
+still true and unchanged) — the fix narrows scope to where the original
+rule didn't actually apply.
+
+**Trade-offs:** Editing a batch used by several fee plans, or an academy
+holiday used by several batch-scoped plans, now fires a recompute loop
+over every affected plan's open fees on every such edit — fine at this
+app's scale (an academy has a handful of batches/plans, each with a
+handful of open fees), but a very large academy doing frequent batch
+edits could feel this as extra write latency; revisit if that ever
+becomes noticeable. A partial payment recorded against the old amount
+can now cause a fee to jump straight to `paid` status on an unrelated
+rate change (e.g. a rate cut that happens to be fully covered already)
+without an explicit "record payment" action — this is intentional (the
+money genuinely does cover it now) but worth remembering if it looks
+surprising in the payment history.
+
 ## 2026-09-15 — Billing periods align to the calendar month, not join date
 
 **Decision:** `generate_upcoming_fees()` now anchors every new period's

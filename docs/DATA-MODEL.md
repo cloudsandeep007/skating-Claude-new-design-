@@ -452,16 +452,22 @@ Indexes: `(academy_id)`, `(batch_id)`.
 | fee_plan_id  | uuid          | yes      |                   | composite FK → fee_plans; set null on plan delete  |
 | period_start | date          | no       |                   |                                                    |
 | period_end   | date          | no       |                   | ≥ period_start                                     |
-| amount       | numeric(10,2) | no       |                   | ≥ 0; copied from the plan so plan edits don't rewrite history |
+| amount       | numeric(10,2) | no       |                   | ≥ 0; copied from the plan at generation time. Frozen once the fee is `paid`/`waived`; while still `pending`/`overdue`, kept in sync with the plan/batch by `recompute_open_fees_for_plan()` — see the trigger note below and `0018_sync_open_fees_with_plan_and_schedule.sql` |
 | due_date     | date          | no       |                   |                                                    |
 | status       | fee_status    | no       | 'pending'         |                                                    |
 | waived_reason | text         | yes      |                   | set together with status='waived'; `0007_fees.sql` |
 | last_reminded_at | timestamptz | yes     |                   | set by `send_fee_reminders()`; `0010_fee_batch_plans_and_reminders.sql` — shown in the admin fee list as "Reminded N days ago" |
-| credits_granted | integer      | yes      |                   | `0012_class_bookings.sql` — how many classes this period paid for (`expected_classes_from_schedule` for the plan's batch, null for an academy-wide/no-batch plan); copied at generation time so a later plan or schedule edit never rewrites history, same rationale as `amount` |
+| credits_granted | integer      | yes      |                   | `0012_class_bookings.sql` — how many classes this period paid for (`expected_classes_from_schedule` for the plan's batch, null for an academy-wide/no-batch plan); copied at generation time, same live-while-unpaid / frozen-once-paid rule as `amount` above |
 | created_at / updated_at | timestamptz | no | now()       | trigger                                            |
 
 Unique `(student_id, period_start)` (`0007_fees.sql`) — a student can't have two periods starting the same day.
 Indexes: `(academy_id, status)`, `(academy_id, due_date)`, `(academy_id, period_start)`, `(student_id)`, `(fee_plan_id)`.
+**Trigger:** `fee_plans_sync_open_fees` (on `fee_plans`), `batches_sync_open_fees`
+(on `batches`), and `holidays_sync_open_fees` (on `holidays`) — all call
+`recompute_open_fees_for_plan()` to re-price this table's `pending`/`overdue`
+rows whenever the plan's amount/rate/pricing_mode/batch, the batch's
+`days_of_week`, or an academy holiday changes (`0018_sync_open_fees_with_plan_and_schedule.sql`).
+See DECISIONS, "Unpaid fees stay live-synced to plan/batch/holiday changes".
 Audit: insert/update/delete → `audit_logs` — waiving (status + waived_reason in one update) is logged automatically this way.
 **RLS:** super_admin all · academy_admin all in academy · parent select own children. Coaches: none.
 
@@ -706,6 +712,7 @@ from `0001_initial_schema.sql`. `students.fee_plan_id` and
 | `delete_payment(p_payment_id)` (`0016_delete_payment_and_fee.sql`) | `SECURITY INVOKER`, admin-only via `payments_admin_all`. Deletes the payment, then recomputes the fee's status from what's left (`paid` if still fully covered, else `overdue`/`pending` by due date) — never leaves a fee falsely marked paid with nothing to show for it. No-ops on a `waived` fee. | void                                          |
 | `delete_student_fee(p_fee_id)` (`0016_delete_payment_and_fee.sql`) | `SECURITY INVOKER`, admin-only via `student_fees_admin_all` / `payments_admin_all`. Rolls back an entire period: deletes its payments (required first — `payments.student_fee_id` is `on delete restrict`, no cascade), then the period row itself. For correcting a period generated before its plan was finished being configured; follow with `generate_upcoming_fees()` for a clean replacement. | void                                          |
 | `student_fees_list(status?, month?, batch?)` | `SECURITY INVOKER`. The admin fee list: one row per fee matching the filters, with `paid`, `balance`, and `last_reminded_at` pre-computed — the admin dashboard's table and CSV export both read this directly. `month` matches by `due_date`'s calendar month; leaving it null (the "Overdue" quick filter does this) returns every matching fee regardless of month. | one row per matching fee                     |
+| `recompute_open_fees_for_plan(p_fee_plan_id)` (`0018_sync_open_fees_with_plan_and_schedule.sql`) | Re-prices every `pending`/`overdue` `student_fees` row on the given plan from the plan/batch's *current* config (same `amount`/`credits_granted` formulas as `generate_upcoming_fees()`), then re-derives `status` from what's actually been paid against the new amount. Never touches a `paid` or `waived` fee. Not called directly by the UI — fired automatically by the triggers below. | void |
 
 ### Fee reminders (`0010_fee_batch_plans_and_reminders.sql`)
 

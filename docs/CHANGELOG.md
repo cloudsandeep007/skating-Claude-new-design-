@@ -5,6 +5,23 @@ non-technical person can follow it. Newest first.
 
 ---
 
+## 2026-09-15 — Unpaid fees now stay in sync with plan and batch edits
+
+- **Fixed: editing a batch's schedule or a fee plan's rate after a fee
+  was generated didn't update that fee.** A per-class fee priced off a
+  5-day batch (₹8,800) kept showing ₹8,800 even after the batch was
+  changed to weekends-only — the number only made sense for a schedule
+  that no longer existed.
+- **Now:** any fee that's still **pending or overdue** (nothing paid, or
+  not fully paid yet) automatically recalculates the moment you change
+  the batch's days, the plan's rate/amount, or the academy's holidays —
+  no more manual "delete and regenerate" needed for this case. A fee
+  that's already **paid or waived is never touched** — that's money
+  already collected under the terms it was collected under, and stays
+  exactly as it was.
+- If a rate change happens to fully cover a fee that already had a
+  partial payment on it, the fee flips straight to Paid automatically.
+
 ## 2026-09-15 — Billing cycles now align to the calendar month
 
 - **A skater's fee period now always runs 1st–30th/31st of the month**,
