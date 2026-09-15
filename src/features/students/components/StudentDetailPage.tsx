@@ -6,6 +6,7 @@ import { MakeupCreditsCard } from '@/features/attendance'
 import { useAuth } from '@/features/auth'
 import { PaymentHistoryList } from '@/features/fees'
 import { AchievementHistoryList, SkillAssessmentPanel } from '@/features/progression'
+import { ClassCreditsCard, useClassCreditBalance } from '@/features/schedule'
 import { useSignedPhotoUrls } from '@/shared/lib/signedPhotoUrls'
 import {
   AlertDialog,
@@ -33,6 +34,7 @@ export function StudentDetailPage() {
   const navigate = useNavigate()
   const { profile } = useAuth()
   const { data: student, isLoading } = useStudent(studentId)
+  const { data: creditBalance } = useClassCreditBalance(studentId || null)
   const setStatus = useSetStudentStatus()
   const { data: photoUrls } = useSignedPhotoUrls('student-photos', [student?.photoUrl ?? null])
 
@@ -111,6 +113,9 @@ export function StudentDetailPage() {
                 >
                   {student.attendancePct}% attendance
                 </StatusBadge>
+              )}
+              {creditBalance !== null && creditBalance !== undefined && (
+                <StatusBadge tone="outline">{creditBalance} credits left</StatusBadge>
               )}
             </div>
             <div className="mt-2.5 text-sm text-muted-foreground">
@@ -212,7 +217,8 @@ export function StudentDetailPage() {
             )}
           </TabsContent>
 
-          <TabsContent value="attendance" className="p-5">
+          <TabsContent value="attendance" className="space-y-4 p-5">
+            <ClassCreditsCard studentId={student.id} />
             <MakeupCreditsCard studentId={student.id} />
           </TabsContent>
           <TabsContent value="progress" className="space-y-5 p-5">

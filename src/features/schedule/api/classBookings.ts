@@ -21,6 +21,32 @@ export function useClassCreditBalance(studentId: string | null) {
   })
 }
 
+export interface ClassCreditSummary {
+  granted: number
+  booked: number
+  bonus: number
+  available: number | null
+}
+
+/** class_credit_summary() RPC — the same balance as class_credit_balance(),
+ * broken into its parts (granted from paid fees, spent on bookings, bonus
+ * from pending make-up credits) for the admin side, where a plain number
+ * isn't enough to explain "why is this 0". */
+export function useClassCreditSummary(studentId: string | null) {
+  return useQuery({
+    queryKey: ['bookings', 'summary', studentId],
+    enabled: studentId !== null,
+    queryFn: async (): Promise<ClassCreditSummary | null> => {
+      if (!studentId) return null
+      const { data, error } = await supabase
+        .rpc('class_credit_summary', { p_student_id: studentId })
+        .single()
+      if (error) throw error
+      return { granted: data.granted, booked: data.booked, bonus: data.bonus, available: data.available }
+    },
+  })
+}
+
 /** Which of a student's upcoming sessions they've already booked. */
 export function useStudentBookedSessionIds(studentId: string | null) {
   return useQuery({

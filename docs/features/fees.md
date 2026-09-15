@@ -15,7 +15,9 @@
 > Also 2026-09-15: any batch-scoped plan (cycle or per-class) now grants
 > the student class credits, spent by booking specific upcoming sessions
 > a week ahead — see docs/features/schedule.md's "Class bookings"
-> section. Billing itself (what's charged) is unchanged by this.
+> section. Billing itself (what's charged) is unchanged by this. A
+> credit only counts once its fee is **paid** (or waived) — recording a
+> payment is what actually unlocks a period's classes for booking.
 
 ## Purpose
 

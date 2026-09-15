@@ -17,6 +17,45 @@ Format:
 
 ---
 
+## 2026-09-15 — Credits gated behind payment, and surfaced to admins
+
+**Decision:** `class_credit_balance()` now sums `credits_granted` only
+from `student_fees` rows with `status in ('paid', 'waived')` — a
+pending/overdue period contributes zero credits until it's settled. This
+was a one-line change to an existing `sum(...)` filter, not a new
+mechanism, because the balance was already a live query over
+`student_fees` rather than a value frozen at generation time. Added
+`class_credit_summary()` — the same formula split into
+`(granted, booked, bonus, available)` — so the admin side isn't limited
+to a single opaque number; it's shown on the student profile (a badge
+next to attendance %, and a full breakdown card on the Attendance tab,
+right where `MakeupCreditsCard` already lives).
+
+**Options considered:**
+1. *Where to gate* — (a) filter the existing balance query by fee status
+   (chosen); (b) a separate "credits released" flag flipped by
+   `record_payment()`. (a) needed no new column or trigger — payment
+   status already lives on `student_fees.status`, and the balance was
+   never stored, only computed, so there was nothing to keep in sync.
+2. *What the parent sees at 0* — distinguishing "unpaid" from "genuinely
+   out of credits" was worth the extra `exists(...)` check in
+   `book_class_slot()` and a parallel client-side check (via the
+   student's existing `student_fees` query) — a flat "No credits left"
+   would have looked identical to a real problem needing academy
+   attention, and confusing which one it is defeats the point of gating
+   on payment in the first place.
+
+**Why:** The client's model is: you pay, you get classes. Letting
+booking work before payment quietly broke that — an unpaid family could
+already be filling their week's slots.
+
+**Trade-offs:** none of substance — this only tightens an existing check
+by adding a `WHERE` clause; no schema change, no migration of existing
+data needed (a period generated before this shipped simply starts
+counting the moment it's marked paid, same as it always could be).
+
+---
+
 ## 2026-09-15 — Universal class-credit + weekly booking system
 
 **Decision:** Extended the same-day make-up-credits work into a system

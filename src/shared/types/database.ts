@@ -1483,6 +1483,15 @@ export type Database = {
         Returns: undefined
       }
       class_credit_balance: { Args: { p_student_id: string }; Returns: number }
+      class_credit_summary: {
+        Args: { p_student_id: string }
+        Returns: {
+          available: number
+          bonus: number
+          booked: number
+          granted: number
+        }[]
+      }
       coach_activity_report: {
         Args: { p_batch_id?: string; p_from: string; p_to: string }
         Returns: {

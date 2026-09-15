@@ -14,7 +14,7 @@ import { EmptyState } from '@/shared/ui/EmptyState'
 import { Skeleton } from '@/shared/ui/skeleton'
 import { StatusBadge } from '@/shared/ui/StatusBadge'
 
-import { useChildUpcomingSessions } from '../api/childData'
+import { useChildFeeStatus, useChildUpcomingSessions } from '../api/childData'
 import { useCurrentChild } from '../hooks/useSelectedChild'
 import { ChildSelector } from './ChildSelector'
 
@@ -28,6 +28,7 @@ export function ChildSchedulePage() {
   const { data: sessions, isLoading } = useChildUpcomingSessions(child?.id ?? null, 30)
   const { data: balance } = useClassCreditBalance(child?.id ?? null)
   const { data: bookedIds } = useStudentBookedSessionIds(child?.id ?? null)
+  const { data: feeStatus } = useChildFeeStatus(child?.id ?? null)
   const bookSlot = useBookClassSlot()
   const cancelSlot = useCancelClassSlot()
   const today = todayIso()
@@ -37,6 +38,10 @@ export function ChildSchedulePage() {
   if (!child) return <EmptyState title="No skater linked to your account" />
 
   const onBookingPlan = balance !== null && balance !== undefined
+  const unpaidBlocksBooking =
+    onBookingPlan &&
+    balance <= 0 &&
+    (feeStatus?.status === 'pending' || feeStatus?.status === 'overdue')
 
   return (
     <div className="space-y-4">
@@ -56,8 +61,9 @@ export function ChildSchedulePage() {
             </span>
           </div>
           <p className="mt-2 text-xs text-muted-foreground">
-            Book which of the coming week's classes you'll attend below — a booked-but-missed
-            class still carries forward, same as before.
+            {unpaidBlocksBooking
+              ? "Pay this period's fee to unlock these classes — credits are granted once the fee is paid."
+              : "Book which of the coming week's classes you'll attend below — a booked-but-missed class still carries forward, same as before."}
           </p>
         </div>
       )}
@@ -105,6 +111,7 @@ export function ChildSchedulePage() {
                   <BookingControl
                     booked={bookedIds?.has(s.id) ?? false}
                     canBook={balance > 0}
+                    unpaid={unpaidBlocksBooking}
                     onBook={() => {
                       bookSlot.mutate(s.id, {
                         onError: (error) => {
@@ -140,12 +147,14 @@ export function ChildSchedulePage() {
 function BookingControl({
   booked,
   canBook,
+  unpaid,
   onBook,
   onCancel,
   pending,
 }: {
   booked: boolean
   canBook: boolean
+  unpaid: boolean
   onBook: () => void
   onCancel: () => void
   pending: boolean
@@ -167,7 +176,7 @@ function BookingControl({
   }
   return (
     <Button size="sm" variant="outline" disabled={pending || !canBook} onClick={onBook}>
-      {canBook ? 'Book' : 'No credits left'}
+      {canBook ? 'Book' : unpaid ? 'Pay first' : 'No credits left'}
     </Button>
   )
 }

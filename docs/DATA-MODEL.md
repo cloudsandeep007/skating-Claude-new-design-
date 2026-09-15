@@ -345,26 +345,38 @@ writes only happen through `book_class_slot()` / `cancel_class_slot()`
 below, which are `SECURITY DEFINER` and re-check the caller owns the
 student via `parent_student_ids()` themselves.
 
-`0012_class_bookings.sql`:
+`0012_class_bookings.sql` (balance formula updated in
+`0014_credits_require_payment.sql` — see below):
 - `class_credit_balance(p_student_id)` — `stable` SQL,
   `SECURITY INVOKER`. The one running, never-reset balance:
-  `Σ student_fees.credits_granted − count(class_bookings 'booked') +
-  count(makeup_credits 'pending')`. Nothing here is period-scoped —
-  unused credits from an old period are still in the sum the next time a
-  new period is generated, so "leftover carries forward" needs no
-  separate rollover step. Returns **null** (not 0) for a student who has
-  never had a single `credits_granted` row — the frontend's "does this
-  student even use the booking system" check.
+  `Σ student_fees.credits_granted (paid/waived only) − count(class_bookings
+  'booked') + count(makeup_credits 'pending')`. Nothing here is
+  period-scoped — unused credits from an old period are still in the sum
+  the next time a new period is generated, so "leftover carries forward"
+  needs no separate rollover step. Returns **null** (not 0) for a student
+  who has never had a single `credits_granted` row (regardless of that
+  row's payment status) — the frontend's "does this student even use the
+  booking system" check; a student with an unpaid period instead sees a
+  real **0**, so the UI can explain *why*.
 - `book_class_slot(p_session_id)` — `SECURITY DEFINER`. Validates the
   caller's student is actively enrolled in the session's batch, the
   session is `scheduled` and today-or-future, and
-  `class_credit_balance(...) > 0`; inserts (or reactivates a cancelled)
-  the booking.
+  `class_credit_balance(...) > 0`; raises "Pay this period's fee to
+  unlock class credits" specifically when an unpaid/overdue
+  credit-bearing fee is the reason, vs. a generic "No class credits
+  remaining" otherwise. Inserts (or reactivates a cancelled) the booking.
 - `cancel_class_slot(p_session_id)` — `SECURITY DEFINER`. Only works
   while the session is still `scheduled` — once the academy marks
   attendance, the booking is permanent history and the credit is truly
   spent, matching "credit exhausted when the academy marks attendance."
   Sets the row to `'cancelled'`, freeing the credit.
+- `class_credit_summary(p_student_id)` (`0014_credits_require_payment.sql`)
+  — `stable` SQL, `SECURITY INVOKER`. Same math as
+  `class_credit_balance()`, broken into `(granted, booked, bonus,
+  available)` — the admin side's view, since a bare number doesn't
+  explain "why is this 0" the way the parts do. Used on the student
+  profile (Overview badge from `class_credit_balance()`, full breakdown
+  card on the Attendance tab from this function).
 
 `cancel_session()` (`0003_scheduling.sql`) gained one line in
 `0012_class_bookings.sql`: cancelling a session also cancels every active

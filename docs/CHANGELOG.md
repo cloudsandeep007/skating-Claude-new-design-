@@ -5,6 +5,22 @@ non-technical person can follow it. Newest first.
 
 ---
 
+## 2026-09-15 — Credits now require payment, and admins can see the balance
+
+- **Class credits only count once the fee is paid.** A skater's period
+  used to grant credits the moment it was generated, even before the fee
+  was collected — now a pending or overdue fee grants zero credits, so
+  booking is gated behind payment. Once the fee's marked Paid (or
+  Waived), the credits appear right away.
+- **Booking now says why, not just "no credits left".** If a skater's
+  stuck at 0 because their fee isn't paid yet, the app says so directly
+  ("Pay first" on each class, and a clear note on the credits card)
+  instead of leaving the parent to guess.
+- **Admins can now see a skater's credit balance too**, not just their
+  bookings. The skater's profile shows a "N credits left" badge, and a
+  full breakdown (granted, booked, bonus from make-up credits, available)
+  on the Attendance tab.
+
 ## 2026-09-15 — Weekly class booking and credits, for every plan type
 
 - **Every plan tied to a batch now works on class credits.** Whether a

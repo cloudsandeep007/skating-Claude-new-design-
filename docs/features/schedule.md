@@ -130,6 +130,17 @@ gives each coach a rink-side view of what they're teaching today.
   never see the booking UI (`class_credit_balance()` returns `null`, not
   `0`), and they keep showing on every session's roster exactly as
   before this feature.
+- **A credit only counts once its fee is paid.** `class_credit_balance()`
+  sums `credits_granted` only from `student_fees` rows with
+  `status in ('paid', 'waived')` — a `pending`/`overdue` period
+  contributes zero credits until it's settled, so booking is gated
+  behind payment. The booking UI still shows up for an unpaid student
+  (so they can see *why* they're at 0), with "Pay first" on each class
+  instead of a plain "No credits left", and `book_class_slot()` raises a
+  specific "Pay this period's fee to unlock class credits" error when
+  that's the actual reason. `class_credit_summary()` gives the admin
+  side the same breakdown (granted/booked/bonus/available) instead of a
+  single opaque number — shown on the student's profile.
 
 ## Edge cases
 
