@@ -1,5 +1,8 @@
 # Students
 
+> Restyled to the "Kinetic Obsidian" dark theme 2026-09-15 — visual only,
+> nothing below changed. See docs/DECISIONS.md.
+
 ## Purpose
 
 The academy admin's roster: every skater, who their parent is, which batch

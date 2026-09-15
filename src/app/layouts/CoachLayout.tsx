@@ -42,7 +42,7 @@ export function CoachLayout() {
         <Outlet />
       </main>
 
-      <nav className="fixed inset-x-0 bottom-0 grid h-16 grid-cols-2 border-t-2 bg-card shadow-[0_-3px_10px_rgba(45,43,43,.08)]">
+      <nav className="fixed inset-x-0 bottom-0 grid h-16 grid-cols-2 border-t border-white/10 bg-card shadow-[0_-8px_24px_rgba(0,0,0,0.4)]">
         {NAV_ITEMS.map(({ to, label, icon: Icon, end, badge }) => (
           <NavLink
             key={to}
@@ -51,8 +51,7 @@ export function CoachLayout() {
             className={({ isActive }) =>
               cn(
                 'relative flex flex-col items-center justify-center gap-1 text-[11px] font-medium text-muted-foreground',
-                isActive &&
-                  'font-bold text-foreground shadow-[inset_0_3px_0_theme(colors.neutral.950)]',
+                isActive && 'font-bold text-primary shadow-[inset_0_3px_0_hsl(var(--primary))]',
               )
             }
           >

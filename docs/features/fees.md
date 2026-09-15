@@ -1,5 +1,10 @@
 # Fee management
 
+> Restyled to the "Kinetic Obsidian" dark theme 2026-09-15 — visual only,
+> nothing below changed. The redesign mockups showed UPI QR payment,
+> autopay, and self-service plan switching; none of that was built — see
+> docs/DECISIONS.md.
+
 ## Purpose
 
 Manual fee tracking and payment recording — plans, generation, dues,

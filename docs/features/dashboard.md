@@ -1,5 +1,10 @@
 # Admin dashboard
 
+> Restyled to the "Kinetic Obsidian" dark theme 2026-09-15 — visual only.
+> `StatCard` and `ChartCard` moved from this feature to `shared/ui/` so
+> other screens (fees, progression, parent home) can reuse the same
+> look. See docs/DECISIONS.md and docs/ARCHITECTURE.md.
+
 ## Purpose
 
 The academy admin's landing page — where things stand right now, and who

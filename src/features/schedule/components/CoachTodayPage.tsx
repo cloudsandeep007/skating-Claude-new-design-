@@ -60,7 +60,7 @@ export function CoachTodayPage() {
         <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
           Today
         </div>
-        <h1 className="text-2xl font-extrabold tracking-tight">{heading}</h1>
+        <h1 className="font-display text-2xl font-extrabold tracking-tight">{heading}</h1>
         <div className="mt-1 text-sm text-muted-foreground">
           {live.length === 0
             ? 'No sessions'
@@ -107,7 +107,7 @@ function SessionCard({ session, muted = false }: { session: SessionItem; muted?:
       <div
         className={cn(
           'text-xs font-semibold uppercase tracking-wide',
-          cancelled || muted ? 'text-muted-foreground' : 'text-neutral-400',
+          'text-muted-foreground',
         )}
       >
         {muted && `${formatDate(session.sessionDate)} · `}
@@ -120,7 +120,7 @@ function SessionCard({ session, muted = false }: { session: SessionItem; muted?:
         {session.batchName}
       </div>
       <div className="mt-3 flex items-center gap-2 text-sm font-semibold">
-        <span className={cancelled || muted ? 'text-muted-foreground' : 'text-neutral-300'}>
+        <span className={cancelled ? 'text-muted-foreground' : 'text-foreground'}>
           {cancelled
             ? `Cancelled — ${session.cancellationReason}`
             : `${session.studentCount} skater${session.studentCount === 1 ? '' : 's'}`}
@@ -130,7 +130,6 @@ function SessionCard({ session, muted = false }: { session: SessionItem; muted?:
             className={cn(
               'ml-auto inline-flex items-center gap-1 text-xs font-bold',
               fullyMarked ? 'text-success-400' : 'text-warning-300',
-              muted && (fullyMarked ? 'text-success-700' : 'text-warning-800'),
             )}
           >
             <CheckCircle2 className="h-3.5 w-3.5" />
@@ -146,7 +145,9 @@ function SessionCard({ session, muted = false }: { session: SessionItem; muted?:
 
   const className = cn(
     'block rounded-lg p-4 shadow-sm',
-    cancelled || muted ? 'border bg-card text-foreground' : 'bg-neutral-950 text-white',
+    cancelled || muted
+      ? 'border bg-card text-foreground'
+      : 'border border-primary/20 bg-card text-foreground shadow-[0_0_20px_-8px_hsl(var(--primary)/0.3)]',
     !cancelled && 'active:opacity-90',
   )
 

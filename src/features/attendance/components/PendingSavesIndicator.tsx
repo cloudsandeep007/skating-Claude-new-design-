@@ -13,7 +13,7 @@ export function PendingSavesIndicator() {
 
   return (
     <span
-      className="inline-flex items-center gap-1.5 rounded-full bg-warning-100 px-2.5 py-1 text-xs font-bold text-warning-900"
+      className="inline-flex items-center gap-1.5 rounded-full bg-warning-500/15 px-2.5 py-1 text-xs font-bold text-warning-300"
       title="Attendance saved on this device, waiting for a connection"
     >
       <CloudOff className="h-3.5 w-3.5" />

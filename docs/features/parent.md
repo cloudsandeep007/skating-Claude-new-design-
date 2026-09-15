@@ -1,5 +1,10 @@
 # Parent app
 
+> Restyled to the "Kinetic Obsidian" dark theme 2026-09-15 — visual only.
+> The home, progress, and attendance-history screens' dark hero cards
+> were given a cyan border/glow so they read as distinct from the page
+> background. See docs/DECISIONS.md.
+
 ## Purpose
 
 Everything a parent checks in ten seconds on a phone: when the next

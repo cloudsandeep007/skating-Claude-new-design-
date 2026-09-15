@@ -185,7 +185,7 @@ export function BatchForm({
                           className={cn(
                             'h-11 min-w-[52px] rounded-lg border-[1.5px] px-3 text-sm font-bold transition-colors',
                             selected
-                              ? 'border-neutral-950 bg-neutral-950 text-white'
+                              ? 'border-primary bg-primary text-primary-foreground'
                               : 'border-input bg-card hover:bg-muted',
                           )}
                         >

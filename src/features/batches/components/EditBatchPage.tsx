@@ -39,7 +39,7 @@ export function EditBatchPage() {
 
   return (
     <div className="mx-auto max-w-2xl">
-      <h1 className="mb-4 text-2xl font-extrabold tracking-tight">Edit batch</h1>
+      <h1 className="mb-4 font-display text-2xl font-extrabold tracking-tight">Edit batch</h1>
       <BatchForm
         isEdit
         defaultValues={{

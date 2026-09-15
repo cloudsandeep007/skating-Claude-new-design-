@@ -18,7 +18,7 @@ export function BatchesListPage() {
   return (
     <div>
       <div className="mb-4 flex flex-wrap items-end justify-between gap-4">
-        <h1 className="text-2xl font-extrabold tracking-tight">Batches</h1>
+        <h1 className="font-display text-2xl font-extrabold tracking-tight">Batches</h1>
         <Button asChild>
           <Link to="/admin/batches/new">
             <Plus className="h-4 w-4" />

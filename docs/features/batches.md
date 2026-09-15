@@ -1,5 +1,8 @@
 # Batches
 
+> Restyled to the "Kinetic Obsidian" dark theme 2026-09-15 — visual only,
+> nothing below changed. See docs/DECISIONS.md.
+
 ## Purpose
 
 A batch is a recurring class: a name, a coach, a weekly time slot on

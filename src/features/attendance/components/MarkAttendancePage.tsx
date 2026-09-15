@@ -29,32 +29,32 @@ const ROW_STYLE: Record<
 > = {
   unmarked: {
     row: 'bg-card',
-    avatar: 'bg-neutral-200 text-neutral-800',
-    meta: 'text-neutral-700',
+    avatar: 'bg-secondary text-secondary-foreground',
+    meta: 'text-muted-foreground',
     label: '',
   },
   present: {
-    row: 'bg-success-50',
-    avatar: 'bg-success-100 text-success-800',
-    meta: 'text-success-700',
+    row: 'bg-success-500/10',
+    avatar: 'bg-success-500/20 text-success-300',
+    meta: 'text-success-300',
     label: 'Marked present',
   },
   absent: {
-    row: 'bg-brand-50',
-    avatar: 'bg-brand-200 text-brand-800',
-    meta: 'text-brand-800',
+    row: 'bg-brand-500/10',
+    avatar: 'bg-brand-500/20 text-brand-300',
+    meta: 'text-brand-300',
     label: 'Marked absent',
   },
   late: {
-    row: 'bg-warning-50',
-    avatar: 'bg-warning-200 text-warning-900',
-    meta: 'text-warning-800',
+    row: 'bg-warning-500/10',
+    avatar: 'bg-warning-500/20 text-warning-300',
+    meta: 'text-warning-300',
     label: 'Marked late',
   },
   excused: {
-    row: 'bg-info-50',
-    avatar: 'bg-info-100 text-info-800',
-    meta: 'text-info-800',
+    row: 'bg-info-500/10',
+    avatar: 'bg-info-500/20 text-info-300',
+    meta: 'text-info-300',
     label: 'Excused',
   },
 }
@@ -125,14 +125,14 @@ export function MarkAttendancePage() {
   return (
     // Escape the layout's padding so the ink header runs edge to edge.
     <div className="-m-4 flex min-h-[calc(100vh-3.5rem)] flex-col pb-40">
-      <header className="bg-neutral-950 px-4 pb-4 pt-3 text-white">
+      <header className="border-b border-white/10 bg-card px-4 pb-4 pt-3 text-foreground">
         <div className="-ml-2 mb-2 flex items-center justify-between">
           <button
             type="button"
             onClick={() => {
               void navigate('/coach')
             }}
-            className="inline-flex h-11 items-center gap-1.5 rounded-lg px-2 text-sm font-bold text-neutral-300 hover:bg-white/10"
+            className="inline-flex h-11 items-center gap-1.5 rounded-lg px-2 text-sm font-bold text-muted-foreground hover:bg-accent"
           >
             <ArrowLeft className="h-4 w-4" />
             Today
@@ -142,34 +142,38 @@ export function MarkAttendancePage() {
             onClick={() => {
               void navigate(`/coach/skills/session/${session.id}`)
             }}
-            className="mr-2 inline-flex h-11 items-center gap-1.5 rounded-lg px-2.5 text-sm font-bold text-neutral-300 hover:bg-white/10"
+            className="mr-2 inline-flex h-11 items-center gap-1.5 rounded-lg px-2.5 text-sm font-bold text-muted-foreground hover:bg-accent"
           >
             <Sparkles className="h-4 w-4" />
             Assess skills
           </button>
         </div>
-        <div className="text-xs font-semibold uppercase tracking-wide text-neutral-400">
+        <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
           {formatDate(session.sessionDate)} · {formatTime(session.startTime)}
           {session.venue && ` · ${session.venue}`}
         </div>
-        <div className="mt-1 text-2xl font-extrabold tracking-tight">{session.batchName}</div>
+        <div className="mt-1 font-display text-2xl font-extrabold tracking-tight">
+          {session.batchName}
+        </div>
 
         <div className="mt-4 flex items-baseline gap-2">
-          <span className="text-[26px] font-extrabold leading-none">{draft.marked}</span>
-          <span className="text-[15px] font-semibold text-neutral-400">
+          <span className="text-[26px] font-extrabold leading-none text-primary">
+            {draft.marked}
+          </span>
+          <span className="text-[15px] font-semibold text-muted-foreground">
             of {draft.total} marked
           </span>
           <span className="ml-auto text-[13px] font-bold text-success-400">
             {draft.counts.present} present
           </span>
-          <span className="text-[13px] font-bold text-brand-500">{draft.counts.absent} absent</span>
+          <span className="text-[13px] font-bold text-brand-400">{draft.counts.absent} absent</span>
           {draft.counts.late > 0 && (
             <span className="text-[13px] font-bold text-warning-300">{draft.counts.late} late</span>
           )}
         </div>
-        <div className="mt-2 h-2 overflow-hidden rounded-full bg-white/20">
+        <div className="mt-2 h-2 overflow-hidden rounded-full bg-muted">
           <div
-            className="h-full rounded-full bg-white transition-[width]"
+            className="h-full rounded-full bg-primary transition-[width]"
             style={{ width: `${progressPct}%` }}
           />
         </div>
@@ -194,7 +198,7 @@ export function MarkAttendancePage() {
       )}
 
       {draft.pendingSave && (
-        <div className="flex items-start gap-2.5 border-b border-warning-200 bg-warning-50 px-4 py-3 text-sm text-warning-900">
+        <div className="flex items-start gap-2.5 border-b border-warning-700 bg-warning-500/10 px-4 py-3 text-sm text-warning-300">
           <CloudOff className="mt-0.5 h-4 w-4 shrink-0" />
           <div>
             <div className="font-bold">Saved on this device — waiting to sync</div>
@@ -212,7 +216,7 @@ export function MarkAttendancePage() {
           <button
             type="button"
             onClick={draft.markAllPresent}
-            className="h-12 w-full rounded-lg border-[1.5px] border-neutral-950 bg-card text-[15px] font-bold hover:bg-muted"
+            className="h-12 w-full rounded-lg border-[1.5px] border-primary bg-card text-[15px] font-bold text-foreground hover:bg-accent"
           >
             Mark all present{remaining < draft.total && ` (${remaining} left)`}
           </button>
@@ -247,7 +251,7 @@ export function MarkAttendancePage() {
       </ul>
 
       {!locked && (
-        <div className="fixed inset-x-0 bottom-16 border-t-2 bg-card px-4 pb-4 pt-3 shadow-[0_-3px_10px_rgba(45,43,43,.08)]">
+        <div className="fixed inset-x-0 bottom-16 border-t-2 bg-card px-4 pb-4 pt-3 shadow-[0_-8px_24px_rgba(0,0,0,0.4)]">
           <button
             type="button"
             onClick={() => {
@@ -255,10 +259,10 @@ export function MarkAttendancePage() {
             }}
             disabled={draft.marked === 0}
             className={cn(
-              'flex h-14 w-full items-center gap-2.5 rounded-lg px-4.5 text-[17px] font-bold text-white disabled:opacity-45',
+              'flex h-14 w-full items-center gap-2.5 rounded-lg px-4.5 text-[17px] font-bold disabled:opacity-45',
               draft.allMarked
-                ? 'bg-brand-600 hover:bg-brand-700'
-                : 'bg-neutral-950 hover:bg-neutral-800',
+                ? 'bg-primary text-primary-foreground hover:bg-primary/90'
+                : 'bg-secondary text-secondary-foreground hover:bg-secondary/80',
             )}
           >
             <span>{draft.allMarked ? 'Confirm attendance' : 'Confirm anyway'}</span>
@@ -335,7 +339,7 @@ function RosterRow({
             event.stopPropagation()
             onSkills()
           }}
-          className="flex h-14 w-9 items-center justify-center rounded-lg border-[1.5px] border-neutral-400 bg-card text-neutral-600"
+          className="flex h-14 w-9 items-center justify-center rounded-lg border-[1.5px] border-border bg-card text-muted-foreground"
         >
           <Sparkles className="h-4 w-4" />
         </button>
@@ -352,7 +356,7 @@ function RosterRow({
             'flex h-14 w-14 items-center justify-center rounded-lg border-[1.5px] text-xl font-bold disabled:opacity-45',
             isPresent
               ? 'border-success-600 bg-success-600 text-white'
-              : 'border-neutral-400 bg-card text-neutral-800',
+              : 'border-border bg-card text-muted-foreground',
           )}
         >
           <Check className="h-6 w-6" strokeWidth={3} />
@@ -370,7 +374,7 @@ function RosterRow({
             'flex h-14 w-14 items-center justify-center rounded-lg border-[1.5px] text-xl font-bold disabled:opacity-45',
             isAbsent
               ? 'border-brand-600 bg-brand-600 text-white'
-              : 'border-neutral-400 bg-card text-neutral-800',
+              : 'border-border bg-card text-muted-foreground',
           )}
         >
           <X className="h-6 w-6" strokeWidth={3} />

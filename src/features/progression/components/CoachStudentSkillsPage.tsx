@@ -29,7 +29,7 @@ export function CoachStudentSkillsPage() {
         >
           <ArrowLeft className="h-4 w-4" />
         </Button>
-        <h1 className="min-w-0 flex-1 truncate text-xl font-extrabold tracking-tight">
+        <h1 className="min-w-0 flex-1 truncate font-display text-xl font-extrabold tracking-tight">
           {progress?.fullName ?? 'Skills'}
         </h1>
       </div>

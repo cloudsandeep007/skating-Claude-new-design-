@@ -44,7 +44,7 @@ export function NeedsAttentionPanel() {
   }
 
   return (
-    <div className="overflow-hidden rounded-xl bg-neutral-950 shadow-[0_12px_32px_rgba(45,43,43,.22)]">
+    <div className="overflow-hidden rounded-xl border border-white/10 bg-card shadow-[0_12px_32px_rgba(0,0,0,0.5)]">
       <div className="flex flex-wrap items-center gap-3 bg-brand-600 px-5 py-3.5">
         <span className="text-xl font-extrabold tracking-tight text-white">Needs attention</span>
         {!isLoading && (
@@ -59,7 +59,7 @@ export function NeedsAttentionPanel() {
         <div className="space-y-0">
           {Array.from({ length: 3 }).map((_, i) => (
             <div key={i} className="border-b border-white/10 p-5">
-              <Skeleton className="h-5 w-48 bg-white/10" />
+              <Skeleton className="h-5 w-48" />
             </div>
           ))}
         </div>

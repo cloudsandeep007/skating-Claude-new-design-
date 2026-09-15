@@ -15,15 +15,15 @@ import { useCurrentChild } from '../hooks/useSelectedChild'
 import { ChildSelector } from './ChildSelector'
 
 const SKILL_TILE: Record<string, string> = {
-  not_started: 'border-neutral-300 bg-card text-neutral-500',
-  learning: 'border-warning-400 bg-warning-50 text-warning-900',
-  achieved: 'border-success-500 bg-success-100 text-success-900',
+  not_started: 'border-border bg-card text-muted-foreground',
+  learning: 'border-warning-500 bg-warning-500/10 text-warning-300',
+  achieved: 'border-success-500 bg-success-500/10 text-success-300',
 }
 
 const SKILL_TILE_ICON_BG: Record<string, string> = {
-  not_started: 'bg-neutral-200',
-  learning: 'bg-warning-200',
-  achieved: 'bg-success-200',
+  not_started: 'bg-muted',
+  learning: 'bg-warning-500/20',
+  achieved: 'bg-success-500/20',
 }
 
 const STATUS_LABEL: Record<string, string> = {
@@ -80,19 +80,19 @@ export function ParentProgressPage() {
     <div className="space-y-5">
       <ChildSelector subtitle="Progress" />
 
-      <div className="rounded-lg bg-neutral-950 p-4 text-white">
-        <div className="flex items-center justify-between text-xs font-semibold uppercase tracking-wide text-neutral-400">
+      <div className="rounded-lg border border-primary/20 bg-card p-4 text-foreground shadow-[0_0_30px_-10px_hsl(var(--primary)/0.3)]">
+        <div className="flex items-center justify-between text-xs font-semibold uppercase tracking-wide text-muted-foreground">
           <span>
             Level {progress.currentLevelSequence} of {progress.totalLevels}
           </span>
-          {progress.isTopLevel && <span className="text-brand-400">Top level!</span>}
+          {progress.isTopLevel && <span className="text-success-400">Top level!</span>}
         </div>
-        <div className="mt-1 text-2xl font-extrabold tracking-tight">
+        <div className="mt-1 font-display text-2xl font-extrabold tracking-tight">
           {progress.currentLevelName}
         </div>
-        <div className="mt-3 h-2.5 overflow-hidden rounded-full bg-white/15">
+        <div className="mt-3 h-2.5 overflow-hidden rounded-full bg-muted">
           <div
-            className="h-full rounded-full bg-brand-500 transition-[width]"
+            className="h-full rounded-full bg-primary transition-[width]"
             style={{ width: `${pct}%` }}
           />
         </div>

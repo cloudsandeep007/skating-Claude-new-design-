@@ -157,7 +157,7 @@ export function LevelsManagePage() {
           <Button variant="ghost" size="sm" asChild className="-ml-2 mb-1">
             <Link to="/admin/progression">← Progress</Link>
           </Button>
-          <h1 className="text-2xl font-extrabold tracking-tight">Levels & skills</h1>
+          <h1 className="font-display text-2xl font-extrabold tracking-tight">Levels & skills</h1>
           <p className="mt-1 text-sm text-muted-foreground">
             The progression ladder every skater climbs. Drag to reorder.
           </p>
@@ -316,7 +316,7 @@ function LevelCard({
           onClick={onToggle}
           className="flex min-w-0 flex-1 items-center gap-2.5 text-left"
         >
-          <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-neutral-950 text-xs font-bold text-white">
+          <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary text-xs font-bold text-primary-foreground">
             {index + 1}
           </span>
           <span className="min-w-0 flex-1">
@@ -363,7 +363,7 @@ function LevelCard({
               variant="ghost"
               size="icon"
               aria-label={`Remove ${level.name}`}
-              className="h-9 w-9 text-brand-700 hover:text-brand-800"
+              className="h-9 w-9 text-brand-400 hover:text-brand-300"
             >
               <Trash2 className="h-4 w-4" />
             </Button>
@@ -495,7 +495,7 @@ function SkillRowItem({
             variant="ghost"
             size="icon"
             aria-label={`Remove ${skill.name}`}
-            className="h-8 w-8 text-brand-700 hover:text-brand-800"
+            className="h-8 w-8 text-brand-400 hover:text-brand-300"
           >
             <Trash2 className="h-3.5 w-3.5" />
           </Button>

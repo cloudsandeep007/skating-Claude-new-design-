@@ -17,6 +17,63 @@ Format:
 
 ---
 
+## 2026-09-15 — Full UI redesign to "Kinetic Obsidian", dark-only, restyle-only scope
+
+**Decision:** Reskinned the entire app to match a new dark design system
+("Kinetic Obsidian", Stitch mockups at `docs/design/latest stitch/`),
+executed as a token-level and class-level restyle across every screen —
+no changes to `api/`, `hooks/`, Zod schemas, or mutation logic anywhere.
+Delivered in 15 reviewable stages (design foundation → shared UI →
+layouts → one feature at a time → parent screens → final QA), each
+verified live against real seeded Supabase data before moving on.
+
+**Options considered:**
+(a) Dark-only, replacing the light theme's CSS variables directly — no
+`.dark` block, no toggle.
+(b) Keep the existing light theme as default and add dark as an
+optional `next-themes` toggle.
+(c) Restyle only real, working screens vs. also building the new
+functionality some mockups implied (UPI QR payments, autopay, coach
+voice-note debriefs, in-app late/leave request flow).
+
+**Why:** (a) — dark-only was chosen by the user; it's also simpler to
+build and verify since there's exactly one palette to get right, and
+`next-themes` was already an unused dependency doing nothing (confirmed
+during research: no `ThemeProvider` was ever mounted). (c) — restyle
+only was chosen by the user; those mockup elements have no backend
+today and building them would have turned a UI project into a mixed
+UI+feature project with materially larger scope (new tables, new RPCs,
+new business rules).
+
+**Trade-offs:**
+- No light mode exists any more. If a future request wants one, it's a
+  second `--variable` set plus a toggle from scratch, not a flip of a
+  flag — `next-themes` would need real wiring at that point.
+- **Mockup ideas intentionally not implemented** (kept here as a
+  reference so they aren't rediscovered from scratch, not as a
+  commitment to build them): UPI QR code fee payment + "compare fee
+  tiers" self-service switching (`prsa_fees_payments`), autopay toggle,
+  coach voice-note debrief player (`prsa_skill_mastery_progress`),
+  in-app "I'll be late" / "Request leave" parent flow with toast
+  confirmation (`prsa_schedule_attendance`), and a vertical
+  certification-timeline component for achievement history (visual
+  polish only, no functional gap).
+- `DevLayout` (`/dev/*`, `super_admin`-only) was left untouched — it's
+  already dark, already visually distinct by design (see the Dev
+  Console reference in the removed ARCHITECTURE.md section this entry
+  supersedes), and every screen behind it is a `PlaceholderPage`, so
+  there was nothing real to verify a restyle against.
+- A real bug was caught and fixed as a side effect, not a new decision:
+  `MarkAttendancePage`'s "Confirm attendance" button and
+  `SkillAssessmentPanel`'s "Promote" button both keyed off the
+  Tailwind `brand` color ramp for their positive/success styling. That
+  ramp's *hue* changed from orange to coral as part of this redesign
+  (its semantic role — error/destructive — did not), which would have
+  made both buttons render alarmingly red on a successful, complete
+  action. Fixed by pointing them at `primary`/the `brand` *button
+  variant* (which itself was remapped to `success`) instead of the raw
+  `brand-*` classes.
+
 ## 2026-09-15 — Coach account removal goes through an Edge Function, not a table delete
 
 **Decision:** "Remove coach" calls a new `delete-user` Edge Function

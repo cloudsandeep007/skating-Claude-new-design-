@@ -94,11 +94,11 @@ export function StudentDetailPage() {
             name={student.fullName}
             photoUrl={student.photoUrl ? photoUrls?.[student.photoUrl] : undefined}
             className="h-16 w-16 shrink-0"
-            fallbackClassName="bg-neutral-950 text-lg font-extrabold text-white"
+            fallbackClassName="bg-primary text-lg font-extrabold text-primary-foreground"
           />
 
           <div className="min-w-[220px] flex-1">
-            <div className="text-2xl font-extrabold tracking-tight">{student.fullName}</div>
+            <div className="font-display text-2xl font-extrabold tracking-tight">{student.fullName}</div>
             <div className="mt-2 flex flex-wrap gap-2">
               {student.batchName && <StatusBadge tone="neutral">{student.batchName}</StatusBadge>}
               {student.levelName && <StatusBadge tone="dark">{student.levelName}</StatusBadge>}
@@ -167,7 +167,7 @@ export function StudentDetailPage() {
         </div>
 
         <Tabs defaultValue="overview">
-          <TabsList className="border-t border-t-neutral-200">
+          <TabsList className="border-t border-t-border">
             {['overview', 'attendance', 'progress', 'fees', 'notes'].map((tab) => (
               <TabsTrigger key={tab} value={tab} className="capitalize">
                 {tab}

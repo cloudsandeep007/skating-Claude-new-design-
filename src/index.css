@@ -2,31 +2,31 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Skating Academy Design System tokens — from
-   docs/design/handoff/skating-academy-design-system/project/Skating Academy Design System.dc.html
-   Ink for identity/primary, brand red reserved for CTA/destructive/absent. */
+/* "Kinetic Obsidian" design system tokens — from
+   docs/design/latest stitch/*.zip (kinetic_obsidian/DESIGN.md). Dark-only:
+   this is the app's single theme, there is no light-mode block. */
 @layer base {
   :root {
-    --background: 0 4% 95%; /* n100 */
-    --foreground: 20 5% 12%; /* n950 */
-    --card: 0 0% 100%;
-    --card-foreground: 20 5% 12%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 20 5% 12%;
-    --primary: 20 5% 12%; /* n950 ink */
-    --primary-foreground: 0 0% 100%;
-    --secondary: 0 7% 91%; /* n200 */
-    --secondary-foreground: 0 2% 17%; /* n900 */
-    --muted: 0 4% 95%; /* n100 */
-    --muted-foreground: 0 2% 37%; /* n700 */
-    --accent: 0 7% 91%; /* n200 */
-    --accent-foreground: 0 2% 17%; /* n900 */
-    --destructive: 8 85% 50%; /* brand-600 */
+    --background: 222 39% 6%; /* #0A0E17 — base ground */
+    --foreground: 210 40% 98%; /* near-white body text */
+    --card: 222 36% 11%; /* #121826 — elevated panel surface */
+    --card-foreground: 210 40% 98%;
+    --popover: 222 36% 11%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 183 100% 50%; /* #00F2FE — Ice Cyan, the primary action color */
+    --primary-foreground: 222 39% 6%;
+    --secondary: 223 35% 16%; /* #1A2236 — surface-high, used for secondary fills */
+    --secondary-foreground: 210 40% 98%;
+    --muted: 223 35% 16%;
+    --muted-foreground: 215 20% 65%; /* slate-400-ish secondary text */
+    --accent: 223 35% 16%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 100% 65%; /* Warning Coral, tuned bright for a solid button fill */
     --destructive-foreground: 0 0% 100%;
-    --border: 0 5% 84%; /* n300 */
-    --input: 0 3% 72%; /* n400 */
-    --ring: 8 85% 50%; /* brand-600 — the one focus ring color everywhere */
-    --radius: 0.75rem; /* cards (rounded-lg) land on 12px per the design system */
+    --border: 222 25% 20%;
+    --input: 222 25% 24%;
+    --ring: 183 100% 50%; /* same Ice Cyan as primary, per the design's focus-state spec */
+    --radius: 1rem;
   }
 }
 

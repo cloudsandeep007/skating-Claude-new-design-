@@ -3,12 +3,16 @@ import { Minus, TrendingDown, TrendingUp } from 'lucide-react'
 import { cn } from '@/shared/lib/utils'
 import { Skeleton } from '@/shared/ui/skeleton'
 
-import type { Trend } from '../hooks/trend'
+export interface StatCardTrend {
+  direction: 'up' | 'down' | 'flat'
+  /** Absolute change, already rounded for display. */
+  delta: number
+}
 
 interface StatCardProps {
   label: string
   value: string
-  trend: Trend
+  trend: StatCardTrend
   /** How to read the trend for this particular stat — "vs last month",
    * "21 students", etc. */
   trendCaption: string
@@ -20,6 +24,9 @@ interface StatCardProps {
   formatDelta?: (n: number) => string
 }
 
+/** A KPI tile: label, big value, a trend arrow ± color, and a caption.
+ * Used across the admin dashboard and any other screen that needs a
+ * glanceable metric (fees hub, progression analytics). */
 export function StatCard({
   label,
   value,
@@ -35,11 +42,11 @@ export function StatCard({
     trend.direction === 'up' ? TrendingUp : trend.direction === 'down' ? TrendingDown : Minus
 
   return (
-    <div className={cn('rounded-xl border bg-card p-4 shadow-sm', emphasize && 'border-brand-300')}>
+    <div className={cn('rounded-xl border border-border bg-card p-4 shadow-sm', emphasize && 'border-brand-500/40')}>
       <div
         className={cn(
           'text-xs font-semibold uppercase tracking-wide text-muted-foreground',
-          emphasize && 'text-brand-800',
+          emphasize && 'text-brand-300',
         )}
       >
         {label}
@@ -50,8 +57,8 @@ export function StatCard({
         <>
           <div
             className={cn(
-              'mt-2 text-[34px] font-extrabold leading-none tracking-tight',
-              emphasize && 'text-brand-700',
+              'mt-2 font-display text-[34px] font-extrabold leading-none tracking-tight text-primary',
+              emphasize && 'text-brand-400',
             )}
           >
             {value}
@@ -61,7 +68,7 @@ export function StatCard({
               <span
                 className={cn(
                   'flex items-center gap-1 text-sm font-bold',
-                  goodDirection ? 'text-success-700' : 'text-brand-700',
+                  goodDirection ? 'text-success-400' : 'text-brand-400',
                 )}
               >
                 <Icon className="h-3.5 w-3.5" />

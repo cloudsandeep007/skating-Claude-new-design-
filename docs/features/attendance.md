@@ -1,5 +1,10 @@
 # Attendance
 
+> Restyled to the "Kinetic Obsidian" dark theme 2026-09-15 — visual only,
+> nothing below changed except one bug fix: the coach's "Confirm
+> attendance" button no longer renders red when everyone is marked. See
+> docs/DECISIONS.md.
+
 ## Purpose
 
 The screen coaches use every day, rink-side, one-handed, often in glare

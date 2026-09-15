@@ -52,7 +52,7 @@ export function WeekCalendarPage() {
     <div className="space-y-6">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-extrabold tracking-tight">Schedule</h1>
+          <h1 className="font-display text-2xl font-extrabold tracking-tight">Schedule</h1>
           <div className="mt-1 text-sm text-muted-foreground">{weekLabel(monday)}</div>
         </div>
         <div className="flex flex-wrap items-center gap-2">
@@ -106,14 +106,14 @@ export function WeekCalendarPage() {
                   <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                     {d.toLocaleDateString(undefined, { weekday: 'short' })}
                   </div>
-                  <div className={cn('text-lg font-extrabold', isToday && 'text-brand-700')}>
+                  <div className={cn('text-lg font-extrabold', isToday && 'text-primary')}>
                     {d.getDate()}
                   </div>
                 </div>
 
                 <div className="space-y-2 p-2">
                   {holiday && (
-                    <div className="rounded-md border border-dashed border-warning-400 bg-warning-50 px-2.5 py-2 text-xs font-bold text-warning-900">
+                    <div className="rounded-md border border-dashed border-warning-500 bg-warning-500/10 px-2.5 py-2 text-xs font-bold text-warning-300">
                       Holiday · {holiday}
                     </div>
                   )}
@@ -198,7 +198,7 @@ function SessionCard({
           <button
             type="button"
             onClick={onCancel}
-            className="mt-1.5 text-[11px] font-bold text-brand-700 underline-offset-2 hover:underline"
+            className="mt-1.5 text-[11px] font-bold text-brand-400 underline-offset-2 hover:underline"
           >
             Cancel session
           </button>

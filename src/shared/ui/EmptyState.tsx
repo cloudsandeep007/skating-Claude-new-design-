@@ -27,16 +27,16 @@ export function EmptyState({
     <div
       className={cn(
         'rounded-lg border px-5 py-8',
-        tone === 'dark' ? 'border-white/10 bg-ink-surface text-neutral-100' : 'bg-card',
+        tone === 'dark' ? 'border-white/10 bg-ink-surface text-neutral-100' : 'border-border bg-card',
         className,
       )}
     >
       <div
         className={cn(
           'mb-4 flex h-14 w-14 items-center justify-center rounded-xl',
-          tone === 'error' && 'border-[1.5px] border-brand-200 bg-brand-50 text-brand-700',
+          tone === 'error' && 'border-[1.5px] border-brand-700 bg-brand-500/10 text-brand-300',
           tone === 'empty' &&
-            'border-[1.5px] border-dashed border-neutral-400 bg-neutral-100 text-neutral-600',
+            'border-[1.5px] border-dashed border-border bg-muted/40 text-muted-foreground',
           tone === 'dark' &&
             'border-[1.5px] border-dashed border-white/25 bg-ink-surface2 text-neutral-400',
         )}
@@ -48,7 +48,7 @@ export function EmptyState({
         <p
           className={cn(
             'mt-1.5 max-w-[42ch] text-[15px] leading-relaxed',
-            tone === 'dark' ? 'text-neutral-400' : 'text-neutral-700',
+            tone === 'dark' ? 'text-neutral-400' : 'text-muted-foreground',
           )}
         >
           {description}

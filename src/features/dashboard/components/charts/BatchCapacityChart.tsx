@@ -1,7 +1,7 @@
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 
 import { useBatchCapacity } from '../../api/batchCapacity'
-import { ChartCard } from '../ChartCard'
+import { ChartCard } from '@/shared/ui/ChartCard'
 
 export function BatchCapacityChart() {
   const { data, isLoading } = useBatchCapacity()
@@ -24,17 +24,36 @@ export function BatchCapacityChart() {
             margin={{ top: 4, right: 24, left: 8, bottom: 4 }}
             barCategoryGap={10}
           >
-            <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#e5e2e2" />
-            <XAxis type="number" allowDecimals={false} tick={{ fontSize: 12 }} />
-            <YAxis type="category" dataKey="batchName" tick={{ fontSize: 12 }} width={140} />
+            <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="hsl(var(--border))" />
+            <XAxis
+              type="number"
+              allowDecimals={false}
+              tick={{ fontSize: 12, fill: 'hsl(var(--muted-foreground))' }}
+              stroke="hsl(var(--border))"
+            />
+            <YAxis
+              type="category"
+              dataKey="batchName"
+              tick={{ fontSize: 12, fill: 'hsl(var(--muted-foreground))' }}
+              stroke="hsl(var(--border))"
+              width={140}
+            />
             <Tooltip
-              cursor={{ fill: '#f5f3f3' }}
+              cursor={{ fill: 'hsl(var(--accent))' }}
+              contentStyle={{
+                backgroundColor: 'hsl(var(--popover))',
+                border: '1px solid hsl(var(--border))',
+                borderRadius: '0.5rem',
+                color: 'hsl(var(--popover-foreground))',
+                fontSize: 12,
+              }}
+              labelStyle={{ color: 'hsl(var(--foreground))', fontWeight: 600 }}
               formatter={(value, name) =>
                 name === 'enrolledCount' ? [value, 'Enrolled'] : [value, 'Capacity']
               }
             />
-            <Bar dataKey="capacity" fill="#eae7e7" radius={[0, 4, 4, 0]} />
-            <Bar dataKey="enrolledCount" fill="#ec3013" radius={[0, 4, 4, 0]} />
+            <Bar dataKey="capacity" fill="hsl(var(--muted))" radius={[0, 4, 4, 0]} />
+            <Bar dataKey="enrolledCount" fill="#00F2FE" radius={[0, 4, 4, 0]} />
           </BarChart>
         </ResponsiveContainer>
       </div>

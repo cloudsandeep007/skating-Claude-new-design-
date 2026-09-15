@@ -137,7 +137,7 @@ export function BulkAssessPage() {
           <ArrowLeft className="h-4 w-4" />
         </Button>
         <div>
-          <h1 className="text-xl font-extrabold tracking-tight">Bulk assess</h1>
+          <h1 className="font-display text-xl font-extrabold tracking-tight">Bulk assess</h1>
           <p className="text-xs text-muted-foreground">{roster?.batchName}</p>
         </div>
       </div>
@@ -193,7 +193,7 @@ export function BulkAssessPage() {
                   }}
                   className={cn(
                     'flex cursor-pointer items-center gap-2.5 rounded-lg border bg-card p-3',
-                    selected.has(student.id) && 'border-neutral-950 bg-neutral-100',
+                    selected.has(student.id) && 'border-primary bg-primary/10',
                   )}
                 >
                   <Checkbox
@@ -208,8 +208,8 @@ export function BulkAssessPage() {
                   <span
                     className={cn(
                       'flex items-center gap-1 text-xs font-semibold',
-                      current === 'achieved' && 'text-success-700',
-                      current === 'learning' && 'text-warning-800',
+                      current === 'achieved' && 'text-success-400',
+                      current === 'learning' && 'text-warning-300',
                       current === 'not_started' && 'text-muted-foreground',
                     )}
                   >
@@ -230,7 +230,7 @@ export function BulkAssessPage() {
             rows={2}
           />
 
-          <div className="fixed inset-x-0 bottom-16 border-t-2 bg-card px-4 pb-4 pt-3 shadow-[0_-3px_10px_rgba(45,43,43,.08)]">
+          <div className="fixed inset-x-0 bottom-16 border-t-2 bg-card px-4 pb-4 pt-3 shadow-[0_-8px_24px_rgba(0,0,0,0.4)]">
             <div className="flex gap-2">
               <Button
                 variant="outline"

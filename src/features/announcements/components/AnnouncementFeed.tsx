@@ -70,7 +70,7 @@ function FeedCard({ item, onOpen }: { item: FeedItem; onOpen: () => void }) {
         onClick={onOpen}
         className={cn(
           'w-full rounded-lg border bg-card p-4 text-left shadow-sm transition-colors',
-          unread && 'border-neutral-600 shadow-md',
+          unread && 'border-primary/40 shadow-md',
         )}
       >
         <div className="flex items-start gap-3">

@@ -12,40 +12,44 @@ export default {
     },
     extend: {
       fontFamily: {
-        sans: ['Archivo', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+        sans: ['Plus Jakarta Sans', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+        display: ['Syne', 'ui-sans-serif', 'system-ui', 'sans-serif'],
       },
       animation: {
         shimmer: 'shimmer 1.4s linear infinite',
       },
       colors: {
-        // Raw ramps from the design system, for spot colors (status pills,
-        // progress bars) that don't map to one of shadcn's semantic tokens
-        // above. Semantic tokens (border/background/primary/etc.) are still
-        // the default choice — reach for these only when a design spec
-        // calls out a specific ramp step (e.g. "success-600 fill").
+        // Raw ramps for spot colors (status pills, progress bars) that don't
+        // map to one of shadcn's semantic tokens above. Each ramp keeps its
+        // original semantic role from the previous theme (brand = error/
+        // destructive/absent, success = positive/paid, warning = caution,
+        // info = neutral highlight) — only the hues were retuned to the
+        // "Kinetic Obsidian" dark palette (docs/design/latest stitch).
         brand: {
-          50: '#fff7f5',
-          100: '#fff2ef',
-          200: '#ffe0d9',
-          300: '#ffc4b8',
-          400: '#ff9783',
-          500: '#ff563c',
-          600: '#ec3013',
-          700: '#ae1800',
-          800: '#7c1405',
-          900: '#4d170e',
+          // Warning Coral — error / destructive / absent states
+          50: '#fff1f0',
+          100: '#ffe1df',
+          200: '#ffc7c4',
+          300: '#ffa19c',
+          400: '#ff6f68',
+          500: '#ff4d4d',
+          600: '#e0342f',
+          700: '#b8241f',
+          800: '#8f1c19',
+          900: '#6b1613',
         },
         success: {
-          50: '#eff8f1',
-          100: '#d9efdd',
-          200: '#b4dfbd',
-          300: '#83c993',
-          400: '#4cae63',
-          500: '#2f9149',
-          600: '#22763a',
-          700: '#1a5c2e',
-          800: '#154524',
-          900: '#11301a',
+          // Hyper Teal — positive / paid / confirmed states
+          50: '#e9fbf6',
+          100: '#c9f5e9',
+          200: '#96ebd4',
+          300: '#5adcbc',
+          400: '#22c9a0',
+          500: '#05b08c',
+          600: '#048d70',
+          700: '#036b56',
+          800: '#034f40',
+          900: '#02362c',
         },
         warning: {
           50: '#fff8e8',
@@ -60,18 +64,21 @@ export default {
           900: '#402c00',
         },
         info: {
-          50: '#eef5fd',
-          100: '#d6e8fb',
-          200: '#aed1f6',
-          300: '#7bb2ee',
-          400: '#4390e0',
-          500: '#1f73c7',
-          600: '#145ca4',
-          700: '#0f4680',
-          800: '#0c3560',
-          900: '#0a2643',
+          // Ice Cyan — neutral highlight / telemetry accent
+          50: '#e5fdff',
+          100: '#c0faff',
+          200: '#85f4ff',
+          300: '#3ee9fb',
+          400: '#00d5ee',
+          500: '#00b8d4',
+          600: '#0092ac',
+          700: '#007086',
+          800: '#01536a',
+          900: '#033c50',
         },
-        // Developer console surfaces (design: Developer Console.dc.html)
+        // Developer console surfaces (design: Developer Console.dc.html) —
+        // also used by shared/ui/EmptyState.tsx. Kept as-is; not part of
+        // this redesign pass (see docs/DECISIONS.md).
         ink: {
           rail: '#161413',
           surface: '#2a2726',

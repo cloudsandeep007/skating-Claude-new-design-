@@ -22,7 +22,7 @@ export function CoachesListPage() {
   return (
     <div>
       <div className="mb-4 flex flex-wrap items-end justify-between gap-4">
-        <h1 className="text-2xl font-extrabold tracking-tight">Coaches</h1>
+        <h1 className="font-display text-2xl font-extrabold tracking-tight">Coaches</h1>
         <Button asChild>
           <Link to="/admin/coaches/new">
             <Plus className="h-4 w-4" />
@@ -79,7 +79,7 @@ export function CoachesListPage() {
                         name={coach.fullName}
                         photoUrl={coach.photoUrl ? photoUrls?.[coach.photoUrl] : undefined}
                         className="h-9 w-9"
-                        fallbackClassName="bg-neutral-200 text-xs font-bold text-neutral-800"
+                        fallbackClassName="bg-secondary text-xs font-bold text-secondary-foreground"
                       />
                       <div>
                         <div className="font-bold">{coach.fullName}</div>

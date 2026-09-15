@@ -65,7 +65,7 @@ export function EnrollStudentDialog({
         </DialogHeader>
 
         {full && (
-          <div className="flex gap-2.5 rounded-lg border border-warning-200 bg-warning-50 p-3 text-sm text-warning-900">
+          <div className="flex gap-2.5 rounded-lg border border-warning-700 bg-warning-500/10 p-3 text-sm text-warning-300">
             <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
             <div>
               <div className="font-bold">This batch is full.</div>

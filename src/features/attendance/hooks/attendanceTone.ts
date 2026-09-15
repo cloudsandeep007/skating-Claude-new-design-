@@ -27,7 +27,7 @@ export function attendanceLabel(status: AttendanceStatus | null): string {
 /** Same thresholds as the students list and the at-risk view (<60%). */
 export function pctColorClass(pct: number | null): string {
   if (pct === null) return 'text-muted-foreground'
-  if (pct < 60) return 'text-brand-700'
-  if (pct < 80) return 'text-warning-800'
-  return 'text-success-700'
+  if (pct < 60) return 'text-brand-400'
+  if (pct < 80) return 'text-warning-400'
+  return 'text-success-400'
 }

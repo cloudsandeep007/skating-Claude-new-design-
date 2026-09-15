@@ -33,8 +33,11 @@ import { countByStatus, skillStatusLabel } from '../hooks/skillStatus'
 import type { SkillStatus, StudentSkillState } from '../types'
 
 const STATUS_CHIP: Record<SkillStatus, { icon: typeof Circle; className: string }> = {
-  not_started: { icon: Circle, className: 'border-neutral-400 text-neutral-700' },
-  learning: { icon: PlayCircle, className: 'border-warning-600 bg-warning-100 text-warning-900' },
+  not_started: { icon: Circle, className: 'border-border text-muted-foreground' },
+  learning: {
+    icon: PlayCircle,
+    className: 'border-warning-500 bg-warning-500/15 text-warning-300',
+  },
   achieved: { icon: Check, className: 'border-success-600 bg-success-600 text-white' },
 }
 
@@ -142,7 +145,7 @@ export function SkillAssessmentPanel({
             </span>
           )}
         </div>
-        <div className="mt-2.5 h-2 overflow-hidden rounded-full bg-neutral-200">
+        <div className="mt-2.5 h-2 overflow-hidden rounded-full bg-muted">
           <div
             className="h-full rounded-full bg-success-600 transition-[width]"
             style={{
@@ -208,8 +211,8 @@ export function SkillAssessmentPanel({
               className={cn(
                 'flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border-[1.5px]',
                 skill.notes
-                  ? 'border-neutral-950 bg-neutral-950 text-white'
-                  : 'border-neutral-400 text-neutral-600 hover:bg-muted',
+                  ? 'border-primary bg-primary text-primary-foreground'
+                  : 'border-border text-muted-foreground hover:bg-accent',
               )}
             >
               <PenLine className="h-3.5 w-3.5" />
@@ -232,7 +235,7 @@ export function SkillAssessmentPanel({
                       'flex h-9 w-9 items-center justify-center rounded-lg border-[1.5px]',
                       active
                         ? chip.className
-                        : 'border-neutral-300 text-neutral-400 hover:bg-muted',
+                        : 'border-border text-muted-foreground hover:bg-accent',
                     )}
                   >
                     <Icon className="h-4 w-4" />

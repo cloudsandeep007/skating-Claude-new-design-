@@ -9,14 +9,15 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        default: 'bg-neutral-950 text-white hover:bg-neutral-800 active:bg-neutral-900',
-        brand: 'bg-brand-600 text-white hover:bg-brand-700',
+        default:
+          'bg-primary text-primary-foreground shadow-[0_0_20px_-4px_hsl(var(--primary)/0.5)] hover:bg-primary/90 active:bg-primary/80',
+        brand: 'bg-success-500 text-white hover:bg-success-600',
         destructive:
-          'border-[1.5px] border-brand-300 bg-card text-brand-700 hover:border-brand-400 hover:bg-brand-100 hover:text-brand-800',
+          'border-[1.5px] border-brand-700 bg-transparent text-brand-400 hover:border-brand-500 hover:bg-brand-900/30 hover:text-brand-300',
         outline:
-          'border-[1.5px] border-neutral-400 bg-card text-foreground hover:border-neutral-600 hover:bg-neutral-100',
-        secondary: 'bg-neutral-200 text-neutral-950 hover:bg-neutral-300',
-        ghost: 'text-foreground hover:bg-neutral-200',
+          'border-[1.5px] border-border bg-card text-foreground hover:border-primary/50 hover:bg-accent',
+        secondary: 'bg-secondary text-secondary-foreground hover:bg-secondary/80',
+        ghost: 'text-foreground hover:bg-accent hover:text-accent-foreground',
         link: 'text-primary underline-offset-4 hover:underline',
       },
       size: {

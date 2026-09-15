@@ -162,30 +162,45 @@ layers enforce isolation, both described in full in
 
 ## Design system
 
-The visual spec is the Claude Design handoff in `docs/design/handoff/` —
-read `Skating Academy Design System.dc.html` first, then the per-screen
-files (`Admin Console`, `Academy Screens`, `Developer Console`). It's
-wired into the app in two places:
+The visual spec is **"Kinetic Obsidian"** — a dark-only theme exported
+from Stitch as 22 mockups at `docs/design/latest stitch/*.zip`
+(`kinetic_obsidian/DESIGN.md` has the full palette/type spec). It
+replaced the earlier light "ink/brand" theme in September 2026 (see
+DECISIONS 2026-09-15). It's wired into the app in three places:
 
-- `src/index.css` — shadcn's semantic tokens (`--primary`, `--ring`,
-  `--radius`, …) remapped to the design's ink/brand palette, so every
-  shadcn component is on-brand without per-component edits.
-- `tailwind.config.js` — the Archivo font, the raw colour ramps
-  (`brand-*`, `success-*`, `warning-*`, `info-*`) for spot colours the
-  semantic tokens don't cover (status pills, attendance bars), the
-  `ink-rail/surface/surface2` greys for the developer console, and the
-  `shimmer` skeleton animation.
-- `src/shared/ui/*` — the Tailwind class strings inside the generated
-  shadcn primitives are tuned to the spec (sizes, borders, weights,
-  bottom-sheet dialogs on phones, ink toasts). Structure, props and
-  behaviour stay as generated; see DECISIONS 2026-09-14.
+- `src/index.css` — shadcn's semantic tokens (`--background`,
+  `--primary`, `--card`, `--ring`, `--radius`, …) hold the dark palette
+  directly in the single `:root` block — there is no `.dark` variant and
+  no theme toggle; dark is the only theme. `--primary` is Ice Cyan
+  (`#00F2FE`), `--background`/`--card` are near-black navy steps.
+- `tailwind.config.js` — Plus Jakarta Sans (body, `font-sans`) and Syne
+  (headings, `font-display`); the raw colour ramps (`brand-*`,
+  `success-*`, `warning-*`, `info-*`) for spot colours the semantic
+  tokens don't cover (status pills, attendance bars, chart series) —
+  each ramp kept its prior *semantic* role (brand = error/destructive,
+  success = positive, info = neutral highlight) but was retuned to
+  coral/teal/cyan hues that read correctly on the dark background. The
+  `ink-*` ramp (Dev Console only) is untouched.
+- `src/shared/ui/*` and every feature's components — Tailwind class
+  strings were swept for hardcoded light-theme colors (`neutral-*`
+  scales, pastel `*-50`/`*-100` fills, dark `*-700`/`*-800`/`*-900` text
+  steps meant for a white background) and replaced with semantic tokens
+  or dark-appropriate ramp steps (`*-300`/`*-400` text, `*-500/10`
+  translucent fills). Recharts components (dashboard + progression
+  charts) get their axis/grid/tooltip colors and series fills passed
+  explicitly as props — Recharts doesn't inherit Tailwind classes.
 
 Small design-specific components that shadcn doesn't ship live as
-wrappers in `src/shared/ui/` (`StatusBadge`, `EmptyState`, `PageLoader`).
-The per-role shells in `src/app/layouts/` are built directly from the
-mockups: `AdminLayout` (ink sidebar + search/bell/identity top bar),
-`DevLayout` (environment banner + dark rail), `CoachLayout` and
-`ParentLayout` (mobile-first, bottom tabs).
+wrappers in `src/shared/ui/` (`StatusBadge`, `EmptyState`, `PageLoader`,
+`StatCard`, `ChartCard` — the latter two promoted from
+`features/dashboard/` since the redesign reuses their look on the fees,
+progression, and parent-home screens too). The per-role shells in
+`src/app/layouts/` follow the same three-shell pattern as the mockups:
+`AdminLayout` (dark sidebar + blurred top bar), `CoachLayout` and
+`ParentLayout` (mobile-first, bottom tabs, cyan active-tab indicator).
+`DevLayout` (environment banner + dark rail) was **not** touched by the
+redesign — it's a separate, already-dark "ink" console with only
+placeholder screens behind it; see DECISIONS 2026-09-15.
 
 ## External services
 

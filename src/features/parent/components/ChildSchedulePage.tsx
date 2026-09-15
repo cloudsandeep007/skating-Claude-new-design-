@@ -41,11 +41,11 @@ export function ChildSchedulePage() {
                 className={cn(
                   'flex items-center gap-3 rounded-lg border bg-card px-4 py-3 shadow-sm',
                   cancelled && 'opacity-70',
-                  isToday && !cancelled && 'border-neutral-950',
+                  isToday && !cancelled && 'border-primary/40',
                 )}
               >
                 <div className="w-20 shrink-0">
-                  <div className={cn('text-sm font-bold', isToday && 'text-brand-700')}>
+                  <div className={cn('text-sm font-bold', isToday && 'text-primary')}>
                     {isToday ? 'Today' : formatDate(s.sessionDate)}
                   </div>
                   <div className="text-xs text-muted-foreground">{formatTime(s.startTime)}</div>

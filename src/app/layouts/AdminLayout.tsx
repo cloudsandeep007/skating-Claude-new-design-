@@ -68,7 +68,7 @@ function Wordmark({ name }: { name: string }) {
   return (
     <div className="px-2.5 pb-4">
       <img src={prsaLogo} alt="PRSA" className="h-auto w-[168px]" />
-      <div className="mt-1.5 truncate text-[11px] font-medium uppercase tracking-[.08em] text-neutral-500">
+      <div className="mt-1.5 truncate text-[11px] font-medium uppercase tracking-[.08em] text-muted-foreground">
         {name}
       </div>
     </div>
@@ -86,9 +86,9 @@ function NavList({ onNavigate }: { onNavigate?: () => void }) {
           onClick={onNavigate}
           className={({ isActive }) =>
             cn(
-              'flex h-11 items-center gap-2.5 rounded-lg px-2.5 text-sm font-medium text-neutral-300 transition-colors hover:bg-white/10 hover:text-white',
+              'flex h-11 items-center gap-2.5 rounded-lg px-2.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-white/5 hover:text-foreground',
               isActive &&
-                'bg-white font-bold text-neutral-950 hover:bg-white hover:text-neutral-950',
+                'bg-primary/15 font-bold text-primary shadow-[0_0_16px_-4px_hsl(var(--primary)/0.4)] hover:bg-primary/15 hover:text-primary',
             )
           }
         >
@@ -103,7 +103,7 @@ function NavList({ onNavigate }: { onNavigate?: () => void }) {
 function SidebarFooter() {
   const { data: count } = useActiveStudentCount()
   return (
-    <div className="mt-auto border-t border-white/15 px-2.5 pt-4 text-xs leading-relaxed text-neutral-500">
+    <div className="mt-auto border-t border-white/10 px-2.5 pt-4 text-xs leading-relaxed text-muted-foreground">
       {count === undefined ? '' : `${count} active skater${count === 1 ? '' : 's'}`}
     </div>
   )
@@ -137,12 +137,12 @@ export function AdminLayout() {
 
   return (
     <div className="flex min-h-screen">
-      <aside className="hidden w-[216px] shrink-0 flex-col gap-0.5 bg-neutral-950 pb-4 pt-[18px] md:flex">
+      <aside className="hidden w-[216px] shrink-0 flex-col gap-0.5 border-r border-white/10 bg-background pb-4 pt-[18px] md:flex">
         <Sidebar academyName={academyName} />
       </aside>
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="flex flex-wrap items-center gap-4 border-b-2 border-neutral-300 bg-card px-5 py-3">
+        <header className="flex flex-wrap items-center gap-4 border-b border-white/10 bg-background/80 px-5 py-3 backdrop-blur-xl">
           <Sheet open={drawerOpen} onOpenChange={setDrawerOpen}>
             <SheetTrigger asChild className="md:hidden">
               <Button variant="outline" size="icon" aria-label="Open menu">
@@ -151,7 +151,7 @@ export function AdminLayout() {
             </SheetTrigger>
             <SheetContent
               side="left"
-              className="flex w-[216px] flex-col gap-0.5 bg-neutral-950 p-0 pb-4 pt-[18px]"
+              className="flex w-[216px] flex-col gap-0.5 bg-background p-0 pb-4 pt-[18px]"
             >
               <Sidebar
                 academyName={academyName}
@@ -166,13 +166,13 @@ export function AdminLayout() {
             <div className="truncate text-[17px] font-extrabold leading-tight tracking-tight">
               {academyName}
             </div>
-            <div className="text-[11px] font-medium uppercase tracking-[.08em] text-neutral-600">
+            <div className="text-[11px] font-medium uppercase tracking-[.08em] text-muted-foreground">
               {screenLabel(pathname)}
             </div>
           </div>
 
           <form onSubmit={submitSearch} className="relative min-w-[160px] max-w-[420px] flex-1">
-            <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-neutral-600" />
+            <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <input
               type="search"
               value={query}
@@ -181,7 +181,7 @@ export function AdminLayout() {
               }}
               placeholder="Search skaters"
               aria-label="Search skaters"
-              className="h-11 w-full rounded-lg border-[1.5px] border-neutral-300 bg-neutral-100 pl-10 pr-3.5 text-[15px] placeholder:text-neutral-500 focus:border-neutral-950 focus:bg-card focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+              className="h-11 w-full rounded-lg border-[1.5px] border-border bg-card pl-10 pr-3.5 text-[15px] placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
             />
           </form>
 
@@ -189,7 +189,7 @@ export function AdminLayout() {
             <Button
               variant="outline"
               size="icon"
-              className="relative border-neutral-300"
+              className="relative"
               aria-label="Notifications"
               onClick={() => {
                 void navigate('/admin/announcements')
@@ -205,23 +205,23 @@ export function AdminLayout() {
               <DropdownMenuTrigger asChild>
                 <button
                   type="button"
-                  className="flex h-11 items-center gap-2.5 rounded-lg pl-1 pr-2.5 hover:bg-neutral-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                  className="flex h-11 items-center gap-2.5 rounded-lg pl-1 pr-2.5 hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                 >
                   <Avatar className="h-9 w-9">
-                    <AvatarFallback className="bg-neutral-950 text-[13px] font-bold text-white">
+                    <AvatarFallback className="bg-primary text-[13px] font-bold text-primary-foreground">
                       {profile ? initials(profile.full_name) : ''}
                     </AvatarFallback>
                   </Avatar>
                   <div className="hidden min-w-0 text-left lg:block">
                     <div className="truncate text-[13px] font-bold">{profile?.full_name}</div>
-                    <div className="text-[11px] text-neutral-700">Academy admin</div>
+                    <div className="text-[11px] text-muted-foreground">Academy admin</div>
                   </div>
                 </button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56">
                 <DropdownMenuLabel className="font-normal">
                   <div className="text-sm font-bold">{profile?.full_name}</div>
-                  <div className="text-xs text-neutral-700">{profile?.email}</div>
+                  <div className="text-xs text-muted-foreground">{profile?.email}</div>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem

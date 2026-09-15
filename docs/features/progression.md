@@ -1,5 +1,9 @@
 # Skill progression
 
+> Restyled to the "Kinetic Obsidian" dark theme 2026-09-15 — visual only,
+> except one bug fix: the "Promote to next level" button no longer
+> renders red on a successful promotion. See docs/DECISIONS.md.
+
 ## Purpose
 
 The feature that differentiates this app from a generic attendance

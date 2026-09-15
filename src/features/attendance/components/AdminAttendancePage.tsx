@@ -24,10 +24,10 @@ import { OverrideSelect } from './OverrideSelect'
 export function AdminAttendancePage() {
   return (
     <div>
-      <h1 className="mb-4 text-2xl font-extrabold tracking-tight">Attendance</h1>
+      <h1 className="mb-4 font-display text-2xl font-extrabold tracking-tight">Attendance</h1>
       <div className="overflow-hidden rounded-lg border bg-card shadow-sm">
         <Tabs defaultValue="date">
-          <TabsList className="border-b-0 border-b-neutral-200">
+          <TabsList className="border-b-0">
             <TabsTrigger value="date">By date</TabsTrigger>
             <TabsTrigger value="batch">By batch</TabsTrigger>
             <TabsTrigger value="student">By student</TabsTrigger>

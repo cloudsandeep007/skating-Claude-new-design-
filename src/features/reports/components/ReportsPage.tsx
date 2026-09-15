@@ -82,7 +82,7 @@ export function ReportsPage() {
   return (
     <div className="space-y-5">
       <div>
-        <h1 className="text-2xl font-extrabold tracking-tight">Reports</h1>
+        <h1 className="font-display text-2xl font-extrabold tracking-tight">Reports</h1>
         <p className="mt-1 text-sm text-muted-foreground">
           Attendance, fees, progress and coach activity — filter by date range and batch, export
           either format.

@@ -105,7 +105,7 @@ export function FeeDashboardPage() {
     <div className="space-y-5">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-extrabold tracking-tight">Fees</h1>
+          <h1 className="font-display text-2xl font-extrabold tracking-tight">Fees</h1>
           <p className="mt-1 text-sm text-muted-foreground">
             Manual payment recording — no gateway yet.
           </p>
@@ -164,7 +164,7 @@ export function FeeDashboardPage() {
           onChange={(event) => {
             setMonth(`${event.target.value}-01`)
           }}
-          className="h-11 rounded-lg border-[1.5px] border-neutral-400 bg-card px-3.5 text-[15px] hover:border-neutral-950 focus:border-neutral-950 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+          className="h-11 rounded-lg border-[1.5px] border-border bg-card px-3.5 text-[15px] hover:border-primary/50 focus:border-primary focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
         />
         <Select
           value={statusFilter}
@@ -305,9 +305,9 @@ function SummaryCard({
   tone: 'success' | 'warning' | 'danger'
 }) {
   const TONE_TEXT: Record<typeof tone, string> = {
-    success: 'text-success-700',
-    warning: 'text-warning-800',
-    danger: 'text-brand-700',
+    success: 'text-success-400',
+    warning: 'text-warning-400',
+    danger: 'text-brand-400',
   }
   return (
     <Card>
@@ -352,7 +352,7 @@ function FeeRow({
       <TableCell className="text-muted-foreground">{row.feePlanName ?? '—'}</TableCell>
       <TableCell>{formatDate(row.dueDate)}</TableCell>
       <TableCell>{formatRupees(row.amount)}</TableCell>
-      <TableCell className={row.balance > 0 ? 'font-bold text-brand-700' : 'text-muted-foreground'}>
+      <TableCell className={row.balance > 0 ? 'font-bold text-brand-400' : 'text-muted-foreground'}>
         {formatRupees(row.balance)}
       </TableCell>
       <TableCell>

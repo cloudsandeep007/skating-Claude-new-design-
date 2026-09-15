@@ -4,7 +4,7 @@ import { useBatchOptions } from '@/features/batches'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/ui/select'
 
 import { useAttendanceTrend } from '../../api/attendanceTrend'
-import { ChartCard } from '../ChartCard'
+import { ChartCard } from '@/shared/ui/ChartCard'
 
 interface AttendanceTrendChartProps {
   months: number
@@ -48,18 +48,35 @@ export function AttendanceTrendChart({
       <div className="h-[220px] w-full">
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={data} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
-            <XAxis dataKey="month" tick={{ fontSize: 12 }} />
-            <YAxis domain={[0, 100]} tick={{ fontSize: 12 }} width={32} />
+            <XAxis
+              dataKey="month"
+              tick={{ fontSize: 12, fill: 'hsl(var(--muted-foreground))' }}
+              stroke="hsl(var(--border))"
+            />
+            <YAxis
+              domain={[0, 100]}
+              tick={{ fontSize: 12, fill: 'hsl(var(--muted-foreground))' }}
+              stroke="hsl(var(--border))"
+              width={32}
+            />
             <Tooltip
-              cursor={{ stroke: '#e5e2e2' }}
+              cursor={{ stroke: 'hsl(var(--border))' }}
+              contentStyle={{
+                backgroundColor: 'hsl(var(--popover))',
+                border: '1px solid hsl(var(--border))',
+                borderRadius: '0.5rem',
+                color: 'hsl(var(--popover-foreground))',
+                fontSize: 12,
+              }}
+              labelStyle={{ color: 'hsl(var(--foreground))', fontWeight: 600 }}
               formatter={(value) => [`${value}%`, 'Attendance']}
             />
             <Line
               type="monotone"
               dataKey="value"
-              stroke="#ec3013"
+              stroke="#00F2FE"
               strokeWidth={3}
-              dot={{ r: 4, fill: '#fff', stroke: '#ec3013', strokeWidth: 3 }}
+              dot={{ r: 4, fill: 'hsl(var(--card))', stroke: '#00F2FE', strokeWidth: 3 }}
               connectNulls
             />
           </LineChart>

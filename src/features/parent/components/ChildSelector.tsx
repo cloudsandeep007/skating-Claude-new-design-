@@ -28,7 +28,7 @@ export function ChildSelector({ subtitle }: { subtitle?: string }) {
           </SelectContent>
         </Select>
       ) : (
-        <h1 className="text-2xl font-extrabold tracking-tight">{child.fullName}</h1>
+        <h1 className="font-display text-2xl font-extrabold tracking-tight">{child.fullName}</h1>
       )}
     </div>
   )

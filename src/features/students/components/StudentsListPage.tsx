@@ -88,7 +88,7 @@ export function StudentsListPage() {
     <div>
       <div className="mb-4 flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-extrabold tracking-tight">Students</h1>
+          <h1 className="font-display text-2xl font-extrabold tracking-tight">Students</h1>
         </div>
         <Button asChild>
           <Link to="/admin/students/new">
@@ -154,7 +154,7 @@ export function StudentsListPage() {
           {filtersActive && (
             <Button
               variant="ghost"
-              className="text-brand-700 hover:bg-brand-50 hover:text-brand-800"
+              className="text-brand-400 hover:bg-brand-500/10 hover:text-brand-300"
               onClick={() => {
                 setSearchInput('')
                 setBatchId('all')
@@ -247,7 +247,7 @@ export function StudentsListPage() {
                             name={student.fullName}
                             photoUrl={student.photoUrl ? photoUrls?.[student.photoUrl] : undefined}
                             className="h-9 w-9 shrink-0"
-                            fallbackClassName="bg-neutral-200 text-xs font-bold text-neutral-800"
+                            fallbackClassName="bg-secondary text-xs font-bold text-secondary-foreground"
                           />
                           <div className="min-w-0">
                             <div className="truncate font-bold">{student.fullName}</div>
@@ -268,7 +268,7 @@ export function StudentsListPage() {
                           {student.attendancePct === null ? '—' : `${student.attendancePct}%`}
                         </div>
                         {student.attendancePct !== null && (
-                          <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-neutral-200">
+                          <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-muted">
                             <div
                               className={`h-full rounded-full ${attendanceBarColorClass(student.attendancePct)}`}
                               style={{ width: `${student.attendancePct}%` }}

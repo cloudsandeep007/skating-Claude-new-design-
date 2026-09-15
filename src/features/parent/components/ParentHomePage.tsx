@@ -64,27 +64,30 @@ export function ParentHomePage() {
     <div className="space-y-4">
       <ChildSelector subtitle="Skater" />
 
-      <Link to="/parent/schedule" className="block rounded-lg bg-neutral-950 p-4 text-white">
-        <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-neutral-400">
+      <Link
+        to="/parent/schedule"
+        className="block rounded-lg border border-primary/20 bg-card p-4 text-foreground shadow-[0_0_30px_-10px_hsl(var(--primary)/0.3)]"
+      >
+        <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
           <CalendarDays className="h-3.5 w-3.5" />
           Next session
           <ChevronRight className="ml-auto h-4 w-4" />
         </div>
         {next ? (
           <>
-            <div className="mt-1.5 text-2xl font-extrabold tracking-tight">
+            <div className="mt-1.5 font-display text-2xl font-extrabold tracking-tight">
               {next.sessionDate === today ? 'Today' : formatDate(next.sessionDate)}
-              <span className="text-neutral-400"> · </span>
+              <span className="text-muted-foreground"> · </span>
               {formatTime(next.startTime)}
             </div>
-            <div className="mt-1 text-sm font-semibold text-neutral-300">
+            <div className="mt-1 text-sm font-semibold text-muted-foreground">
               {next.batchName}
               {next.venue && ` · ${next.venue}`}
               {next.coachName && ` · Coach ${next.coachName}`}
             </div>
           </>
         ) : (
-          <div className="mt-1.5 text-lg font-bold text-neutral-300">Nothing scheduled yet</div>
+          <div className="mt-1.5 text-lg font-bold text-muted-foreground">Nothing scheduled yet</div>
         )}
       </Link>
 
@@ -138,7 +141,7 @@ export function ParentHomePage() {
           Latest announcement
           <Link
             to="/parent/announcements"
-            className="ml-auto font-bold text-brand-700 normal-case tracking-normal"
+            className="ml-auto font-bold text-brand-400 normal-case tracking-normal"
           >
             See all
           </Link>
@@ -148,7 +151,7 @@ export function ParentHomePage() {
             to="/parent/announcements"
             className={cn(
               'block rounded-lg border bg-card p-4 shadow-sm',
-              latest.notificationId && !latest.readAt && 'border-neutral-600',
+              latest.notificationId && !latest.readAt && 'border-primary/40',
             )}
           >
             <div className="flex items-start gap-2">

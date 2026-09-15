@@ -38,7 +38,7 @@ export function AddCoachPage() {
 
   return (
     <div className="mx-auto max-w-lg">
-      <h1 className="mb-4 text-2xl font-extrabold tracking-tight">Add coach</h1>
+      <h1 className="mb-4 font-display text-2xl font-extrabold tracking-tight">Add coach</h1>
       <Card>
         <CardContent className="pt-6">
           <Form {...form}>

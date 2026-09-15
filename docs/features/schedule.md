@@ -1,5 +1,8 @@
 # Schedule
 
+> Restyled to the "Kinetic Obsidian" dark theme 2026-09-15 — visual only,
+> nothing below changed. See docs/DECISIONS.md.
+
 ## Purpose
 
 Turns batches' weekly rules into actual sessions on actual dates, shows

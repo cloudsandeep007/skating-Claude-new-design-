@@ -47,7 +47,7 @@ export function AdminAnnouncementsPage() {
   return (
     <div>
       <div className="mb-4 flex flex-wrap items-end justify-between gap-4">
-        <h1 className="text-2xl font-extrabold tracking-tight">Announcements</h1>
+        <h1 className="font-display text-2xl font-extrabold tracking-tight">Announcements</h1>
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
             <Button>

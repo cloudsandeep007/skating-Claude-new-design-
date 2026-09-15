@@ -28,7 +28,7 @@ export function AchievementHistoryList({ studentId }: { studentId: string }) {
     <ul className="space-y-2">
       {history.map((event) => (
         <li key={event.skillId} className="flex items-start gap-2.5 rounded-lg border bg-card p-3">
-          <span className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-success-100 text-success-800">
+          <span className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-success-500/15 text-success-400">
             <Award className="h-3.5 w-3.5" />
           </span>
           <div className="min-w-0 flex-1">

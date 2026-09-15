@@ -61,7 +61,7 @@ export function ParentProfilePage() {
 
   return (
     <div className="space-y-4">
-      <h1 className="text-2xl font-extrabold tracking-tight">Profile</h1>
+      <h1 className="font-display text-2xl font-extrabold tracking-tight">Profile</h1>
 
       <Card>
         <CardHeader>

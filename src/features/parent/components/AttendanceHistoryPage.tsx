@@ -42,20 +42,20 @@ export function AttendanceHistoryPage() {
     <div className="space-y-4">
       <ChildSelector subtitle="Attendance" />
 
-      <div className="rounded-lg bg-neutral-950 p-4 text-white">
-        <div className="text-xs font-semibold uppercase tracking-wide text-neutral-400">
+      <div className="rounded-lg border border-primary/20 bg-card p-4 text-foreground shadow-[0_0_30px_-10px_hsl(var(--primary)/0.3)]">
+        <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
           Last 6 months
         </div>
         <div className="mt-1 flex items-baseline gap-2">
-          <span className="text-4xl font-extrabold tracking-tight">
+          <span className="font-display text-4xl font-extrabold tracking-tight text-primary">
             {overall.pct === null ? '—' : `${overall.pct}%`}
           </span>
-          <span className="text-sm font-semibold text-neutral-300">
+          <span className="text-sm font-semibold text-muted-foreground">
             {overall.attended} of {overall.counted} sessions
           </span>
         </div>
-        <div className="mt-3 h-2 overflow-hidden rounded-full bg-white/20">
-          <div className="h-full rounded-full bg-white" style={{ width: `${overall.pct ?? 0}%` }} />
+        <div className="mt-3 h-2 overflow-hidden rounded-full bg-muted">
+          <div className="h-full rounded-full bg-primary" style={{ width: `${overall.pct ?? 0}%` }} />
         </div>
       </div>
 
@@ -76,9 +76,9 @@ export function AttendanceHistoryPage() {
               </span>
             </div>
             <div className="flex gap-4 border-b px-4 py-2 text-xs font-semibold text-muted-foreground">
-              <span className="text-success-700">{totals.present} present</span>
-              <span className="text-warning-800">{totals.late} late</span>
-              <span className="text-brand-700">{totals.absent} absent</span>
+              <span className="text-success-400">{totals.present} present</span>
+              <span className="text-warning-300">{totals.late} late</span>
+              <span className="text-brand-400">{totals.absent} absent</span>
               {totals.excused > 0 && <span>{totals.excused} excused</span>}
             </div>
             <ul className="divide-y">

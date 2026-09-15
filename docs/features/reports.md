@@ -1,5 +1,8 @@
 # Reports
 
+> Restyled to the "Kinetic Obsidian" dark theme 2026-09-15 — visual only,
+> nothing below changed. See docs/DECISIONS.md.
+
 ## Purpose
 
 Four exportable reports for anything the dashboard's charts summarize

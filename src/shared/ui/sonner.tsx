@@ -24,12 +24,12 @@ const Toaster = ({ ...props }: ToasterProps) => {
       toastOptions={{
         classNames: {
           toast:
-            'group toast group-[.toaster]:rounded-xl group-[.toaster]:border-0 group-[.toaster]:bg-neutral-950 group-[.toaster]:text-white group-[.toaster]:shadow-[0_3px_10px_rgba(45,43,43,.16)]',
+            'group toast group-[.toaster]:rounded-xl group-[.toaster]:border group-[.toaster]:border-white/10 group-[.toaster]:bg-popover group-[.toaster]:text-foreground group-[.toaster]:shadow-[0_8px_32px_rgba(0,0,0,0.5)]',
           title: 'group-[.toast]:text-[15px] group-[.toast]:font-bold',
-          description: 'group-[.toast]:text-neutral-300',
+          description: 'group-[.toast]:text-muted-foreground',
           actionButton:
-            'group-[.toast]:bg-transparent group-[.toast]:font-bold group-[.toast]:text-neutral-300',
-          cancelButton: 'group-[.toast]:bg-transparent group-[.toast]:text-neutral-400',
+            'group-[.toast]:bg-transparent group-[.toast]:font-bold group-[.toast]:text-muted-foreground',
+          cancelButton: 'group-[.toast]:bg-transparent group-[.toast]:text-muted-foreground/70',
           success: 'group-[.toast]:[&>svg]:text-success-400',
           error: 'group-[.toast]:[&>svg]:text-brand-500',
           warning: 'group-[.toast]:[&>svg]:text-warning-300',

@@ -14,7 +14,7 @@ import { RetentionChart } from './charts/RetentionChart'
 import { RevenueChart } from './charts/RevenueChart'
 import { SkillDistributionChart } from './charts/SkillDistributionChart'
 import { NeedsAttentionPanel } from './NeedsAttentionPanel'
-import { StatCard } from './StatCard'
+import { StatCard } from '@/shared/ui/StatCard'
 import { computeTrend } from '../hooks/trend'
 import { MONTH_RANGE_OPTIONS, type MonthRange } from '../types'
 
@@ -67,7 +67,7 @@ export function AdminDashboardPage() {
     <div className="space-y-5">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-extrabold tracking-tight">Dashboard</h1>
+          <h1 className="font-display text-2xl font-extrabold tracking-tight">Dashboard</h1>
           <p className="mt-1 text-sm text-muted-foreground">
             Where the academy stands right now, and who needs a call today.
           </p>

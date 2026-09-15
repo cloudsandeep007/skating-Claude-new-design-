@@ -79,11 +79,11 @@ export function CoachDetailPage() {
             name={coach.fullName}
             photoUrl={coach.photoUrl ? photoUrls?.[coach.photoUrl] : undefined}
             className="h-16 w-16 shrink-0"
-            fallbackClassName="bg-neutral-950 text-lg font-extrabold text-white"
+            fallbackClassName="bg-primary text-lg font-extrabold text-primary-foreground"
           />
 
           <div className="min-w-[220px] flex-1">
-            <div className="text-2xl font-extrabold tracking-tight">{coach.fullName}</div>
+            <div className="font-display text-2xl font-extrabold tracking-tight">{coach.fullName}</div>
             <div className="mt-2 flex flex-wrap gap-2">
               <StatusBadge tone={isActive ? 'success' : 'neutral'}>
                 {isActive ? 'Active' : 'Inactive'}
@@ -118,7 +118,7 @@ export function CoachDetailPage() {
                   variant="outline"
                   size="icon"
                   aria-label={`Remove ${fullName}`}
-                  className="text-brand-700 hover:text-brand-800"
+                  className="text-brand-400 hover:text-brand-300"
                 >
                   <Trash2 className="h-4 w-4" />
                 </Button>

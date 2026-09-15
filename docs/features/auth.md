@@ -1,5 +1,9 @@
 # Auth
 
+> Sign-in/forgot/reset screens render in the new "Kinetic Obsidian" dark
+> theme as of 2026-09-15 — no code changes were needed here, they were
+> already fully token-driven. See docs/DECISIONS.md.
+
 ## Purpose
 
 Signs people in, keeps them signed in, and sends each of the four roles

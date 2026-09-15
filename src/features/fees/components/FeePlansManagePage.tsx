@@ -79,7 +79,7 @@ export function FeePlansManagePage() {
           <Button variant="ghost" size="sm" asChild className="-ml-2 mb-1">
             <Link to="/admin/fees">← Fees</Link>
           </Button>
-          <h1 className="text-2xl font-extrabold tracking-tight">Fee plans</h1>
+          <h1 className="font-display text-2xl font-extrabold tracking-tight">Fee plans</h1>
           <p className="mt-1 text-sm text-muted-foreground">
             What families are billed and how often. Assign a plan to a skater from their profile.
           </p>
@@ -156,7 +156,7 @@ export function FeePlansManagePage() {
                     variant="ghost"
                     size="icon"
                     aria-label={`Remove ${plan.name}`}
-                    className="text-brand-700 hover:text-brand-800"
+                    className="text-brand-400 hover:text-brand-300"
                   >
                     <Trash2 className="h-4 w-4" />
                   </Button>

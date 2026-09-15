@@ -1,5 +1,8 @@
 # Announcements and notifications
 
+> Restyled to the "Kinetic Obsidian" dark theme 2026-09-15 — visual only,
+> nothing below changed. See docs/DECISIONS.md.
+
 ## Purpose
 
 The academy's one-to-many channel: an admin posts something, the right

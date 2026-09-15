@@ -78,7 +78,7 @@ export function BatchDetailPage() {
       <div className="rounded-lg border bg-card p-5 shadow-sm">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-extrabold tracking-tight">{batch.name}</h1>
+            <h1 className="font-display text-2xl font-extrabold tracking-tight">{batch.name}</h1>
             <div className="mt-2 flex flex-wrap gap-2">
               <StatusBadge tone={capacityTone(batch.enrolledCount, batch.capacity)}>
                 {batch.enrolledCount} / {batch.capacity} enrolled
@@ -115,7 +115,7 @@ export function BatchDetailPage() {
                   variant="outline"
                   size="icon"
                   aria-label={`Remove ${name}`}
-                  className="text-brand-700 hover:text-brand-800"
+                  className="text-brand-400 hover:text-brand-300"
                 >
                   <Trash2 className="h-4 w-4" />
                 </Button>
@@ -189,7 +189,7 @@ export function BatchDetailPage() {
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="h-8 w-8 text-muted-foreground hover:text-brand-700"
+                    className="h-8 w-8 text-muted-foreground hover:text-brand-400"
                     aria-label={`Remove ${entry.fullName} from batch`}
                     disabled={removeStudent.isPending}
                     onClick={() => {

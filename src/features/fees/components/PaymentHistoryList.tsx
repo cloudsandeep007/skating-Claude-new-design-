@@ -96,7 +96,7 @@ export function PaymentHistoryList({
               <div className="text-right">
                 <div className="font-extrabold tracking-tight">{formatRupees(fee.amount)}</div>
                 {balance > 0 && fee.status !== 'waived' && (
-                  <div className="text-xs font-semibold text-brand-700">
+                  <div className="text-xs font-semibold text-brand-400">
                     {formatRupees(balance)} due
                   </div>
                 )}

@@ -14,9 +14,8 @@ interface ChartCardProps {
 }
 
 /** One chart card's chrome — title, optional filter control, loading
- * skeleton, and an empty state when the academy has no data yet for it.
- * Every chart on the dashboard is wrapped in this, so none of them can
- * render a blank card. */
+ * skeleton, and an empty state when there's no data yet. Wrap any chart
+ * (or other data panel) in this so it never renders a blank card. */
 export function ChartCard({
   title,
   subtitle,
@@ -31,7 +30,7 @@ export function ChartCard({
     <Card>
       <CardHeader className="flex-row items-start justify-between gap-3 space-y-0 pb-2">
         <div>
-          <CardTitle className="text-base">{title}</CardTitle>
+          <CardTitle className="font-display text-base">{title}</CardTitle>
           {subtitle && <CardDescription className="mt-0.5">{subtitle}</CardDescription>}
         </div>
         {action}

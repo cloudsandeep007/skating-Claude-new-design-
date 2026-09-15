@@ -5,6 +5,49 @@ non-technical person can follow it. Newest first.
 
 ---
 
+## 2026-09-15 — Full app redesign: new dark theme ("Kinetic Obsidian")
+
+- **Every screen in the app was restyled** to match a new dark design —
+  new colors, new fonts (Syne for headings, Plus Jakarta Sans for body
+  text), a cyan/teal/coral accent palette instead of the old orange
+  theme. This was a visual-only project: nothing about how any screen
+  *works* changed, only how it looks.
+- The app is now **dark-only** — there's no light mode any more, by
+  request. It was previously light-only, so this is a full swap, not an
+  added option.
+- Fixed one real bug found while restyling: the coach's "Confirm
+  attendance" button and the "Promote to next level" button used to
+  briefly render in an alarming red when someone finished a positive
+  action (all attendance marked, or a skater ready to level up). They
+  now correctly show in the new positive/green color.
+- The "Needs attention" panel on the dashboard, the coach's "today's
+  session" card, and the parent home screen's "next session" card were
+  redesigned to stand out clearly against the new dark background —
+  they'd have blended into it otherwise.
+- A few things shown in the new design's original mockups were
+  deliberately **not** built, because they'd need real backend work, not
+  just a new look: paying fees by UPI QR code, an autopay toggle,
+  switching fee plans yourself, coaches leaving voice-note feedback, and
+  an in-app "running late" / "requesting leave" button for parents.
+  These are recorded as future ideas in `docs/DECISIONS.md`, not lost.
+- `docs/design/latest stitch/` holds the design mockups this was built
+  from, for reference.
+
+## 2026-09-15 — Switched to a new Supabase project
+
+- The app now points at a new Supabase database/project instead of the
+  old one. All database tables, security rules, and storage buckets
+  were recreated on the new project by re-running every migration file
+  in order, so nothing needed to be manually copied over.
+- The three backend functions (inviting a user, deleting a user,
+  generating monthly fees) were redeployed to the new project.
+- No data carries over automatically from the old project — this was a
+  fresh, empty database. If there was real student/coach/fee data on
+  the old project that needs to move over, that's a separate data-export
+  step, not something this change did.
+- The local `.env` file (not checked into git) was updated with the new
+  project's web address and public API key.
+
 ## 2026-09-15 — Real photos everywhere, and full delete/remove permissions for admins
 
 - **Coaches can now have a photo**, uploaded the same way students'

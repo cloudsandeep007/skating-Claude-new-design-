@@ -67,7 +67,7 @@ export function EditCoachPage() {
 
   return (
     <div className="mx-auto max-w-lg">
-      <h1 className="mb-4 text-2xl font-extrabold tracking-tight">Edit coach</h1>
+      <h1 className="mb-4 font-display text-2xl font-extrabold tracking-tight">Edit coach</h1>
       <Card>
         <CardContent className="pt-6">
           <Form {...form}>
