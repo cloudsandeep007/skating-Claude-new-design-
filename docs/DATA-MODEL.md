@@ -43,6 +43,7 @@ Source of truth: `supabase/migrations/0001_initial_schema.sql`. Demo data:
 | `skill_status`          | not_started, learning, achieved                           |
 | `billing_cycle`         | monthly, quarterly, annual                                |
 | `fee_status`            | pending, paid, overdue, waived                            |
+| `fee_pricing_mode`      | cycle, per_class                                           |
 | `payment_method`        | cash, upi, card, bank_transfer, cheque, other             |
 | `announcement_audience` | all, batch, parents, coaches                              |
 | `error_level`           | debug, info, warning, error, fatal                        |
@@ -246,10 +247,13 @@ academy · parent select own children's rows.
 | coach_id            | uuid           | yes      |                   | composite FK → coaches; set null on coach delete     |
 | status              | session_status | no       | 'scheduled'       |                                                      |
 | cancellation_reason | text           | yes      |                   | **required when status = 'cancelled'** (check)       |
+| makeup_for_session_id | uuid         | yes      |                   | FK → schedule_sessions set null; `0011_makeup_credits_and_per_class_billing.sql` — set when this session IS the make-up for a cancelled one |
 | created_at / updated_at | timestamptz | no    | now()             | trigger                                              |
 
 Unique `(batch_id, session_date, start_time)` — a batch can't be scheduled
 twice at the same moment, which also makes schedule generation re-runnable.
+Partial unique index on `makeup_for_session_id` (where not null) — a
+cancelled session can have at most one make-up linked to it.
 Indexes: `(academy_id, session_date)`, `(academy_id, status)`,
 `(batch_id, session_date)`, `(coach_id, session_date)`.
 **RLS:** super_admin all · academy_admin all in academy · coach select in
@@ -275,6 +279,111 @@ Audit: insert/update/delete → `audit_logs`.
 **RLS:** super_admin all · academy_admin all in academy · coach select /
 insert / update in academy, and writes must set `marked_by` to themselves ·
 parent select own children.
+
+Trigger `attendance_makeup_credit` (after insert or update of `status`,
+`0011_makeup_credits_and_per_class_billing.sql`): inserts a `pending`
+`makeup_credits` row when a mark becomes `absent`; deletes a still-pending
+one if a mark is corrected away from `absent`. Fires from the same
+insert/update `save_attendance()` already does — no changes to that
+function or the coach marking UI.
+
+### `makeup_credits` — a personally-missed class the academy still owes
+
+| Column            | Type        | Nullable | Default           | Notes                                              |
+| ----------------- | ----------- | -------- | ----------------- | --------------------------------------------------- |
+| id                | uuid        | no       | gen_random_uuid() |                                                     |
+| academy_id        | uuid        | no       |                   | FK → academies cascade                             |
+| student_id        | uuid        | no       |                   | composite FK → students cascade                    |
+| reason_session_id | uuid        | no       |                   | composite FK → schedule_sessions cascade — the session the student missed |
+| status            | text        | no       | 'pending'         | check in ('pending', 'fulfilled') — not a Postgres enum |
+| granted_at        | timestamptz | no       | now()             |                                                     |
+| fulfilled_at      | timestamptz | yes      |                   | set by `fulfill_makeup_credit()`                    |
+| fulfilled_by      | uuid        | yes      |                   | FK → profiles set null                             |
+| notes             | text        | yes      |                   |                                                     |
+
+Unique `(student_id, reason_session_id)` — one credit per student per
+missed session; also the `on conflict` target the grant trigger relies on.
+Index: `(student_id, status)`.
+Audit: insert/update/delete → `audit_logs`.
+**RLS:** super_admin all · academy_admin all in academy · parent select
+own children. Written only by the `attendance_makeup_credit` trigger and
+`fulfill_makeup_credit()` — never a direct insert/update from the app.
+
+`0011_makeup_credits_and_per_class_billing.sql`:
+- `schedule_makeup_session(p_original_session_id, p_date, p_start, p_end)`
+  — `SECURITY INVOKER`. Validates the original session is `cancelled` and
+  has no make-up linked yet; reuses `generate_sessions()`'s holiday-skip
+  and coach-conflict checks for the single date (raising instead of
+  skipping); inserts the new session with `makeup_for_session_id` set;
+  notifies every parent in the batch (`type: 'makeup_scheduled'`).
+- `fulfill_makeup_credit(p_credit_id, p_notes?)` — `SECURITY INVOKER`,
+  admin-only via RLS. Sets `status = 'fulfilled'`, `fulfilled_at = now()`,
+  `fulfilled_by = auth.uid()`.
+- `expected_classes_from_schedule(p_batch_id, p_from, p_to)` — `stable`
+  SQL, no writes. Counts days in range matching `batches.days_of_week`
+  minus `holidays` — the same weekday math `generate_sessions()` uses,
+  read-only. Used by `generate_upcoming_fees()` for per-class billing
+  (see `fee_plans` below) and by nothing else.
+
+### `class_bookings` — a reserved slot against a student's credit balance
+
+| Column       | Type        | Nullable | Default           | Notes                                              |
+| ------------ | ----------- | -------- | ----------------- | --------------------------------------------------- |
+| id           | uuid        | no       | gen_random_uuid() |                                                     |
+| academy_id   | uuid        | no       |                   | FK → academies cascade                             |
+| student_id   | uuid        | no       |                   | composite FK → students cascade                    |
+| session_id   | uuid        | no       |                   | composite FK → schedule_sessions cascade           |
+| status       | text        | no       | 'booked'          | check in ('booked', 'cancelled') — not a Postgres enum |
+| booked_at    | timestamptz | no       | now()             |                                                     |
+| cancelled_at | timestamptz | yes      |                   |                                                     |
+
+Unique `(student_id, session_id)`. Indexes: `(student_id, status)`,
+`(session_id, status)`. Audit: insert/update/delete → `audit_logs`.
+**RLS:** super_admin all · academy_admin all in academy · coach select in
+academy · parent select own children. No parent insert/update policy —
+writes only happen through `book_class_slot()` / `cancel_class_slot()`
+below, which are `SECURITY DEFINER` and re-check the caller owns the
+student via `parent_student_ids()` themselves.
+
+`0012_class_bookings.sql`:
+- `class_credit_balance(p_student_id)` — `stable` SQL,
+  `SECURITY INVOKER`. The one running, never-reset balance:
+  `Σ student_fees.credits_granted − count(class_bookings 'booked') +
+  count(makeup_credits 'pending')`. Nothing here is period-scoped —
+  unused credits from an old period are still in the sum the next time a
+  new period is generated, so "leftover carries forward" needs no
+  separate rollover step. Returns **null** (not 0) for a student who has
+  never had a single `credits_granted` row — the frontend's "does this
+  student even use the booking system" check.
+- `book_class_slot(p_session_id)` — `SECURITY DEFINER`. Validates the
+  caller's student is actively enrolled in the session's batch, the
+  session is `scheduled` and today-or-future, and
+  `class_credit_balance(...) > 0`; inserts (or reactivates a cancelled)
+  the booking.
+- `cancel_class_slot(p_session_id)` — `SECURITY DEFINER`. Only works
+  while the session is still `scheduled` — once the academy marks
+  attendance, the booking is permanent history and the credit is truly
+  spent, matching "credit exhausted when the academy marks attendance."
+  Sets the row to `'cancelled'`, freeing the credit.
+
+`cancel_session()` (`0003_scheduling.sql`) gained one line in
+`0012_class_bookings.sql`: cancelling a session also cancels every active
+booking on it, so nobody's credit is held hostage by a class that never
+happened — they can book the make-up session (or any other day) with the
+freed credit.
+
+`generate_upcoming_fees()` (`0007_fees.sql`) sets `credits_granted` for
+every plan that has a `batch_id` (cycle or per_class alike) alongside its
+existing `amount` calculation — see the `student_fees.credits_granted`
+row above and `fee_plans` below. Billing math itself is unchanged.
+
+The attendance-marking roster (`getSessionForMarking.ts`,
+`0004_attendance.sql`'s domain) changed to match: a session's roster is
+now actively-enrolled students whose current plan has no `batch_id`
+(legacy, unaffected) **union** actively-enrolled students with an active
+booking for that specific session — not simply everyone in the batch.
+`save_attendance()` itself, and the RLS/lock policies around it, are
+unchanged.
 
 ### `student_skills` — progress per skill
 
@@ -305,9 +414,14 @@ own children.
 | amount        | numeric(10,2) | no       |                   | ≥ 0, rupees               |
 | billing_cycle | billing_cycle | no       |                   |                           |
 | description   | text          | yes      |                   |                           |
-| batch_id      | uuid          | yes      |                   | composite FK → batches; set null on batch delete; `0010_fee_batch_plans_and_reminders.sql` — null = academy-wide plan, non-null = scoped to that one batch (e.g. a cheaper plan for a weekend-only batch). Purely a picker-filtering field — `generate_upcoming_fees()` still bills off `students.fee_plan_id`, so this never makes billing ambiguous. |
+| batch_id      | uuid          | yes      |                   | composite FK → batches; set null on batch delete; `0010_fee_batch_plans_and_reminders.sql` — null = academy-wide plan, non-null = scoped to that one batch (e.g. a cheaper plan for a weekend-only batch). For a `cycle` plan this is purely a picker-filtering field; for `per_class` it's also which batch's schedule prices the plan. |
+| pricing_mode  | fee_pricing_mode | no    | 'cycle'           | `0011_makeup_credits_and_per_class_billing.sql` — 'cycle' (existing flat-per-period `amount`) or 'per_class' (`per_class_rate` × classes in the period, from the batch's schedule) |
+| per_class_rate | numeric(10,2) | yes      |                   | rupees per class; required (and only meaningful) when pricing_mode = 'per_class' |
 | created_at / updated_at | timestamptz | no | now()       | trigger                   |
 
+Check constraint: `pricing_mode = 'cycle' or (batch_id is not null and
+per_class_rate is not null and per_class_rate >= 0)` — a per-class plan
+must be batch-scoped and priced.
 Indexes: `(academy_id)`, `(batch_id)`.
 **RLS:** super_admin all · academy_admin all in academy · members select.
 
@@ -326,6 +440,7 @@ Indexes: `(academy_id)`, `(batch_id)`.
 | status       | fee_status    | no       | 'pending'         |                                                    |
 | waived_reason | text         | yes      |                   | set together with status='waived'; `0007_fees.sql` |
 | last_reminded_at | timestamptz | yes     |                   | set by `send_fee_reminders()`; `0010_fee_batch_plans_and_reminders.sql` — shown in the admin fee list as "Reminded N days ago" |
+| credits_granted | integer      | yes      |                   | `0012_class_bookings.sql` — how many classes this period paid for (`expected_classes_from_schedule` for the plan's batch, null for an academy-wide/no-batch plan); copied at generation time so a later plan or schedule edit never rewrites history, same rationale as `amount` |
 | created_at / updated_at | timestamptz | no | now()       | trigger                                            |
 
 Unique `(student_id, period_start)` (`0007_fees.sql`) — a student can't have two periods starting the same day.
@@ -472,8 +587,16 @@ these, never aggregate raw tables.**
 | `batch_attendance_summary`            | view     | batch (all time)                 | academy_id, batch_id, batch_name, batch_status, sessions_marked, counted_sessions, attended_sessions, attendance_pct |
 | `monthly_collection_totals`           | view     | academy × calendar month         | collected, payment_count (by paid_date); expected, outstanding, overdue/pending/paid/waived_count (by due_date) |
 | `at_risk_students`                    | view     | active student < 60% in last 30 days, ≥ 3 counted sessions | academy_id, student_id, full_name, counted/attended_sessions, attendance_pct, batch_names, parent_name, parent_phone |
-| `attendance_summary_for_range(p_from, p_to, p_batch_id?)` | RPC | student in range | student_id, full_name, counted/attended/absent/late/excused_sessions, attendance_pct |
+| `attendance_summary_for_range(p_from, p_to, p_batch_id?)` | RPC | student in range | student_id, full_name, counted/attended/absent/late/excused_sessions, attendance_pct, expected_sessions, pending_makeup_credits |
 | `at_risk_students_for(p_days=30, p_threshold=60, p_min_sessions=3)` | RPC | at-risk student with custom window | student_id, full_name, counted_sessions, attended_sessions, attendance_pct |
+
+`expected_sessions` and `pending_makeup_credits` (`0011_makeup_credits_and_per_class_billing.sql`)
+use deliberately different date semantics from the rest of the row:
+`expected_sessions` counts real (non-cancelled) `schedule_sessions` for
+the student's active batch(es) **within `[p_from, p_to]`**, same as the
+other counts; `pending_makeup_credits` is a count of **all-time** pending
+`makeup_credits`, ignoring the range — a credit doesn't belong to one
+period, so it keeps showing as owed on every report until fulfilled.
 
 ### `holidays` — dates the academy is closed (`0003_scheduling.sql`)
 
@@ -500,6 +623,7 @@ would fail on the first write).
 | ----------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------- |
 | `generate_sessions(p_batch_id, p_from, p_to)`   | For each date in range matching the batch's `days_of_week`: skip if a holiday, skip if the batch already has a session at that time, skip if the batch's coach has an overlapping non-cancelled session, else insert a `scheduled` session copying the batch's time and coach. Max 366 days. | one row per candidate day: `(day, outcome)` where outcome ∈ created / holiday / exists / coach_conflict |
 | `cancel_session(p_session_id, p_reason)`        | Sets status `cancelled` + reason on a `scheduled` session (errors otherwise), then inserts one `notifications` row (`type = 'session_cancelled'`, link `/parent`) per distinct parent of any active student in the batch. | void                                        |
+| `schedule_makeup_session(p_original_session_id, p_date, p_start, p_end)` (`0011_makeup_credits_and_per_class_billing.sql`) | Errors unless the original session is `cancelled` with no make-up linked yet. Reuses `generate_sessions()`'s holiday and coach-conflict checks for the single date, **raising** instead of silently skipping. Inserts the new session with `makeup_for_session_id` set, then notifies every parent in the batch the same way `cancel_session()` does (`type = 'makeup_scheduled'`). | the new `schedule_sessions` row             |
 
 ## Attendance rules (`0004_attendance.sql`)
 
@@ -513,6 +637,14 @@ would fail on the first write).
 Every write to `attendance` — coach save or admin override — is recorded
 by the existing `audit_attendance` trigger with the actor, so "override
 written to audit_logs" needs no extra code.
+
+## Make-up credits (`0011_makeup_credits_and_per_class_billing.sql`)
+
+See the `makeup_credits` table entry above for the full schema and the
+grant/revoke trigger. `fulfill_makeup_credit(p_credit_id, p_notes?)` is
+`SECURITY INVOKER`, admin-only via `makeup_credits_admin_all`; sets
+`status = 'fulfilled', fulfilled_at = now(), fulfilled_by = auth.uid()`
+on a `pending` credit (errors if it's not found or already fulfilled).
 
 ## Announcements fan-out (`0005_announcements.sql`)
 
@@ -551,7 +683,7 @@ from `0001_initial_schema.sql`. `students.fee_plan_id` and
 
 | Function                                | Does                                                                                                                                                                                                          | Returns                                     |
 | ----------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------- |
-| `generate_upcoming_fees(p_academy_id?)`   | `SECURITY INVOKER`. For every active student on a fee plan whose current period has ended (or who has none yet): inserts one `student_fees` row for the next period, `status = 'pending'`, `due_date = period_start`. Called two ways: an admin's "Generate now" button passes their own `academy_id` — RLS then only lets rows in their academy actually insert; the scheduled Edge Function calls it with no argument using the service-role key, which bypasses RLS and covers every academy in one run. | one row per fee created                      |
+| `generate_upcoming_fees(p_academy_id?)`   | `SECURITY INVOKER`. For every active student on a fee plan whose current period has ended (or who has none yet): inserts one `student_fees` row for the next period, `status = 'pending'`, `due_date = period_start`. `billing_cycle` (unchanged) still sets the period's length; the **amount** is `fp.amount` for a `cycle` plan, or `per_class_rate * expected_classes_from_schedule(batch_id, period_start, period_end)` for a `per_class` one (`0011_makeup_credits_and_per_class_billing.sql`) — computed upfront from the schedule, not from sessions actually held. Called two ways: an admin's "Generate now" button passes their own `academy_id` — RLS then only lets rows in their academy actually insert; the scheduled Edge Function calls it with no argument using the service-role key, which bypasses RLS and covers every academy in one run. | one row per fee created                      |
 | `mark_fees_overdue()`                     | `SECURITY INVOKER`. Flips every `pending` fee whose `due_date` has passed to `overdue`. Same academy-scoping story as above — an academy admin could call it for their own academy, but only the scheduled function actually does (see RUNBOOK). | count of fees flipped                        |
 | `record_payment(fee, amount, date?, method?, reference?, notes?)` | `SECURITY INVOKER`. Inserts one `payments` row, then flips the fee to `paid` if the sum of its payments now covers the full amount — otherwise leaves the status exactly as it was, which is how a partial payment works without a separate status. Refuses a waived fee or a non-positive amount. | the inserted payment row                     |
 | `student_fees_list(status?, month?, batch?)` | `SECURITY INVOKER`. The admin fee list: one row per fee matching the filters, with `paid`, `balance`, and `last_reminded_at` pre-computed — the admin dashboard's table and CSV export both read this directly. `month` matches by `due_date`'s calendar month; leaving it null (the "Overdue" quick filter does this) returns every matching fee regardless of month. | one row per matching fee                     |

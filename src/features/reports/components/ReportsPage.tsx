@@ -152,15 +152,27 @@ function AttendanceReportTab({ range, setRange, batchId, setBatchId, resolvedBat
   function exportCsv() {
     if (!rows) return
     downloadCsv(`attendance-report-${range.from}-to-${range.to}.csv`, [
-      ['Student', 'Counted', 'Attended', 'Absent', 'Late', 'Excused', 'Attendance %'],
+      [
+        'Student',
+        'Expected',
+        'Counted',
+        'Attended',
+        'Absent',
+        'Late',
+        'Excused',
+        'Attendance %',
+        'Make-up owed',
+      ],
       ...rows.map((r) => [
         r.fullName,
+        r.expected,
         r.counted,
         r.attended,
         r.absent,
         r.late,
         r.excused,
         r.pct ?? '',
+        r.makeupOwed,
       ]),
     ])
   }
@@ -170,15 +182,27 @@ function AttendanceReportTab({ range, setRange, batchId, setBatchId, resolvedBat
       `attendance-report-${range.from}-to-${range.to}.pdf`,
       'Attendance report',
       `${formatDate(range.from)} – ${formatDate(range.to)}`,
-      ['Student', 'Counted', 'Attended', 'Absent', 'Late', 'Excused', 'Attendance %'],
+      [
+        'Student',
+        'Expected',
+        'Counted',
+        'Attended',
+        'Absent',
+        'Late',
+        'Excused',
+        'Attendance %',
+        'Make-up owed',
+      ],
       rows.map((r) => [
         r.fullName,
+        r.expected,
         r.counted,
         r.attended,
         r.absent,
         r.late,
         r.excused,
         r.pct ?? '—',
+        r.makeupOwed,
       ]),
     )
   }
@@ -208,24 +232,28 @@ function AttendanceReportTab({ range, setRange, batchId, setBatchId, resolvedBat
           <TableHeader>
             <TableRow>
               <TableHead>Student</TableHead>
+              <TableHead>Expected</TableHead>
               <TableHead>Counted</TableHead>
               <TableHead>Attended</TableHead>
               <TableHead>Absent</TableHead>
               <TableHead>Late</TableHead>
               <TableHead>Excused</TableHead>
               <TableHead>Attendance %</TableHead>
+              <TableHead>Make-up owed</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {rows?.map((r) => (
               <TableRow key={r.studentId}>
                 <TableCell className="font-bold">{r.fullName}</TableCell>
+                <TableCell>{r.expected}</TableCell>
                 <TableCell>{r.counted}</TableCell>
                 <TableCell>{r.attended}</TableCell>
                 <TableCell>{r.absent}</TableCell>
                 <TableCell>{r.late}</TableCell>
                 <TableCell>{r.excused}</TableCell>
                 <TableCell>{r.pct !== null ? `${r.pct}%` : '—'}</TableCell>
+                <TableCell>{r.makeupOwed > 0 ? r.makeupOwed : '—'}</TableCell>
               </TableRow>
             ))}
           </TableBody>

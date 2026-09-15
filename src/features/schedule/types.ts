@@ -21,6 +21,13 @@ export interface SessionItem {
   studentCount: number
   /** Attendance rows saved for this session so far. */
   markedCount: number
+  /** Set when this session IS a make-up — the original cancelled session's date. */
+  makeupForDate: string | null
+  /** Set on a cancelled session once a make-up has been scheduled for it. */
+  makeupScheduledDate: string | null
+  /** Active class_bookings for this session — who's actually expected,
+   * as opposed to studentCount (everyone enrolled in the batch). */
+  bookedCount: number
 }
 
 export type GenerateOutcome = 'created' | 'holiday' | 'exists' | 'coach_conflict'
@@ -59,6 +66,18 @@ export const CancelSessionSchema = z.object({
   reason: z.string().trim().min(3, 'Give parents a reason (at least a few words)'),
 })
 export type CancelSession = z.infer<typeof CancelSessionSchema>
+
+export const ScheduleMakeupSchema = z
+  .object({
+    date: z.string().min(1, 'Choose a date'),
+    startTime: z.string().regex(TIME_REGEX, 'Enter a start time'),
+    endTime: z.string().regex(TIME_REGEX, 'Enter an end time'),
+  })
+  .refine((d) => d.endTime > d.startTime, {
+    message: 'End time must be after start time',
+    path: ['endTime'],
+  })
+export type ScheduleMakeup = z.infer<typeof ScheduleMakeupSchema>
 
 export const HolidaySchema = z.object({
   date: z.string().min(1, 'Choose a date'),

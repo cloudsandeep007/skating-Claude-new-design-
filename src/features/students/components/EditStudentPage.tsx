@@ -6,7 +6,7 @@ import { toast } from 'sonner'
 
 import { useAuth } from '@/features/auth'
 import { useBatchOptions } from '@/features/batches'
-import { useFeePlanOptions } from '@/features/fees'
+import { feePlanPriceLabel, useFeePlanOptions } from '@/features/fees'
 import { Button } from '@/shared/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card'
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/shared/ui/form'
@@ -222,7 +222,7 @@ export function EditStudentPage() {
                       <SelectContent>
                         {sortedFeePlans.map((plan) => (
                           <SelectItem key={plan.id} value={plan.id}>
-                            {plan.name} — ₹{plan.amount.toLocaleString('en-IN')}
+                            {plan.name} — {feePlanPriceLabel(plan)}
                             {plan.batchId && plan.batchId !== selectedBatchId ? ' (other batch)' : ''}
                           </SelectItem>
                         ))}

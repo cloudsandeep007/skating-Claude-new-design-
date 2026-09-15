@@ -21,7 +21,7 @@ import { Skeleton } from '@/shared/ui/skeleton'
 import { StatusBadge } from '@/shared/ui/StatusBadge'
 
 import { useCreateFeePlan, useDeleteFeePlan, useFeePlans, useUpdateFeePlan } from '../api/feePlans'
-import { formatRupees } from '../hooks/feeTone'
+import { feePlanPriceLabel } from '../hooks/feeTone'
 import { BILLING_CYCLE_LABEL, type FeePlanForm } from '../types'
 import { FeePlanFormDialog } from './FeePlanFormDialog'
 
@@ -122,6 +122,9 @@ export function FeePlansManagePage() {
                   <StatusBadge tone="outline">
                     {plan.batch_id ? (batchName(plan.batch_id) ?? 'Batch') : 'All batches'}
                   </StatusBadge>
+                  {plan.pricing_mode === 'per_class' && (
+                    <StatusBadge tone="dark">Per class</StatusBadge>
+                  )}
                 </div>
                 {plan.description && (
                   <div className="mt-0.5 truncate text-sm text-muted-foreground">
@@ -130,7 +133,11 @@ export function FeePlansManagePage() {
                 )}
               </div>
               <div className="shrink-0 text-lg font-extrabold tracking-tight">
-                {formatRupees(plan.amount)}
+                {feePlanPriceLabel({
+                  amount: plan.amount,
+                  pricingMode: plan.pricing_mode,
+                  perClassRate: plan.per_class_rate,
+                })}
               </div>
               <FeePlanFormDialog
                 trigger={
@@ -145,6 +152,8 @@ export function FeePlansManagePage() {
                   billingCycle: plan.billing_cycle,
                   description: plan.description ?? '',
                   batchId: plan.batch_id,
+                  pricingMode: plan.pricing_mode,
+                  perClassRate: plan.per_class_rate,
                 }}
                 submitLabel="Save"
                 pending={updatePlan.isPending}

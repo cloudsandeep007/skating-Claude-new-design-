@@ -4,6 +4,7 @@ import {
   computeTotals,
   pctColorClass,
   totalsByMonth,
+  useMakeupCredits,
   useStudentHistory,
 } from '@/features/attendance'
 import { addDays, formatDate, formatTime, todayIso } from '@/shared/lib/format'
@@ -31,12 +32,15 @@ export function AttendanceHistoryPage() {
     addDays(today, -182),
     today,
   )
+  const { data: makeupCredits } = useMakeupCredits(child?.id ?? null)
 
   if (loadingChild) return <Skeleton className="h-40 w-full rounded-lg" />
   if (!child) return <EmptyState title="No skater linked to your account" />
 
   const overall = computeTotals((rows ?? []).map((r) => r.status))
   const months = totalsByMonth(rows ?? [])
+  const expected = rows?.length ?? 0
+  const pendingCredits = (makeupCredits ?? []).filter((c) => c.status === 'pending').length
 
   return (
     <div className="space-y-4">
@@ -57,7 +61,19 @@ export function AttendanceHistoryPage() {
         <div className="mt-3 h-2 overflow-hidden rounded-full bg-muted">
           <div className="h-full rounded-full bg-primary" style={{ width: `${overall.pct ?? 0}%` }} />
         </div>
+        <div className="mt-3 text-xs font-semibold text-muted-foreground">
+          Expected {expected} · Attended {overall.attended}
+          {pendingCredits > 0 &&
+            ` · ${pendingCredits} make-up class${pendingCredits === 1 ? '' : 'es'} owed`}
+        </div>
       </div>
+
+      {pendingCredits > 0 && (
+        <div className="rounded-lg border border-warning-500/40 bg-warning-500/10 px-4 py-3 text-sm font-semibold text-warning-300">
+          {pendingCredits} missed class{pendingCredits === 1 ? '' : 'es'} carried forward — your
+          academy owes {pendingCredits === 1 ? 'a make-up class' : 'make-up classes'}.
+        </div>
+      )}
 
       {isLoading ? (
         <Skeleton className="h-40 w-full rounded-lg" />

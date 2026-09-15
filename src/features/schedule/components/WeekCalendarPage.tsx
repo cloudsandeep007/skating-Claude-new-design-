@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { CalendarX2, ChevronLeft, ChevronRight, Users } from 'lucide-react'
 
-import { addDays, formatTime, toIsoDate, todayIso } from '@/shared/lib/format'
+import { addDays, formatDate, formatTime, toIsoDate, todayIso } from '@/shared/lib/format'
 import { cn } from '@/shared/lib/utils'
 import { Button } from '@/shared/ui/button'
 import { EmptyState } from '@/shared/ui/EmptyState'
@@ -14,6 +14,7 @@ import type { SessionItem } from '../types'
 import { AddSessionDialog } from './AddSessionDialog'
 import { CancelSessionDialog } from './CancelSessionDialog'
 import { HolidaysCard } from './HolidaysCard'
+import { ScheduleMakeupDialog } from './ScheduleMakeupDialog'
 
 /** Monday of the week containing the given date. */
 function startOfWeek(isoDate: string): string {
@@ -34,6 +35,7 @@ export function WeekCalendarPage() {
   const today = todayIso()
   const [monday, setMonday] = useState(() => startOfWeek(today))
   const [cancelling, setCancelling] = useState<SessionItem | null>(null)
+  const [schedulingMakeup, setSchedulingMakeup] = useState<SessionItem | null>(null)
 
   const sunday = addDays(monday, 6)
   const { data: sessions, isLoading } = useSessions({ from: monday, to: sunday })
@@ -130,6 +132,9 @@ export function WeekCalendarPage() {
                           onCancel={() => {
                             setCancelling(session)
                           }}
+                          onScheduleMakeup={() => {
+                            setSchedulingMakeup(session)
+                          }}
                         />
                       ))}
                 </div>
@@ -155,6 +160,13 @@ export function WeekCalendarPage() {
           setCancelling(null)
         }}
       />
+
+      <ScheduleMakeupDialog
+        session={schedulingMakeup}
+        onClose={() => {
+          setSchedulingMakeup(null)
+        }}
+      />
     </div>
   )
 }
@@ -163,10 +175,12 @@ function SessionCard({
   session,
   canCancel,
   onCancel,
+  onScheduleMakeup,
 }: {
   session: SessionItem
   canCancel: boolean
   onCancel: () => void
+  onScheduleMakeup: () => void
 }) {
   const cancelled = session.status === 'cancelled'
   return (
@@ -191,8 +205,31 @@ function SessionCard({
           {session.studentCount}
         </span>
       </div>
+      {session.bookedCount > 0 && (
+        <div className="mt-1 text-[11px] font-semibold opacity-80">Booked: {session.bookedCount}</div>
+      )}
+      {session.makeupForDate && (
+        <div className="mt-1 text-[11px] font-semibold">
+          Make-up for {formatDate(session.makeupForDate)}
+        </div>
+      )}
       {cancelled ? (
-        <div className="mt-1.5 text-[11px] italic">Cancelled: {session.cancellationReason}</div>
+        <>
+          <div className="mt-1.5 text-[11px] italic">Cancelled: {session.cancellationReason}</div>
+          {session.makeupScheduledDate ? (
+            <div className="mt-1 text-[11px] font-bold">
+              Make-up: {formatDate(session.makeupScheduledDate)}
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={onScheduleMakeup}
+              className="mt-1.5 text-[11px] font-bold text-primary underline-offset-2 hover:underline"
+            >
+              Schedule make-up
+            </button>
+          )}
+        </>
       ) : (
         canCancel && (
           <button

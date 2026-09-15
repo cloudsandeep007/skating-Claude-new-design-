@@ -5,6 +5,52 @@ non-technical person can follow it. Newest first.
 
 ---
 
+## 2026-09-15 — Weekly class booking and credits, for every plan type
+
+- **Every plan tied to a batch now works on class credits.** Whether a
+  skater is on a per-class plan, a weekend plan, or a monthly/weekday
+  plan, each billing period grants them a number of class credits (based
+  on how many classes that batch actually holds in the period).
+- **Parents book which classes they're coming to, a week at a time.**
+  The skater's Schedule page now shows a credit balance ("6 of 16 classes
+  left") and a Book/Cancel button on each of the coming week's classes.
+  Once credits run out, booking is disabled until more are granted next
+  period (or a make-up credit frees one up).
+- **A missed booked class still carries forward, automatically** — same
+  mechanism as today's make-up credits: if a booked class is marked
+  absent, that credit comes right back, ready to book another day.
+  Unused credits never expire either — if a skater doesn't use everything
+  they paid for, it's still there the next time they book.
+- **Coaches now see who's actually booked, not just who's enrolled** —
+  the attendance screen's roster for a class follows the week's bookings
+  for skaters on a booking-enabled plan (skaters on an older, non-batch
+  -specific plan are unaffected and still show as before). The Schedule
+  calendar also shows a "Booked: N" count on each class.
+
+## 2026-09-15 — Make-up classes for missed sessions, and per-class billing
+
+- **A missed class now carries forward instead of just being lost.** If a
+  student personally misses a class (marked absent), they automatically
+  get a "make-up owed" credit — no admin action needed. If the *academy*
+  cancels a class (rain, coach unwell, etc.), an admin can click
+  "Schedule make-up" on the Schedule screen to add one make-up session
+  for the whole batch, and every enrolled family gets notified.
+- **Parents can see it on their dashboard.** The Attendance screen now
+  shows "Expected N · Attended M · K make-up class(es) owed" alongside
+  the usual percentage, with a highlighted banner when something's owed.
+- **Admins can see and clear it too.** A skater's profile has a new
+  "Make-up credits" card (in the Attendance tab) listing what's owed,
+  with a "Mark fulfilled" button once the student has attended the
+  make-up. The Attendance report also gained "Expected" and "Make-up
+  owed" columns, in both the on-screen table and CSV/PDF export.
+- **Fee plans can now bill per class instead of a flat amount.** When
+  adding or editing a fee plan, a new "Pricing" choice switches between
+  the existing flat cycle amount and a per-class rate — pick a batch,
+  set a rate per class, and the amount charged each period is calculated
+  from how many classes that batch actually has on its weekly schedule
+  (minus any holidays). Useful for a batch that meets a different number
+  of times than others, like a weekend-only one.
+
 ## 2026-09-15 — Batch-priced fee plans, dues reminders, and a date-picker fix
 
 - **Fee plans can now be tied to a specific batch.** When adding or

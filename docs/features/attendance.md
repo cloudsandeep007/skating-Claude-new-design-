@@ -4,6 +4,16 @@
 > nothing below changed except one bug fix: the coach's "Confirm
 > attendance" button no longer renders red when everyone is marked. See
 > docs/DECISIONS.md.
+>
+> Also 2026-09-15: a personal absence now automatically grants the
+> student a make-up credit — see "Make-up credits" below and
+> docs/features/schedule.md for the whole-batch (academy-cancelled) side
+> of the same feature, and docs/features/fees.md for per-class billing.
+>
+> Also 2026-09-15: a session's attendance roster now follows the week's
+> class bookings for a skater on a batch-scoped plan, instead of simply
+> everyone enrolled in the batch — see "Booking-driven roster" below and
+> docs/features/schedule.md for the booking system itself.
 
 ## Purpose
 
@@ -34,10 +44,17 @@ Plus the admin's view/override/export tools and the parent's history.
 - **By student** — student + range → overall % and a session-by-session
   list with an override dropdown per row, **Export CSV**.
 
+**Admin — skater profile** (`/admin/students/:id`, "Attendance" tab)
+- **Make-up credits** card — the student's pending make-up credits (batch
+  and the date they missed) with a **Mark fulfilled** button per credit.
+  Empty state when nothing's owed.
+
 **Parent** (`/parent`)
 - One child (a dropdown if they have several): overall % for the last six
   months in an ink card, then a card per month with its %, counts and the
-  session list.
+  session list. When a make-up credit is pending, the summary card also
+  shows an **Expected N · Attended M · K make-up class(es) owed** line
+  and a highlighted banner.
 
 ## Data touched
 
@@ -49,8 +66,11 @@ Plus the admin's view/override/export tools and the parent's history.
 | `parents_students`               | ✓    |       | parent's children                                        |
 | RPC `session_is_editable`        | ✓    |       | the lock rule (falls back to "today or yesterday" if the RPC isn't deployed yet) |
 | RPC `save_attendance`            |      | ✓     | all marks + completion, one transaction                  |
-| RPC `attendance_summary_for_range` | ✓  |       | admin "by batch" percentages                             |
-| `audit_logs`                     |      | ✓     | by the existing `audit_attendance` trigger, automatically |
+| RPC `attendance_summary_for_range` | ✓  |       | admin "by batch" percentages, plus `expected_sessions`/`pending_makeup_credits` for the report |
+| `makeup_credits`                 | ✓    | (auto)| granted/revoked by the `attendance_makeup_credit` trigger, not written directly by the app |
+| `class_bookings`                 | ✓    |       | who's booked a session — the roster source for a batch-scoped-plan student |
+| RPC `fulfill_makeup_credit`      |      | ✓     | admin "Mark fulfilled" button                            |
+| `audit_logs`                     |      | ✓     | by the existing `audit_attendance` (and new `audit_makeup_credits`) triggers, automatically |
 | Browser `localStorage`           | ✓    | ✓     | `attendance-pending-saves` — the retry queue             |
 
 ## Business rules
@@ -83,6 +103,36 @@ Plus the admin's view/override/export tools and the parent's history.
   extra "reason" step — speed over ceremony; the audit log is the trail.
 - Saving marks a `scheduled` session `completed`; cancelled sessions
   can't be marked.
+- **A personal absence grants a make-up credit automatically.** The
+  `attendance_makeup_credit` trigger fires on every insert/update of
+  `attendance.status`: marking a student `absent` inserts a `pending`
+  `makeup_credits` row (`on conflict do nothing`, so re-marking absent
+  twice is harmless); correcting a mistaken absent mark back to
+  present/late/excused deletes the credit if it's still pending. This is
+  the entire mechanism — `save_attendance()` and the coach marking UI
+  (including the offline-queue flow) needed **zero changes**, since the
+  trigger fires from the row write they already do.
+- **Credits don't expire or auto-fulfil.** A pending credit stays pending
+  — and keeps showing as owed everywhere — until an admin clicks **Mark
+  fulfilled** on the student's profile (`fulfill_makeup_credit()`). There
+  is no attempt to detect "this attendance mark redeems that credit";
+  fulfilling is always a manual admin action.
+- **This only covers a personal absence.** If the *academy* cancels the
+  whole class, no credit is granted here at all — instead the admin
+  schedules one make-up session for the whole batch from the Schedule
+  screen (see docs/features/schedule.md). The two paths don't overlap:
+  a cancelled session never gets attendance rows, so this trigger simply
+  never fires for it.
+- **Booking-driven roster.** A session's roster (who a coach sees and can
+  mark) is now: actively-enrolled students whose current fee plan has no
+  batch (legacy/academy-wide plans, unaffected) **union** actively
+  -enrolled students who booked *this specific session* (see
+  docs/features/schedule.md for the booking system). A batch-scoped-plan
+  student who never booked simply doesn't appear that day — this is
+  intentional, not a bug: booking is what says "I'm coming." Nothing
+  about `save_attendance()`, the offline-queue retry flow, or the rest
+  of `MarkAttendancePage` changed — only where the roster query pulls
+  its student list from.
 
 ## Edge cases
 

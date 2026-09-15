@@ -2,6 +2,7 @@ import { ArrowLeft, Pencil } from 'lucide-react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { toast } from 'sonner'
 
+import { MakeupCreditsCard } from '@/features/attendance'
 import { useAuth } from '@/features/auth'
 import { PaymentHistoryList } from '@/features/fees'
 import { AchievementHistoryList, SkillAssessmentPanel } from '@/features/progression'
@@ -211,8 +212,8 @@ export function StudentDetailPage() {
             )}
           </TabsContent>
 
-          <TabsContent value="attendance" className="p-5 text-sm text-muted-foreground">
-            Not built yet — this comes with the attendance feature.
+          <TabsContent value="attendance" className="p-5">
+            <MakeupCreditsCard studentId={student.id} />
           </TabsContent>
           <TabsContent value="progress" className="space-y-5 p-5">
             {profile?.academy_id && (

@@ -25,6 +25,8 @@ export function useAttendanceReport(range: ReportRange, batchId: string | null) 
         late: r.late_sessions,
         excused: r.excused_sessions,
         pct: r.attendance_pct,
+        expected: r.expected_sessions,
+        makeupOwed: r.pending_makeup_credits,
       }))
     },
   })

@@ -8,9 +8,11 @@ export type PaymentRow = Tables<'payments'>
 export type FeeStatus = Enums<'fee_status'>
 export type BillingCycle = Enums<'billing_cycle'>
 export type PaymentMethod = Enums<'payment_method'>
+export type FeePricingMode = Enums<'fee_pricing_mode'>
 
 export const FEE_STATUSES: FeeStatus[] = ['pending', 'overdue', 'paid', 'waived']
 export const BILLING_CYCLES: BillingCycle[] = ['monthly', 'quarterly', 'annual']
+export const FEE_PRICING_MODES: FeePricingMode[] = ['cycle', 'per_class']
 export const PAYMENT_METHODS: PaymentMethod[] = [
   'cash',
   'upi',
@@ -24,6 +26,11 @@ export const BILLING_CYCLE_LABEL: Record<BillingCycle, string> = {
   monthly: 'Monthly',
   quarterly: 'Quarterly',
   annual: 'Annual',
+}
+
+export const FEE_PRICING_MODE_LABEL: Record<FeePricingMode, string> = {
+  cycle: 'Cycle amount',
+  per_class: 'Per class',
 }
 
 export const PAYMENT_METHOD_LABEL: Record<PaymentMethod, string> = {
@@ -42,6 +49,8 @@ export interface FeePlanOption {
   billingCycle: BillingCycle
   /** null = academy-wide plan, not scoped to a specific batch. */
   batchId: string | null
+  pricingMode: FeePricingMode
+  perClassRate: number | null
 }
 
 export interface FeeListRow {
@@ -94,14 +103,26 @@ export interface StudentFeeWithPayments {
   payments: PaymentRecord[]
 }
 
-export const FeePlanFormSchema = z.object({
-  name: z.string().min(1, 'Plan name is required'),
-  amount: z.number().min(0, 'Amount must be 0 or more'),
-  billingCycle: z.enum(['monthly', 'quarterly', 'annual']),
-  description: z.string().optional(),
-  /** null/'' = academy-wide plan. */
-  batchId: z.string().nullable().optional(),
-})
+export const FeePlanFormSchema = z
+  .object({
+    name: z.string().min(1, 'Plan name is required'),
+    amount: z.number().min(0, 'Amount must be 0 or more'),
+    billingCycle: z.enum(['monthly', 'quarterly', 'annual']),
+    description: z.string().optional(),
+    /** null/'' = academy-wide plan. */
+    batchId: z.string().nullable().optional(),
+    pricingMode: z.enum(['cycle', 'per_class']),
+    /** Required, and only meaningful, when pricingMode is 'per_class'. */
+    perClassRate: z.number().min(0, 'Rate must be 0 or more').nullable().optional(),
+  })
+  .refine((v) => v.pricingMode !== 'per_class' || Boolean(v.batchId), {
+    message: 'A per-class plan must be scoped to a batch — pick one above',
+    path: ['batchId'],
+  })
+  .refine((v) => v.pricingMode !== 'per_class' || (v.perClassRate != null && v.perClassRate >= 0), {
+    message: 'Enter a rate per class',
+    path: ['perClassRate'],
+  })
 export type FeePlanForm = z.infer<typeof FeePlanFormSchema>
 
 export const PaymentFormSchema = z.object({

@@ -17,6 +17,160 @@ Format:
 
 ---
 
+## 2026-09-15 — Universal class-credit + weekly booking system
+
+**Decision:** Extended the same-day make-up-credits work into a system
+where *every* batch-scoped fee plan (not just per-class ones) grants the
+student a running credit balance, spent by booking specific upcoming
+sessions a week at a time. Concretely:
+- `student_fees.credits_granted` — set at generation time for any plan
+  with a `batch_id`, using the same `expected_classes_from_schedule()`
+  already built for per-class billing. Copied onto the row (immutable
+  history), never recomputed.
+- `class_bookings` — one row per (student, session) they've reserved.
+- `class_credit_balance(student)` = `Σ credits_granted − active bookings
+  + pending make-up credits`. No ledger table, no period-scoped resets —
+  a single running sum that never resets, so unused credits automatically
+  "carry forward" to the next period/enrollment with no extra code.
+- The attendance-marking roster changed from "everyone actively enrolled
+  in the batch" to "everyone actively enrolled **and** either on a
+  legacy no-batch plan, or actively booked for this specific session."
+
+**Options considered:**
+1. *Where credit consumption "happens"* — (a) decrement a counter when a
+   booking is made, re-increment on cancel, separately again on mark
+   (chosen implicitly by *not* doing this — see below); (b) never
+   literally decrement anything — a booking, once made, simply counts
+   permanently against the running balance (`available_credits` already
+   subtracts every `'booked'` row, whether the session has happened yet
+   or not), and only the already-built absent→make-up-credit trigger
+   ever adds back to the balance. (b) was chosen: it means "spent at
+   booking, refunded automatically on a missed booked class" and "spent
+   only once truly attended" produce the *identical number* for
+   `available_credits` — present/late/excused leave the booking's `-1`
+   standing permanently, absent leaves the same `-1` but adds a `+1`
+   bonus, netting to a wash. No separate "consume on mark" step was ever
+   needed once this was traced through.
+2. *Per-period ledger vs. one running balance* — (a) reset/recompute
+   credits each billing period, with an explicit "roll leftover into the
+   next period" step at renewal (rejected — a real ledger table with
+   period boundaries, more moving parts, more ways to get the rollover
+   math wrong); (b) one lifetime running sum per student (chosen) —
+   "carry forward if you re-enroll" is just what a running sum already
+   does; there is nothing to roll over because nothing was ever
+   period-scoped to begin with.
+3. *Should legacy academy-wide (no-batch) plans be forced into the
+   booking system* — rejected. A plan with `batch_id = null` can't
+   compute `expected_classes_from_schedule` (no batch to count from), so
+   those students simply keep today's behavior (auto-rostered, no
+   booking, no credits) rather than breaking or requiring an immediate
+   data migration of every existing fee plan.
+
+**Why:** The client wants one consistent mental model across pay-per
+-class, weekend, and weekday/monthly enrollments: you're granted a
+number of classes, you book which specific days you're using them on a
+week at a time, and a class you booked but missed isn't lost. Tracing
+that requirement against what "carry forward" already meant today (a
+pending, never-expiring `makeup_credits` row) showed the whole system
+could be expressed as one formula with no new bookkeeping primitive,
+which is both less code and less that can drift out of sync.
+
+**Trade-offs:** The attendance roster is no longer "everyone in the
+batch," which is a real behavior change for any coach used to seeing the
+full class list — mitigated by leaving every legacy (no-batch-plan)
+student on the old behavior, so only batch-scoped-plan students are
+affected, and by keeping `save_attendance()`, the offline-queue retry
+flow, and the rest of the marking screen completely untouched (only the
+roster *query* changed). A student on no fee plan at all, or on a plan
+that never had a batch, gets `class_credit_balance() = null` and simply
+never sees any booking UI — an academy must keep every actively-taught
+student on a batch-scoped plan for the booking system to apply to them,
+which is a data-hygiene expectation this migration doesn't enforce.
+
+---
+
+## 2026-09-15 — Make-up credits (attendance) + make-up sessions (schedule) + per-class billing
+
+**Decision:** A missed class now "carries forward" via two deliberately
+separate mechanisms depending on *why* it was missed, plus a new per-class
+pricing mode so a plan can bill by the class instead of a flat cycle
+amount:
+1. **Personal absence** — an `attendance_makeup_credit` trigger fires on
+   every insert/update of `attendance.status` and grants the student a
+   `pending` row in a new `makeup_credits` table the moment they're marked
+   `absent` (removing it if the mark is corrected away from absent). This
+   needed **zero changes** to `save_attendance()` or the coach marking UI
+   — including the offline-queue retry flow — because it hooks the same
+   row write that flow already does.
+2. **Academy cancels the whole class** — a new
+   `schedule_makeup_session(original_session_id, date, start, end)` RPC
+   lets an admin add one new session for the whole batch, linked back to
+   the cancelled one via `schedule_sessions.makeup_for_session_id`. This
+   is a deliberate, separate admin action — `cancel_session()` itself is
+   unchanged, and cancelling never grants a personal credit (no attendance
+   rows are ever written for a cancelled session, so the trigger above
+   never fires for it either).
+3. **Per-class billing** — `fee_plans.pricing_mode` ('cycle' | 'per_class')
+   and `.per_class_rate`. A per-class plan's amount is computed **upfront**
+   at generation time as `rate × expected_classes_from_schedule(batch_id,
+   period_start, period_end)` — a new read-only function that counts the
+   batch's `days_of_week` minus `holidays` over the period, mirroring
+   `generate_sessions()`'s own day-loop. `billing_cycle` (monthly/
+   quarterly/annual) is completely unchanged; per-class only changes the
+   amount formula, not how long a period is.
+
+Credits never expire and are only ever cleared by an admin clicking "Mark
+fulfilled" (`fulfill_makeup_credit()`) — no attempt to auto-detect "this
+attendance mark redeems that credit."
+
+**Options considered:**
+1. *Personal-absence mechanism* — (a) a trigger on `attendance` (chosen);
+   (b) a check inside `save_attendance()` itself. (a) won because it
+   keeps the delicate offline-tolerant coach flow completely untouched —
+   any future write path to `attendance` (admin override included) gets
+   the same behavior for free, instead of needing to remember to call a
+   "grant credit" step.
+2. *Who gets the make-up* — the user was explicit: academy-cancelled →
+   whole batch gets one added session; personal absence → only that
+   student gets a credit, since nobody else in the batch missed anything.
+   Implementing these as one unified "credit" concept for both cases was
+   considered and rejected — a whole-batch credit-per-student would be N
+   credit rows to track and fulfil individually for something that's
+   really one make-up class, versus one new session everyone can attend.
+3. *Per-class pricing timing* — (a) computed upfront from the schedule at
+   generation time (chosen, per explicit user answer); (b) computed after
+   the fact from sessions actually held that period. (a) matches how
+   billing already works (a fee is generated once, before the period
+   necessarily has all its sessions), avoids a fee amount that silently
+   changes if a session gets added/cancelled after generation, and reuses
+   the exact weekday-counting approach `generate_sessions()` already has.
+4. *Reporting "expected" vs. billing "expected"* — deliberately two
+   different calculations rather than one shared function: billing needs
+   the count **before** sessions necessarily exist (schedule-based,
+   `expected_classes_from_schedule`), while the attendance report and
+   parent dashboard show a period that's mostly already happened, so they
+   count real `schedule_sessions` rows instead (simpler, and automatically
+   reflects ad-hoc/make-up sessions without extra logic).
+
+**Why:** The user's own client bills per class and needs missed/cancelled
+classes to visibly carry forward for both the parent and the admin,
+without inventing new fee-credit bookkeeping (a credit here means "you get
+an extra class," never "we'll adjust next month's invoice").
+
+**Trade-offs:** Two separate mechanisms (credits vs. batch make-up
+sessions) is more surface area than one unified concept, but matches the
+real-world difference the user described and keeps each one simple. A
+credit with no expiry can accumulate indefinitely if an admin never
+fulfils it — acceptable for now since fulfilling is a fast one-click
+action and the alternative (auto-expiry) has no policy anyone asked for.
+Switching a student's fee plan mid-period (existing limitation, unrelated
+to this change) still only affects the *next* generated period, so a
+per-class plan assigned to a long-enrolled student may generate nothing
+until their next period boundary — same behavior a cycle-amount plan
+change already has.
+
+---
+
 ## 2026-09-15 — Batch-scoped fee plans + admin-triggered fee reminders
 
 **Decision:** Added an optional `fee_plans.batch_id` (null = academy-wide,

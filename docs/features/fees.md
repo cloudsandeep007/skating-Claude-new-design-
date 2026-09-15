@@ -8,6 +8,14 @@
 > send an in-app fee reminder to parents with an outstanding balance. See
 > the "Batch-scoped fee plans" and "Dues visibility & reminders" sections
 > below, and docs/DECISIONS.md for the design rationale.
+>
+> Also 2026-09-15: a fee plan can now bill per class instead of a flat
+> cycle amount — see "Per-class billing" below.
+>
+> Also 2026-09-15: any batch-scoped plan (cycle or per-class) now grants
+> the student class credits, spent by booking specific upcoming sessions
+> a week ahead — see docs/features/schedule.md's "Class bookings"
+> section. Billing itself (what's charged) is unchanged by this.
 
 ## Purpose
 
@@ -20,8 +28,12 @@ collected some other way (cash, UPI, bank transfer, etc.).
 
 **Admin — setup** (`/admin/fee-plans`)
 - Fee plans list: name, amount, billing cycle (monthly/quarterly/annual),
-  description, and now a **batch badge** — "All batches" for an
-  academy-wide plan, or the specific batch it's scoped to. Add/edit/delete.
+  description, a **batch badge** — "All batches" for an academy-wide
+  plan, or the specific batch it's scoped to — and a **Per class** badge
+  when the plan bills that way (see "Per-class billing"). Add/edit/delete.
+- The form's **Pricing** toggle switches between **Cycle amount** (the
+  existing flat-per-period Amount field) and **Per class** (a **Rate per
+  class** field instead, and the batch picker becomes required).
 - A plan is assigned to a student from their **Add/Edit student** form
   ("Fee plan" picker) — that's "assign on enrollment"; saving triggers an
   immediate `generate_upcoming_fees()` call so the first invoice appears
@@ -77,6 +89,9 @@ collected some other way (cash, UPI, bank transfer, etc.).
 | `notifications`                       |      | ✓     | one row per parent per reminded fee, written by `send_fee_reminders` |
 | `parents_students`                    | ✓    |       | resolves which parents to notify for a reminded student            |
 | `fee_plans.batch_id`                  | ✓    | ✓     | optional batch scope, set from the fee plan form                   |
+| `fee_plans.pricing_mode`, `.per_class_rate` | ✓ | ✓  | cycle (default) vs per-class pricing, set from the fee plan form   |
+| RPC `expected_classes_from_schedule`  | ✓    |       | called by `generate_upcoming_fees` for a per-class plan's amount, and for every batch-scoped plan's `credits_granted` |
+| `student_fees.credits_granted`        |      | ✓     | set by `generate_upcoming_fees`; feeds `class_credit_balance()` — see docs/features/schedule.md |
 | `audit_logs`                          |      | (auto)| existing `audit_student_fees` / `audit_payments` triggers          |
 
 ## Business rules
@@ -110,6 +125,18 @@ collected some other way (cash, UPI, bank transfer, etc.).
   within the selected month (`student_fees_list`, filtered client-side
   by status) — a fee due last month that's still unpaid keeps showing up
   under last month, not this one, until it's paid or waived.
+- **Per-class billing is computed upfront, from the schedule — not from
+  actual sessions held.** A `per_class` plan's amount is
+  `per_class_rate * expected_classes_from_schedule(batch_id, period_start,
+  period_end)`, where that function counts the batch's `days_of_week`
+  minus `holidays` over the period — the same weekday-counting approach
+  `generate_sessions()` uses, just counting instead of inserting. This
+  runs at generation time (before the period even starts), so it never
+  waits to see how many sessions actually happened; if the batch's
+  schedule or holidays change mid-period, only the *next* generated
+  period reflects it (`billing_cycle` — monthly/quarterly/annual — still
+  controls how long a period is; per-class only changes the amount
+  formula, not the period length).
 - **A batch-scoped plan doesn't change billing logic.** `fee_plans.batch_id`
   is purely a filter/suggestion for the plan picker — `generate_upcoming_fees()`
   still bills off the explicit `students.fee_plan_id` assignment, so a
@@ -171,6 +198,9 @@ collected some other way (cash, UPI, bank transfer, etc.).
 - No scheduled/automatic reminders — an admin has to click Remind. No
   SMS/WhatsApp/email — reminders are in-app notifications only (toast +
   badge + a link to the parent's Fees page).
+- A per-class plan must be scoped to a batch (enforced by a check
+  constraint) — there's no academy-wide per-class plan, since the rate
+  needs one batch's schedule to price from.
 - A batch can have more than one scoped fee plan (e.g. Monthly and
   Quarterly for the same batch) — there's no limit or "default" concept,
   same as academy-wide plans today.

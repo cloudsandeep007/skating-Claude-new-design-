@@ -7,6 +7,8 @@ export interface AttendanceReportRow {
   late: number
   excused: number
   pct: number | null
+  expected: number
+  makeupOwed: number
 }
 
 export interface FeeReportRow {

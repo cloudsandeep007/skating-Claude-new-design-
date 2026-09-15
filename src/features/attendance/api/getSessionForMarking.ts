@@ -28,9 +28,24 @@ interface RosterRow {
     full_name: string
     photo_url: string | null
     current_level: { name: string } | null
+    fee_plan: { batch_id: string | null } | null
   }
 }
 
+interface BookedRow {
+  student: {
+    id: string
+    full_name: string
+    photo_url: string | null
+    current_level: { name: string } | null
+  }
+}
+
+/** A session's roster is: actively-enrolled students whose current plan
+ * has no batch (legacy/academy-wide, unaffected by the credit system) —
+ * union — actively-enrolled students with an active booking for THIS
+ * session. A batch-scoped-plan student who never booked simply isn't
+ * expected that day. */
 async function fetchMarkingData(sessionId: string): Promise<MarkingData> {
   const { data: session, error } = await supabase
     .from('schedule_sessions')
@@ -40,18 +55,32 @@ async function fetchMarkingData(sessionId: string): Promise<MarkingData> {
     .overrideTypes<SessionRow, { merge: false }>()
   if (error) throw error
 
-  const [editableResult, rosterResult, marksResult] = await Promise.all([
+  const [editableResult, enrolledResult, bookedResult, marksResult] = await Promise.all([
     supabase.rpc('session_is_editable', { p_session_id: sessionId }),
     supabase
       .from('student_batches')
-      .select('student:students(id, full_name, photo_url, current_level:levels(name))')
+      .select(
+        'student:students(id, full_name, photo_url, current_level:levels(name), fee_plan:fee_plans(batch_id))',
+      )
       .eq('batch_id', session.batch_id)
       .eq('status', 'active')
       .overrideTypes<RosterRow[], { merge: false }>(),
+    supabase
+      .from('class_bookings')
+      .select('student:students(id, full_name, photo_url, current_level:levels(name))')
+      .eq('session_id', sessionId)
+      .eq('status', 'booked')
+      .overrideTypes<BookedRow[], { merge: false }>(),
     supabase.from('attendance').select('student_id, status').eq('session_id', sessionId),
   ])
-  if (rosterResult.error) throw rosterResult.error
+  if (enrolledResult.error) throw enrolledResult.error
+  if (bookedResult.error) throw bookedResult.error
   if (marksResult.error) throw marksResult.error
+
+  const legacyRoster = enrolledResult.data.filter((r) => r.student.fee_plan?.batch_id == null)
+  const rosterById = new Map<string, RosterRow['student'] | BookedRow['student']>()
+  for (const r of legacyRoster) rosterById.set(r.student.id, r.student)
+  for (const r of bookedResult.data) rosterById.set(r.student.id, r.student)
 
   const saved: Marks = {}
   for (const row of marksResult.data) saved[row.student_id] = row.status
@@ -72,12 +101,12 @@ async function fetchMarkingData(sessionId: string): Promise<MarkingData> {
         ? session.session_date >= addDays(todayIso(), -1) && session.session_date <= todayIso()
         : editableResult.data,
     },
-    roster: rosterResult.data
-      .map((r) => ({
-        id: r.student.id,
-        fullName: r.student.full_name,
-        photoUrl: r.student.photo_url,
-        levelName: r.student.current_level?.name ?? null,
+    roster: [...rosterById.values()]
+      .map((s) => ({
+        id: s.id,
+        fullName: s.full_name,
+        photoUrl: s.photo_url,
+        levelName: s.current_level?.name ?? null,
       }))
       .sort((a, b) => a.fullName.localeCompare(b.fullName)),
     saved,

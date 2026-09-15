@@ -26,7 +26,14 @@ import { Input } from '@/shared/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/ui/select'
 import { Textarea } from '@/shared/ui/textarea'
 
-import { BILLING_CYCLES, BILLING_CYCLE_LABEL, FeePlanFormSchema, type FeePlanForm } from '../types'
+import {
+  BILLING_CYCLES,
+  BILLING_CYCLE_LABEL,
+  FEE_PRICING_MODES,
+  FEE_PRICING_MODE_LABEL,
+  FeePlanFormSchema,
+  type FeePlanForm,
+} from '../types'
 
 const EMPTY: FeePlanForm = {
   name: '',
@@ -34,6 +41,8 @@ const EMPTY: FeePlanForm = {
   billingCycle: 'monthly',
   description: '',
   batchId: null,
+  pricingMode: 'cycle',
+  perClassRate: null,
 }
 
 interface FeePlanFormDialogProps {
@@ -59,6 +68,7 @@ export function FeePlanFormDialog({
     resolver: zodResolver(FeePlanFormSchema),
     defaultValues: defaultValues ?? EMPTY,
   })
+  const pricingMode = form.watch('pricingMode')
 
   function close() {
     setOpen(false)
@@ -104,31 +114,89 @@ export function FeePlanFormDialog({
                 </FormItem>
               )}
             />
-            <div className="grid grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="amount"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Amount (₹)</FormLabel>
+            <FormField
+              control={form.control}
+              name="pricingMode"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Pricing</FormLabel>
+                  <Select onValueChange={field.onChange} value={field.value}>
                     <FormControl>
-                      <Input
-                        type="number"
-                        step="0.01"
-                        min={0}
-                        name={field.name}
-                        ref={field.ref}
-                        onBlur={field.onBlur}
-                        value={Number.isNaN(field.value) ? '' : field.value}
-                        onChange={(event) => {
-                          field.onChange(event.target.valueAsNumber)
-                        }}
-                      />
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
                     </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+                    <SelectContent>
+                      {FEE_PRICING_MODES.map((m) => (
+                        <SelectItem key={m} value={m}>
+                          {FEE_PRICING_MODE_LABEL[m]}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormDescription>
+                    Cycle amount bills the same total each period. Per class bills a rate times how
+                    many classes the batch's schedule has that period — pick this for a batch billed
+                    by the class instead of a flat fee.
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <div className="grid grid-cols-2 gap-4">
+              {pricingMode === 'per_class' ? (
+                <FormField
+                  control={form.control}
+                  name="perClassRate"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Rate per class (₹)</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="number"
+                          step="0.01"
+                          min={0}
+                          name={field.name}
+                          ref={field.ref}
+                          onBlur={field.onBlur}
+                          value={field.value == null || Number.isNaN(field.value) ? '' : field.value}
+                          onChange={(event) => {
+                            field.onChange(
+                              event.target.value === '' ? null : event.target.valueAsNumber
+                            )
+                          }}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              ) : (
+                <FormField
+                  control={form.control}
+                  name="amount"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Amount (₹)</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="number"
+                          step="0.01"
+                          min={0}
+                          name={field.name}
+                          ref={field.ref}
+                          onBlur={field.onBlur}
+                          value={Number.isNaN(field.value) ? '' : field.value}
+                          onChange={(event) => {
+                            field.onChange(event.target.valueAsNumber)
+                          }}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              )}
               <FormField
                 control={form.control}
                 name="billingCycle"
@@ -159,7 +227,7 @@ export function FeePlanFormDialog({
               name="batchId"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Batch (optional)</FormLabel>
+                  <FormLabel>Batch {pricingMode === 'per_class' ? '' : '(optional)'}</FormLabel>
                   <Select
                     onValueChange={(value) => {
                       field.onChange(value === 'all' ? null : value)
@@ -172,7 +240,9 @@ export function FeePlanFormDialog({
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="all">All batches (academy-wide)</SelectItem>
+                      {pricingMode !== 'per_class' && (
+                        <SelectItem value="all">All batches (academy-wide)</SelectItem>
+                      )}
                       {batches?.map((batch) => (
                         <SelectItem key={batch.id} value={batch.id}>
                           {batch.name}
@@ -181,9 +251,9 @@ export function FeePlanFormDialog({
                     </SelectContent>
                   </Select>
                   <FormDescription>
-                    Scope this plan to one batch — e.g. a cheaper plan for a weekend-only batch.
-                    Leave as "All batches" for a plan any student can be assigned, regardless of
-                    batch.
+                    {pricingMode === 'per_class'
+                      ? "A per-class plan is priced from this batch's weekly schedule, so a batch is required."
+                      : 'Scope this plan to one batch — e.g. a cheaper plan for a weekend-only batch. Leave as "All batches" for a plan any student can be assigned, regardless of batch.'}
                   </FormDescription>
                   <FormMessage />
                 </FormItem>

@@ -58,3 +58,20 @@ export interface AttendanceTotals {
   attended: number
   pct: number | null
 }
+
+export type MakeupCreditStatus = 'pending' | 'fulfilled'
+
+/** A class a student personally missed that owes them a make-up — granted
+ * automatically when a coach marks them absent, cleared by an admin once
+ * they've attended the make-up (or a scheduled one for the whole batch). */
+export interface MakeupCredit {
+  id: string
+  studentId: string
+  reasonSessionId: string
+  reasonDate: string
+  batchName: string
+  status: MakeupCreditStatus
+  grantedAt: string
+  fulfilledAt: string | null
+  notes: string | null
+}

@@ -333,6 +333,58 @@ export type Database = {
           },
         ]
       }
+      class_bookings: {
+        Row: {
+          academy_id: string
+          booked_at: string
+          cancelled_at: string | null
+          id: string
+          session_id: string
+          status: string
+          student_id: string
+        }
+        Insert: {
+          academy_id: string
+          booked_at?: string
+          cancelled_at?: string | null
+          id?: string
+          session_id: string
+          status?: string
+          student_id: string
+        }
+        Update: {
+          academy_id?: string
+          booked_at?: string
+          cancelled_at?: string | null
+          id?: string
+          session_id?: string
+          status?: string
+          student_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "class_bookings_academy_id_fkey"
+            columns: ["academy_id"]
+            isOneToOne: false
+            referencedRelation: "academies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "class_bookings_session_id_academy_id_fkey"
+            columns: ["session_id", "academy_id"]
+            isOneToOne: false
+            referencedRelation: "schedule_sessions"
+            referencedColumns: ["id", "academy_id"]
+          },
+          {
+            foreignKeyName: "class_bookings_student_id_academy_id_fkey"
+            columns: ["student_id", "academy_id"]
+            isOneToOne: false
+            referencedRelation: "students"
+            referencedColumns: ["id", "academy_id"]
+          },
+        ]
+      }
       coaches: {
         Row: {
           academy_id: string
@@ -475,6 +527,8 @@ export type Database = {
           description: string | null
           id: string
           name: string
+          per_class_rate: number | null
+          pricing_mode: Database["public"]["Enums"]["fee_pricing_mode"]
           updated_at: string
         }
         Insert: {
@@ -486,6 +540,8 @@ export type Database = {
           description?: string | null
           id?: string
           name: string
+          per_class_rate?: number | null
+          pricing_mode?: Database["public"]["Enums"]["fee_pricing_mode"]
           updated_at?: string
         }
         Update: {
@@ -497,6 +553,8 @@ export type Database = {
           description?: string | null
           id?: string
           name?: string
+          per_class_rate?: number | null
+          pricing_mode?: Database["public"]["Enums"]["fee_pricing_mode"]
           updated_at?: string
         }
         Relationships: [
@@ -583,6 +641,71 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "academies"
             referencedColumns: ["id"]
+          },
+        ]
+      }
+      makeup_credits: {
+        Row: {
+          academy_id: string
+          fulfilled_at: string | null
+          fulfilled_by: string | null
+          granted_at: string
+          id: string
+          notes: string | null
+          reason_session_id: string
+          status: string
+          student_id: string
+        }
+        Insert: {
+          academy_id: string
+          fulfilled_at?: string | null
+          fulfilled_by?: string | null
+          granted_at?: string
+          id?: string
+          notes?: string | null
+          reason_session_id: string
+          status?: string
+          student_id: string
+        }
+        Update: {
+          academy_id?: string
+          fulfilled_at?: string | null
+          fulfilled_by?: string | null
+          granted_at?: string
+          id?: string
+          notes?: string | null
+          reason_session_id?: string
+          status?: string
+          student_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "makeup_credits_academy_id_fkey"
+            columns: ["academy_id"]
+            isOneToOne: false
+            referencedRelation: "academies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "makeup_credits_fulfilled_by_fkey"
+            columns: ["fulfilled_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "makeup_credits_reason_session_id_academy_id_fkey"
+            columns: ["reason_session_id", "academy_id"]
+            isOneToOne: false
+            referencedRelation: "schedule_sessions"
+            referencedColumns: ["id", "academy_id"]
+          },
+          {
+            foreignKeyName: "makeup_credits_student_id_academy_id_fkey"
+            columns: ["student_id", "academy_id"]
+            isOneToOne: false
+            referencedRelation: "students"
+            referencedColumns: ["id", "academy_id"]
           },
         ]
       }
@@ -813,6 +936,7 @@ export type Database = {
           created_at: string
           end_time: string
           id: string
+          makeup_for_session_id: string | null
           session_date: string
           start_time: string
           status: Database["public"]["Enums"]["session_status"]
@@ -826,6 +950,7 @@ export type Database = {
           created_at?: string
           end_time: string
           id?: string
+          makeup_for_session_id?: string | null
           session_date: string
           start_time: string
           status?: Database["public"]["Enums"]["session_status"]
@@ -839,6 +964,7 @@ export type Database = {
           created_at?: string
           end_time?: string
           id?: string
+          makeup_for_session_id?: string | null
           session_date?: string
           start_time?: string
           status?: Database["public"]["Enums"]["session_status"]
@@ -865,6 +991,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "coaches"
             referencedColumns: ["id", "academy_id"]
+          },
+          {
+            foreignKeyName: "schedule_sessions_makeup_for_session_id_fkey"
+            columns: ["makeup_for_session_id"]
+            isOneToOne: false
+            referencedRelation: "schedule_sessions"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -970,6 +1103,7 @@ export type Database = {
           academy_id: string
           amount: number
           created_at: string
+          credits_granted: number | null
           due_date: string
           fee_plan_id: string | null
           id: string
@@ -985,6 +1119,7 @@ export type Database = {
           academy_id: string
           amount: number
           created_at?: string
+          credits_granted?: number | null
           due_date: string
           fee_plan_id?: string | null
           id?: string
@@ -1000,6 +1135,7 @@ export type Database = {
           academy_id?: string
           amount?: number
           created_at?: string
+          credits_granted?: number | null
           due_date?: string
           fee_plan_id?: string | null
           id?: string
@@ -1290,8 +1426,10 @@ export type Database = {
           attended_sessions: number
           counted_sessions: number
           excused_sessions: number
+          expected_sessions: number
           full_name: string
           late_sessions: number
+          pending_makeup_credits: number
           student_id: string
         }[]
       }
@@ -1304,10 +1442,47 @@ export type Database = {
           enrolled_count: number
         }[]
       }
+      book_class_slot: {
+        Args: { p_session_id: string }
+        Returns: {
+          academy_id: string
+          booked_at: string
+          cancelled_at: string | null
+          id: string
+          session_id: string
+          status: string
+          student_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "class_bookings"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      cancel_class_slot: {
+        Args: { p_session_id: string }
+        Returns: {
+          academy_id: string
+          booked_at: string
+          cancelled_at: string | null
+          id: string
+          session_id: string
+          status: string
+          student_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "class_bookings"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       cancel_session: {
         Args: { p_reason: string; p_session_id: string }
         Returns: undefined
       }
+      class_credit_balance: { Args: { p_student_id: string }; Returns: number }
       coach_activity_report: {
         Args: { p_batch_id?: string; p_from: string; p_to: string }
         Returns: {
@@ -1348,6 +1523,10 @@ export type Database = {
           today_attendance_pct: number
         }[]
       }
+      expected_classes_from_schedule: {
+        Args: { p_batch_id: string; p_from: string; p_to: string }
+        Returns: number
+      }
       fee_collection_report: {
         Args: { p_batch_id?: string; p_from: string; p_to: string }
         Returns: {
@@ -1363,6 +1542,26 @@ export type Database = {
           student_id: string
         }[]
       }
+      fulfill_makeup_credit: {
+        Args: { p_credit_id: string; p_notes?: string }
+        Returns: {
+          academy_id: string
+          fulfilled_at: string | null
+          fulfilled_by: string | null
+          granted_at: string
+          id: string
+          notes: string | null
+          reason_session_id: string
+          status: string
+          student_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "makeup_credits"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       generate_sessions: {
         Args: { p_batch_id: string; p_from: string; p_to: string }
         Returns: {
@@ -1376,6 +1575,7 @@ export type Database = {
           academy_id: string
           amount: number
           created_at: string
+          credits_granted: number | null
           due_date: string
           fee_plan_id: string | null
           id: string
@@ -1488,6 +1688,34 @@ export type Database = {
         Args: { p_marks: Json; p_session_id: string }
         Returns: number
       }
+      schedule_makeup_session: {
+        Args: {
+          p_date: string
+          p_end: string
+          p_original_session_id: string
+          p_start: string
+        }
+        Returns: {
+          academy_id: string
+          batch_id: string
+          cancellation_reason: string | null
+          coach_id: string | null
+          created_at: string
+          end_time: string
+          id: string
+          makeup_for_session_id: string | null
+          session_date: string
+          start_time: string
+          status: Database["public"]["Enums"]["session_status"]
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "schedule_sessions"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       send_fee_reminders: {
         Args: { p_student_fee_ids: string[] }
         Returns: number
@@ -1550,6 +1778,7 @@ export type Database = {
       coach_status: "active" | "inactive"
       enrollment_status: "active" | "inactive"
       error_level: "debug" | "info" | "warning" | "error" | "fatal"
+      fee_pricing_mode: "cycle" | "per_class"
       fee_status: "pending" | "paid" | "overdue" | "waived"
       gender: "male" | "female" | "other"
       parent_relationship: "father" | "mother" | "guardian" | "other"
@@ -1704,6 +1933,7 @@ export const Constants = {
       coach_status: ["active", "inactive"],
       enrollment_status: ["active", "inactive"],
       error_level: ["debug", "info", "warning", "error", "fatal"],
+      fee_pricing_mode: ["cycle", "per_class"],
       fee_status: ["pending", "paid", "overdue", "waived"],
       gender: ["male", "female", "other"],
       parent_relationship: ["father", "mother", "guardian", "other"],
