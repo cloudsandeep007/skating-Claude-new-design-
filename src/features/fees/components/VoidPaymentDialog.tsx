@@ -2,6 +2,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 
+import { formatDate } from '@/shared/lib/format'
 import { Button } from '@/shared/ui/button'
 import {
   Dialog,
@@ -14,59 +15,63 @@ import {
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/shared/ui/form'
 import { Textarea } from '@/shared/ui/textarea'
 
-import { useWaiveFee } from '../api/waive'
+import { useVoidPayment } from '../api/payments'
 import { formatRupees } from '../hooks/feeTone'
-import { WaiveFormSchema, type WaiveForm } from '../types'
+import { VoidPaymentFormSchema, type VoidPaymentForm } from '../types'
 
-export interface WaiveTarget {
-  studentFeeId: string
-  studentName: string
+export interface VoidTarget {
+  paymentId: string
   amount: number
+  paidDate: string
+  receiptNo: string | null
 }
 
-interface WaiveFeeDialogProps {
-  fee: WaiveTarget | null
+interface VoidPaymentDialogProps {
+  payment: VoidTarget | null
   onClose: () => void
 }
 
-/** Controlled dialog, mirroring CancelSessionDialog's shape. The reason is
- * required and is written to audit_logs by the existing audit trigger —
- * no separate logging code needed. */
-export function WaiveFeeDialog({ fee, onClose }: WaiveFeeDialogProps) {
-  const waive = useWaiveFee()
-  const form = useForm<WaiveForm>({
-    resolver: zodResolver(WaiveFormSchema),
+/** A payment is never deleted — voiding keeps it on the record, struck
+ * through with the reason, and it stops counting toward the fee. */
+export function VoidPaymentDialog({ payment, onClose }: VoidPaymentDialogProps) {
+  const voidPayment = useVoidPayment()
+  const form = useForm<VoidPaymentForm>({
+    resolver: zodResolver(VoidPaymentFormSchema),
     defaultValues: { reason: '' },
   })
 
-  async function onSubmit(values: WaiveForm) {
-    if (!fee) return
+  async function onSubmit(values: VoidPaymentForm) {
+    if (!payment) return
     try {
-      await waive.mutateAsync({ studentFeeId: fee.studentFeeId, reason: values.reason })
-      toast.success(`Fee waived for ${fee.studentName}.`)
+      await voidPayment.mutateAsync({ paymentId: payment.paymentId, reason: values.reason })
+      toast.success('Payment voided.')
       form.reset()
       onClose()
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Could not waive this fee.')
+      toast.error(error instanceof Error ? error.message : 'Could not void this payment.')
     }
   }
 
   return (
     <Dialog
-      open={fee !== null}
+      open={payment !== null}
       onOpenChange={(open) => {
         if (!open) onClose()
       }}
     >
       <DialogContent>
-        {fee && (
+        {payment && (
           <>
             <DialogHeader>
               <DialogTitle>
-                Waive {formatRupees(fee.amount)} for {fee.studentName}?
+                Void {formatRupees(payment.amount)}
+                {payment.receiptNo ? ` (${payment.receiptNo})` : ''}?
               </DialogTitle>
               <DialogDescription>
-                This clears what they owe on this fee. The reason is kept on record.
+                Recorded {formatDate(payment.paidDate)}. The payment stays on record, crossed out
+                with your reason, and stops counting toward the fee — whose status is
+                recalculated from what's left. If that would take away credits the skater has
+                already booked with, it will be refused.
               </DialogDescription>
             </DialogHeader>
             <Form {...form}>
@@ -85,7 +90,7 @@ export function WaiveFeeDialog({ fee, onClose }: WaiveFeeDialogProps) {
                       <FormControl>
                         <Textarea
                           rows={3}
-                          placeholder="Sibling discount, financial hardship, academy error…"
+                          placeholder="Entered on the wrong skater, cheque bounced, duplicate entry…"
                           {...field}
                         />
                       </FormControl>
@@ -95,10 +100,10 @@ export function WaiveFeeDialog({ fee, onClose }: WaiveFeeDialogProps) {
                 />
                 <DialogFooter>
                   <Button type="button" variant="outline" onClick={onClose}>
-                    Keep fee
+                    Keep it
                   </Button>
-                  <Button type="submit" variant="destructive" disabled={waive.isPending}>
-                    {waive.isPending ? 'Waiving…' : 'Waive fee'}
+                  <Button type="submit" variant="destructive" disabled={voidPayment.isPending}>
+                    {voidPayment.isPending ? 'Voiding…' : 'Void payment'}
                   </Button>
                 </DialogFooter>
               </form>

@@ -21,10 +21,18 @@ npm run test:e2e
 ```
 
 `npm run test:e2e` needs `.env` filled in with a real Supabase project
-that has `supabase/seed.sql` applied — it logs in as each of the four
-seeded roles and checks it lands on the right home screen. If port 5173
-is already taken by something else on your machine, run
-`PORT=5183 npm run test:e2e` instead (any free port works).
+that has `supabase/seed.sql` applied. It logs in as each of the four
+seeded roles and checks it lands on the right home screen
+(`auth.spec.ts`), and — `payments.spec.ts` — drives the payment ledger
+through the real admin UI: record a payment, read back its receipt
+number, void it with a reason, and see the fee return to unpaid. That
+test **writes to the project it's pointed at**: on first run it creates
+a fee plan "E2E Monthly" and a skater "E2E Payments Skater" (enrolled in
+the first active batch), and every run leaves that skater with one
+unpaid fee plus one more voided payment in its history. Nothing else is
+touched. Don't point it at a project whose data you can't afford a test
+skater in. If port 5173 is already taken by something else on your
+machine, run `PORT=5183 npm run test:e2e` instead (any free port works).
 
 ## Continuous integration
 
@@ -206,6 +214,11 @@ when a key is absent:
   this many days before the current one ends.
 - `fee_grace_days` (default `5`) — a fee is due this many days after its
   period starts (or after the day it was generated, if that's later).
+- `receipt_prefix` (default: the first four letters/digits of the academy
+  name, upper-cased — "PRSA") — the start of every receipt number,
+  e.g. `PRSA-2026-000012`. Change it before the first payment of a year
+  if you can; changing it later is harmless but makes that year's
+  receipts look like two series.
 
 To change them, run in the SQL Editor (merge with `||` so the timezone
 and any other keys are kept — never replace the whole object):

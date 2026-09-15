@@ -822,39 +822,54 @@ export type Database = {
           amount: number
           created_at: string
           id: string
+          idempotency_key: string | null
           method: Database["public"]["Enums"]["payment_method"]
           notes: string | null
           paid_date: string
+          receipt_no: string | null
           recorded_by: string | null
           reference: string | null
           student_fee_id: string
           updated_at: string
+          void_reason: string | null
+          voided_at: string | null
+          voided_by: string | null
         }
         Insert: {
           academy_id: string
           amount: number
           created_at?: string
           id?: string
+          idempotency_key?: string | null
           method?: Database["public"]["Enums"]["payment_method"]
           notes?: string | null
           paid_date?: string
+          receipt_no?: string | null
           recorded_by?: string | null
           reference?: string | null
           student_fee_id: string
           updated_at?: string
+          void_reason?: string | null
+          voided_at?: string | null
+          voided_by?: string | null
         }
         Update: {
           academy_id?: string
           amount?: number
           created_at?: string
           id?: string
+          idempotency_key?: string | null
           method?: Database["public"]["Enums"]["payment_method"]
           notes?: string | null
           paid_date?: string
+          receipt_no?: string | null
           recorded_by?: string | null
           reference?: string | null
           student_fee_id?: string
           updated_at?: string
+          void_reason?: string | null
+          voided_at?: string | null
+          voided_by?: string | null
         }
         Relationships: [
           {
@@ -877,6 +892,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "student_fees"
             referencedColumns: ["id", "academy_id"]
+          },
+          {
+            foreignKeyName: "payments_voided_by_fkey"
+            columns: ["voided_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -920,6 +942,32 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "profiles_academy_id_fkey"
+            columns: ["academy_id"]
+            isOneToOne: false
+            referencedRelation: "academies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      receipt_counters: {
+        Row: {
+          academy_id: string
+          last_no: number
+          year: number
+        }
+        Insert: {
+          academy_id: string
+          last_no?: number
+          year: number
+        }
+        Update: {
+          academy_id?: string
+          last_no?: number
+          year?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "receipt_counters_academy_id_fkey"
             columns: ["academy_id"]
             isOneToOne: false
             referencedRelation: "academies"
@@ -1408,8 +1456,9 @@ export type Database = {
       }
     }
     Functions: {
+      academy_today: { Args: { p_academy_id: string }; Returns: string }
       assert_credits_not_negative: {
-        Args: { p_action: string; p_student_id: string }
+        Args: { p_action: string; p_before: number; p_student_id: string }
         Returns: undefined
       }
       at_risk_students_for: {
@@ -1543,7 +1592,6 @@ export type Database = {
           today_attendance_pct: number
         }[]
       }
-      delete_payment: { Args: { p_payment_id: string }; Returns: undefined }
       delete_student_fee: { Args: { p_fee_id: string }; Returns: undefined }
       expected_classes_from_schedule: {
         Args: { p_batch_id: string; p_from: string; p_to: string }
@@ -1564,6 +1612,7 @@ export type Database = {
           student_id: string
         }[]
       }
+      fee_paid_total: { Args: { p_fee_id: string }; Returns: number }
       fulfill_makeup_credit: {
         Args: { p_credit_id: string; p_notes?: string }
         Returns: {
@@ -1678,6 +1727,7 @@ export type Database = {
       record_payment: {
         Args: {
           p_amount: number
+          p_idempotency_key?: string
           p_method?: Database["public"]["Enums"]["payment_method"]
           p_notes?: string
           p_paid_date?: string
@@ -1689,13 +1739,18 @@ export type Database = {
           amount: number
           created_at: string
           id: string
+          idempotency_key: string | null
           method: Database["public"]["Enums"]["payment_method"]
           notes: string | null
           paid_date: string
+          receipt_no: string | null
           recorded_by: string | null
           reference: string | null
           student_fee_id: string
           updated_at: string
+          void_reason: string | null
+          voided_at: string | null
+          voided_by: string | null
         }
         SetofOptions: {
           from: "*"
@@ -1704,6 +1759,7 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      rederive_fee_status: { Args: { p_fee_id: string }; Returns: undefined }
       reorder_levels: { Args: { p_ids: string[] }; Returns: undefined }
       reorder_skills: {
         Args: { p_ids: string[]; p_level_id: string }
@@ -1792,6 +1848,58 @@ export type Database = {
           skills_in_level: number
           student_id: string
         }[]
+      }
+      void_payment: {
+        Args: { p_payment_id: string; p_reason: string }
+        Returns: {
+          academy_id: string
+          amount: number
+          created_at: string
+          id: string
+          idempotency_key: string | null
+          method: Database["public"]["Enums"]["payment_method"]
+          notes: string | null
+          paid_date: string
+          receipt_no: string | null
+          recorded_by: string | null
+          reference: string | null
+          student_fee_id: string
+          updated_at: string
+          void_reason: string | null
+          voided_at: string | null
+          voided_by: string | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "payments"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      waive_fee: {
+        Args: { p_fee_id: string; p_reason: string }
+        Returns: {
+          academy_id: string
+          amount: number
+          created_at: string
+          credits_granted: number | null
+          due_date: string
+          fee_plan_id: string | null
+          id: string
+          last_reminded_at: string | null
+          period_end: string
+          period_start: string
+          status: Database["public"]["Enums"]["fee_status"]
+          student_id: string
+          updated_at: string
+          waived_reason: string | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "student_fees"
+          isOneToOne: true
+          isSetofReturn: false
+        }
       }
     }
     Enums: {

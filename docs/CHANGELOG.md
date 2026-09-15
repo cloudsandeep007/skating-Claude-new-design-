@@ -5,6 +5,43 @@ non-technical person can follow it. Newest first.
 
 ---
 
+## 2026-09-15 — Payments & credits audit, Phase 1: an immutable payment ledger
+
+Every rupee ever recorded now stays visible, with its history, forever.
+
+- **Payments are voided, never deleted.** The trash icon on a payment
+  now opens a "Void" dialog that asks for a reason. The payment stays on
+  the skater's Fees tab, crossed out, with the reason under it — and
+  stops counting toward the fee, whose status and balance recalculate on
+  their own. Every total in the app (Collected this month, balances,
+  reminders, reports) ignores voided payments.
+- **Every payment gets a receipt number** — `PRSA-2026-000001`,
+  `-000002`, … per academy, per year, shown on the payment line and in
+  the confirmation. The prefix comes from the academy name (or a
+  `receipt_prefix` setting).
+- **A retried request can't double-record.** If the app sends the same
+  "Record payment" twice (a lost response on bad Wi-Fi, then a retry),
+  the second one gets back the payment already recorded instead of
+  creating another.
+- **You can't record more than what's owed.** The amount field is capped
+  at the balance, and the database refuses anything over it, or a date
+  in the future, or a payment on a fee that's already paid.
+- **A fee's status can't be typed in any more.** Paid / Pending /
+  Overdue / Waived are now derived by the database from what's actually
+  been paid. A raw edit — from the app, a script, or the Supabase table
+  editor — is refused. Waiving goes through its own function with the
+  same reason requirement as before.
+- **Admins can no longer edit or delete payment rows directly** — only
+  the record and void actions can write to them.
+- **"Overdue" now flips at midnight in the academy's own timezone**, not
+  the server's.
+- **A period with any payment history can't be deleted**, even if every
+  payment on it is voided — history is history. Void a wrong payment
+  instead; the balance fixes itself.
+- **New end-to-end test** (`tests/e2e/payments.spec.ts`) drives the real
+  form: record → receipt → void → status back to pending, on a
+  dedicated "E2E Payments Skater" it creates and resets for itself.
+
 ## 2026-09-15 — Payments & credits audit, Phase 0: nothing loses money or goes negative
 
 A full audit of the fees, payments and class-credit system found four

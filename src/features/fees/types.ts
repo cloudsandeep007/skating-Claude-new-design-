@@ -89,6 +89,11 @@ export interface PaymentRecord {
   reference: string | null
   notes: string | null
   recordedByName: string | null
+  /** Per-academy, per-year sequential number, e.g. PRSA-2026-000012. */
+  receiptNo: string | null
+  /** A voided payment stays on record but counts for nothing. */
+  voidedAt: string | null
+  voidReason: string | null
 }
 
 export interface StudentFeeWithPayments {
@@ -138,3 +143,8 @@ export const WaiveFormSchema = z.object({
   reason: z.string().min(1, 'A reason is required to waive a fee'),
 })
 export type WaiveForm = z.infer<typeof WaiveFormSchema>
+
+export const VoidPaymentFormSchema = z.object({
+  reason: z.string().trim().min(1, 'A reason is required to void a payment'),
+})
+export type VoidPaymentForm = z.infer<typeof VoidPaymentFormSchema>

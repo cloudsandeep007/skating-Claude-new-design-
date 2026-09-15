@@ -17,6 +17,68 @@ Format:
 
 ---
 
+## 2026-09-15 — Payments are an append-only ledger; fee status is derived, never typed
+
+**Decision:** (Audit Phase 1, migration 0020.) `payments` rows are never
+updated or deleted by anyone: a mistake is reversed by `void_payment()`
+(sets `voided_at / voided_by / void_reason`), and every sum in the system
+goes through one function, `fee_paid_total(fee)`, which ignores voided
+rows. `record_payment()` is idempotent on a client-supplied
+`idempotency_key`, caps the amount at the fee's balance, refuses future
+dates, and mints a per-academy per-year `receipt_no`. Admins' RLS on
+`payments` is reduced to `select`; both functions are `SECURITY DEFINER`
+with an explicit "admin of this academy" check. A `BEFORE UPDATE`
+trigger on `student_fees` refuses any change to `status`, `amount`,
+`credits_granted` or `waived_reason` unless a transaction-local flag
+(`app.fee_write`) was set by one of the known functions
+(`rederive_fee_status`, `waive_fee`, `mark_fees_overdue`,
+`recompute_open_fees_for_plan`).
+
+**Options considered:**
+- *Keep hard deletes but log them* (the 0016/0019 state) — rejected:
+  `audit_logs` has no UI and never will be the way a parent dispute or a
+  month-end reconciliation gets answered; the ledger has to be readable
+  from the payments table itself.
+- *A separate `payment_reversals` table* (a negative row per reversal) —
+  rejected for now: correct in principle, but every consumer would need
+  a join, and the UI would have to pair rows up. Marking the row voided
+  keeps one row per real-world payment and makes "struck through with a
+  reason" trivial to render. Revisit if refunds (money going *back*)
+  are ever built — those are a genuine new row, not a void.
+- *Idempotency by content* (same fee + amount + date within N seconds)
+  — rejected: a parent genuinely can pay ₹500 twice in a minute. A key
+  the client generates when the form opens is unambiguous.
+- *Cap payments at balance vs. accept overpayment as advance* — cap
+  chosen for Phase 1; a family advance balance is Phase 3 work and
+  needs its own UI, and until then an "overpayment" was just money the
+  system forgot about.
+- *Status guard as a trigger with a session flag vs. revoking UPDATE on
+  the columns* — trigger chosen: column-level `REVOKE` doesn't work
+  through RLS-policy-based access the way this app is set up (admins
+  hold table-level UPDATE via `student_fees_admin_all` for other
+  columns like `last_reminded_at`), and the flag pattern is one line in
+  each legitimate writer.
+- *Receipt numbers as a sequence vs. a counter table* — counter table
+  `(academy_id, year)` with `INSERT … ON CONFLICT … RETURNING`: one
+  atomic statement, per-academy and per-year by construction, no
+  dynamic-SQL sequence names.
+
+**Why:** These are the audit's invariants I-2 (status is derived), I-3
+(a payment is written once), I-4 (recorded once) and part of I-8 (every
+change has an actor and reason). Together they mean the payments table
+can be trusted as the book of record — which is also exactly what an
+online-payment webhook will need (Phase 4), so nothing here is throwaway.
+
+**Trade-offs:** An admin who used to "fix" a payment by deleting and
+re-entering now voids and re-enters — one more click, one reason
+typed, and a permanent crossed-out line. A period that ever had a
+payment (even voided) can't be deleted; that's intended. `record_payment`
+and `void_payment` being `SECURITY DEFINER` means their own permission
+check *is* the security boundary — the check is the first thing in each
+and is covered by the e2e test. The Edge Function is unaffected (it
+calls `generate_upcoming_fees` / `mark_fees_overdue`, which set the flag
+themselves).
+
 ## 2026-09-15 — Billing periods: continue from the last period on any plan; stub-then-align; generate ahead with grace
 
 **Decision:** Three linked rules in `generate_upcoming_fees()` (migration

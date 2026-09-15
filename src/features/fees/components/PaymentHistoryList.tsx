@@ -1,4 +1,4 @@
-import { Receipt, Trash2 } from 'lucide-react'
+import { Ban, Receipt, Trash2 } from 'lucide-react'
 import { useState } from 'react'
 import { toast } from 'sonner'
 
@@ -20,11 +20,12 @@ import { EmptyState } from '@/shared/ui/EmptyState'
 import { Skeleton } from '@/shared/ui/skeleton'
 import { StatusBadge } from '@/shared/ui/StatusBadge'
 
-import { useDeleteFee, useDeletePayment, useStudentFees } from '../api/payments'
-import { canWaive, remainingBalance } from '../hooks/feeMath'
+import { useDeleteFee, useStudentFees } from '../api/payments'
+import { canWaive, paidTotal, remainingBalance } from '../hooks/feeMath'
 import { feeStatusLabel, feeStatusTone, formatRupees } from '../hooks/feeTone'
 import { PAYMENT_METHOD_LABEL } from '../types'
 import { RecordPaymentDialog, type PaymentTarget } from './RecordPaymentDialog'
+import { VoidPaymentDialog, type VoidTarget } from './VoidPaymentDialog'
 import { WaiveFeeDialog, type WaiveTarget } from './WaiveFeeDialog'
 
 interface PaymentHistoryListProps {
@@ -46,7 +47,7 @@ export function PaymentHistoryList({
   const { data: fees, isLoading, isError, refetch } = useStudentFees(studentId)
   const [payTarget, setPayTarget] = useState<PaymentTarget | null>(null)
   const [waiveTarget, setWaiveTarget] = useState<WaiveTarget | null>(null)
-  const deletePayment = useDeletePayment()
+  const [voidTarget, setVoidTarget] = useState<VoidTarget | null>(null)
   const deleteFee = useDeleteFee()
 
   if (isError) {
@@ -92,7 +93,7 @@ export function PaymentHistoryList({
   return (
     <ul className="space-y-3">
       {fees.map((fee) => {
-        const paid = fee.payments.reduce((sum, p) => sum + p.amount, 0)
+        const paid = paidTotal(fee.payments)
         const balance = remainingBalance(fee.amount, paid)
         return (
           <li key={fee.id} className="rounded-lg border bg-card p-3.5 shadow-sm">
@@ -175,7 +176,7 @@ export function PaymentHistoryList({
                         {formatDate(fee.periodStart)} – {formatDate(fee.periodEnd)},{' '}
                         {formatRupees(fee.amount)}.{' '}
                         {fee.payments.length > 0
-                          ? `It has ${fee.payments.length} payment${fee.payments.length === 1 ? '' : 's'} recorded (${formatRupees(paid)}). Money that was received is never removed as a side effect — delete ${fee.payments.length === 1 ? 'that payment' : 'each payment'} first, then the period.`
+                          ? `It has payment history (${fee.payments.length} ${fee.payments.length === 1 ? 'entry' : 'entries'}, including any voided). A period with payments on record is kept as history — void a wrong payment instead, and the fee's status and balance recalculate on their own.`
                           : "This can't be undone."}
                       </AlertDialogDescription>
                     </AlertDialogHeader>
@@ -211,72 +212,74 @@ export function PaymentHistoryList({
 
             {fee.payments.length > 0 && (
               <ul className="mt-3 space-y-1.5 border-t pt-3">
-                {fee.payments.map((p) => (
-                  <li key={p.id} className="flex items-center gap-2.5 text-sm">
-                    <Receipt className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
-                    <span className="font-semibold">{formatRupees(p.amount)}</span>
-                    <span className="text-muted-foreground">
-                      {formatDate(p.paidDate)} · {PAYMENT_METHOD_LABEL[p.method]}
-                      {p.reference && ` · ${p.reference}`}
-                    </span>
-                    {p.recordedByName && (
-                      <span
-                        className={cn(
-                          'shrink-0 text-xs text-muted-foreground',
-                          !canManage && 'ml-auto',
+                {fee.payments.map((p) => {
+                  const voided = p.voidedAt !== null
+                  return (
+                    <li key={p.id} className="text-sm">
+                      <div className="flex items-center gap-2.5">
+                        {voided ? (
+                          <Ban className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+                        ) : (
+                          <Receipt className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
                         )}
-                      >
-                        by {p.recordedByName}
-                      </span>
-                    )}
-                    {canManage && (
-                      <AlertDialog>
-                        <AlertDialogTrigger asChild>
+                        <span
+                          className={cn(
+                            'font-semibold',
+                            voided && 'text-muted-foreground line-through',
+                          )}
+                        >
+                          {formatRupees(p.amount)}
+                        </span>
+                        <span className={cn('text-muted-foreground', voided && 'line-through')}>
+                          {formatDate(p.paidDate)} · {PAYMENT_METHOD_LABEL[p.method]}
+                          {p.reference && ` · ${p.reference}`}
+                        </span>
+                        {p.receiptNo && (
+                          <span
+                            className={cn(
+                              'shrink-0 font-mono text-[11px] text-muted-foreground',
+                              voided && 'line-through',
+                            )}
+                          >
+                            {p.receiptNo}
+                          </span>
+                        )}
+                        {p.recordedByName && (
+                          <span
+                            className={cn(
+                              'shrink-0 text-xs text-muted-foreground',
+                              (!canManage || voided) && 'ml-auto',
+                            )}
+                          >
+                            by {p.recordedByName}
+                          </span>
+                        )}
+                        {canManage && !voided && (
                           <button
                             type="button"
-                            aria-label="Delete payment"
+                            aria-label="Void payment"
                             className="ml-auto shrink-0 text-muted-foreground hover:text-brand-400"
+                            onClick={() => {
+                              setVoidTarget({
+                                paymentId: p.id,
+                                amount: p.amount,
+                                paidDate: p.paidDate,
+                                receiptNo: p.receiptNo,
+                              })
+                            }}
                           >
                             <Trash2 className="h-3.5 w-3.5" />
                           </button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                          <AlertDialogHeader>
-                            <AlertDialogTitle>Delete this payment?</AlertDialogTitle>
-                            <AlertDialogDescription>
-                              {formatRupees(p.amount)} recorded {formatDate(p.paidDate)} via{' '}
-                              {PAYMENT_METHOD_LABEL[p.method]}. The fee's status will be
-                              recalculated from what's left. If this would take away credits
-                              the skater has already booked with, it will be refused. This
-                              can't be undone.
-                            </AlertDialogDescription>
-                          </AlertDialogHeader>
-                          <AlertDialogFooter>
-                            <AlertDialogCancel>Keep it</AlertDialogCancel>
-                            <AlertDialogAction
-                              onClick={() => {
-                                deletePayment.mutate(p.id, {
-                                  onSuccess: () => {
-                                    toast.success('Payment deleted.')
-                                  },
-                                  onError: (error) => {
-                                    toast.error(
-                                      error instanceof Error
-                                        ? error.message
-                                        : 'Could not delete this payment.',
-                                    )
-                                  },
-                                })
-                              }}
-                            >
-                              Delete payment
-                            </AlertDialogAction>
-                          </AlertDialogFooter>
-                        </AlertDialogContent>
-                      </AlertDialog>
-                    )}
-                  </li>
-                ))}
+                        )}
+                      </div>
+                      {voided && (
+                        <div className="ml-6 text-xs text-muted-foreground">
+                          Voided — {p.voidReason}
+                        </div>
+                      )}
+                    </li>
+                  )
+                })}
               </ul>
             )}
           </li>
@@ -295,6 +298,12 @@ export function PaymentHistoryList({
             fee={waiveTarget}
             onClose={() => {
               setWaiveTarget(null)
+            }}
+          />
+          <VoidPaymentDialog
+            payment={voidTarget}
+            onClose={() => {
+              setVoidTarget(null)
             }}
           />
         </>

@@ -474,27 +474,63 @@ Indexes: `(academy_id, status)`, `(academy_id, due_date)`, `(academy_id, period_
 rows whenever the plan's amount/rate/pricing_mode/batch, the batch's
 `days_of_week`, or an academy holiday changes (`0018_sync_open_fees_with_plan_and_schedule.sql`).
 See DECISIONS, "Unpaid fees stay live-synced to plan/batch/holiday changes".
+**Trigger:** `student_fees_guard` (`BEFORE UPDATE`, `0020_phase1_immutable_payment_ledger.sql`)
+refuses any change to `status`, `amount`, `credits_granted` or
+`waived_reason` unless the transaction-local setting `app.fee_write` is
+`'on'` — which only `rederive_fee_status()`, `waive_fee()`,
+`mark_fees_overdue()` and `recompute_open_fees_for_plan()` set. Status is
+derived from payments, never typed; a raw `.update({status})` from the
+browser or the table editor gets "A fee's status, amount and credits can
+only change by recording, voiding or waiving a payment…".
 Audit: insert/update/delete → `audit_logs` — waiving (status + waived_reason in one update) is logged automatically this way.
-**RLS:** super_admin all · academy_admin all in academy · parent select own children. Coaches: none.
+**RLS:** super_admin all · academy_admin all in academy (subject to the guard trigger) · parent select own children. Coaches: none.
 
-### `payments`
+### `payments` — an append-only ledger
 
-| Column         | Type           | Nullable | Default           | Notes                                       |
-| -------------- | -------------- | -------- | ----------------- | ------------------------------------------- |
-| id             | uuid           | no       | gen_random_uuid() |                                             |
-| academy_id     | uuid           | no       |                   | FK → academies cascade                      |
-| student_fee_id | uuid           | no       |                   | composite FK → student_fees **restrict**    |
-| amount         | numeric(10,2)  | no       |                   | > 0; may be less than the fee (partial)     |
-| paid_date      | date           | no       | current_date      |                                             |
-| method         | payment_method | no       | 'cash'            |                                             |
-| reference      | text           | yes      |                   | UPI ref, cheque no., etc.                   |
-| recorded_by    | uuid           | yes      |                   | FK → profiles set null                      |
-| notes          | text           | yes      |                   |                                             |
-| created_at / updated_at | timestamptz | no  | now()             | trigger                                     |
+A row is written once by `record_payment()` and never updated or deleted
+afterwards, except to be **voided** by `void_payment()`. A voided row stays
+(struck through in the UI, with its reason) and counts for nothing —
+`fee_paid_total()` is the one place that sums a fee's payments, and every
+balance, total and report goes through it.
 
-Indexes: `(academy_id, paid_date)`, `(student_fee_id)`, `(recorded_by)`.
+| Column          | Type           | Nullable | Default           | Notes                                       |
+| --------------- | -------------- | -------- | ----------------- | ------------------------------------------- |
+| id              | uuid           | no       | gen_random_uuid() |                                             |
+| academy_id      | uuid           | no       |                   | FK → academies cascade                      |
+| student_fee_id  | uuid           | no       |                   | composite FK → student_fees **restrict** — a fee with payment history (voided included) can't be deleted |
+| amount          | numeric(10,2)  | no       |                   | > 0; never more than the fee's balance at the time (`record_payment` refuses) |
+| paid_date       | date           | no       | current_date      | ≤ the academy's today (`record_payment` refuses a future date) |
+| method          | payment_method | no       | 'cash'            |                                             |
+| reference       | text           | yes      |                   | UPI ref, cheque no., etc.                   |
+| recorded_by     | uuid           | yes      |                   | FK → profiles set null                      |
+| notes           | text           | yes      |                   |                                             |
+| receipt_no      | text           | yes      |                   | `0020` — `<prefix>-<year>-<000001>`, minted by `record_payment` from `receipt_counters`; unique per academy. Prefix = `academies.settings->>'receipt_prefix'`, else the first 4 alphanumerics of the academy name upper-cased ("PRSA"), else `RCPT`. |
+| idempotency_key | uuid           | yes      |                   | `0020` — client-generated per opening of the payment form; unique per academy. `record_payment` returns the existing row for a repeated key instead of inserting. |
+| voided_at       | timestamptz    | yes      |                   | `0020` — set by `void_payment`; non-null = counts for nothing |
+| voided_by       | uuid           | yes      |                   | `0020` — FK → profiles set null              |
+| void_reason     | text           | yes      |                   | `0020` — required when voided (check constraint) |
+| created_at / updated_at | timestamptz | no   | now()             | trigger                                     |
+
+Indexes: `(academy_id, paid_date)`, `(student_fee_id)`, `(recorded_by)`,
+partial `(student_fee_id) where voided_at is null`, unique partial
+`(academy_id, idempotency_key)` and `(academy_id, receipt_no)`.
 Audit: insert/update/delete → `audit_logs`.
-**RLS:** super_admin all · academy_admin all in academy · parent select payments on own children's fees.
+**RLS (since 0020):** super_admin all · academy_admin **select only** in
+academy · parent select payments on own children's fees. All writes go
+through `record_payment()` / `void_payment()` (both `SECURITY DEFINER`
+with their own admin-of-this-academy check). Because `payments` now has
+two FKs to `profiles`, a PostgREST embed must name the one it means:
+`recorded_by:profiles!payments_recorded_by_fkey(full_name)`.
+
+### `receipt_counters` — per-academy, per-year receipt numbering
+
+| Column     | Type    | Nullable | Default | Notes                                   |
+| ---------- | ------- | -------- | ------- | --------------------------------------- |
+| academy_id | uuid    | no       |         | FK → academies cascade; PK with `year`  |
+| year       | integer | no       |         |                                         |
+| last_no    | integer | no       | 0       | bumped atomically by `record_payment` (`insert … on conflict … returning`) |
+
+`0020`. RLS enabled with **no policies** — nothing but `record_payment()` (which runs as the owner) can touch it.
 
 ### `announcements`
 
@@ -713,10 +749,14 @@ from `0001_initial_schema.sql`. `students.fee_plan_id` and
 | Function                                | Does                                                                                                                                                                                                          | Returns                                     |
 | ----------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------- |
 | `generate_upcoming_fees(p_academy_id?)`   | `SECURITY INVOKER`. For every active student on a fee plan: inserts one `student_fees` row for the coming period, `status = 'pending'`. Rules as of `0019_phase0_billing_and_credit_integrity.sql`: **anchor** — `last_period_end` is `max(period_end)` over *all* the student's fees (any plan, incl. null `fee_plan_id`), and `period_start = coalesce(last_period_end + 1, joined_date)`, never earlier. **Length** — if `period_start` is the 1st, a full `billing_cycle` (Oct 1 – Oct 31 / Dec 31 / next Sep 30); otherwise a *stub* to the end of that month (Sep 15 – Sep 30), after which everything is calendar-aligned. **Eligibility** — generated when `last_period_end < current_date + lead_days` (`academies.settings->>'fee_generate_lead_days'`, default 7), i.e. up to a week before the current period ends. **Due date** — `greatest(period_start, current_date) + grace_days` (`settings->>'fee_grace_days'`, default 5), so a fee is never overdue on creation. **Amount** — `per_class_rate × expected_classes_from_schedule(...)` for `per_class` (pro-rata by construction); `fp.amount` for a full `cycle` period; `round(fp.amount / months_in_cycle × days_covered / days_in_month, 2)` for a cycle stub. `credits_granted` = `expected_classes_from_schedule` for any batch-scoped plan, else null. Called two ways: an admin's "Generate now" passes their own `academy_id` (RLS scopes the insert); the scheduled Edge Function calls it with no argument under the service-role key and covers every academy. Mirrored under unit test in `src/features/fees/hooks/feeMath.ts`. | one row per fee created                      |
-| `mark_fees_overdue()`                     | `SECURITY INVOKER`. Flips every `pending` fee whose `due_date` has passed to `overdue`. Same academy-scoping story as above — an academy admin could call it for their own academy, but only the scheduled function actually does (see RUNBOOK). | count of fees flipped                        |
-| `record_payment(fee, amount, date?, method?, reference?, notes?)` | `SECURITY INVOKER`. Inserts one `payments` row, then flips the fee to `paid` if the sum of its payments now covers the full amount — otherwise leaves the status exactly as it was, which is how a partial payment works without a separate status. Refuses a waived fee or a non-positive amount. | the inserted payment row                     |
-| `delete_payment(p_payment_id)` (`0016`, guarded `0019`) | `SECURITY INVOKER`, admin-only via `payments_admin_all`. Deletes the payment, then recomputes the fee's status from what's left (`paid` if still fully covered, else `overdue`/`pending` by due date). No-ops the status on a `waived` fee. Then calls `assert_credits_not_negative()` — if the skater's credit balance would drop below zero (and below what it was), the whole thing rolls back with "cancel N upcoming bookings first". (0016's version failed on every call — untyped `CASE` branches vs. the enum — fixed in 0019.) | void |
-| `delete_student_fee(p_fee_id)` (`0016`, guarded `0019`) | `SECURITY INVOKER`, admin-only. Refuses if **any** payment exists on the period ("delete it/them first") — money received is never removed as a side effect. Otherwise deletes the period row, then `assert_credits_not_negative()` as above (a waived period grants credits, so deleting one can strand bookings). For re-generating a mis-priced, unpaid period. | void |
+| `mark_fees_overdue()`                     | `SECURITY INVOKER`. Flips every `pending` fee whose `due_date` is before `academy_today(academy_id)` (each academy's own midnight, since `0020`) to `overdue`, under the `app.fee_write` flag. Same academy-scoping story as above — an academy admin could call it for their own academy, but only the scheduled function actually does (see RUNBOOK). | count of fees flipped                        |
+| `record_payment(fee, amount, date?, method?, reference?, notes?, idempotency_key?)` (rewritten `0020`) | `SECURITY DEFINER`; first checks the caller is a super admin or an academy admin of the fee's academy. If `idempotency_key` matches an existing payment in the academy, returns that row and does nothing else (a concurrent duplicate that loses the unique-index race is handled the same way). Otherwise refuses a waived fee, a non-positive amount, a `paid_date` after `academy_today()`, a fee that's already fully paid, or an amount over `amount − fee_paid_total()`. Mints `receipt_no` from `receipt_counters`, inserts, then `rederive_fee_status()`. | the payment row (with `receipt_no`) |
+| `void_payment(p_payment_id, p_reason)` (`0020`, replaces `delete_payment`) | `SECURITY DEFINER`, same admin check. Requires a reason; refuses an already-voided payment. Sets `voided_at/voided_by/void_reason`, re-derives the fee's status from the remaining live payments, then `assert_credits_not_negative()` — if the void would strand credits the skater has already booked with, the whole thing rolls back with "cancel N upcoming bookings first". | the voided payment row |
+| `waive_fee(p_fee_id, p_reason)` (`0020`) | `SECURITY INVOKER` (RLS scopes it). Only a `pending`/`overdue` fee; reason required. Sets `status = 'waived'` + `waived_reason` under the `app.fee_write` flag. The UI's Waive dialog calls this instead of updating the table. | the fee row |
+| `fee_paid_total(p_fee_id)` (`0020`) | `stable` SQL. `sum(amount)` of the fee's payments `where voided_at is null`. Used by `record_payment`, `rederive_fee_status`, `recompute_open_fees_for_plan`, `student_fees_list`, `fee_collection_report`, `dashboard_stat_cards`, `send_fee_reminders` and the `monthly_collection_totals` view — the one definition of "paid so far". | numeric |
+| `rederive_fee_status(p_fee_id)` (`0020`) | Sets `status` to `paid` if `fee_paid_total ≥ amount`, else `overdue` if `due_date < academy_today()`, else `pending`; leaves a `waived` fee alone. Sets the `app.fee_write` flag. Not called from the UI. | void |
+| `academy_today(p_academy_id)` (`0020`) | `stable` SQL. `now()` in `academies.settings->>'timezone'` (default UTC) as a date. Used by `record_payment` (future-date check), `rederive_fee_status`, `recompute_open_fees_for_plan` and `mark_fees_overdue`, so "overdue" flips at the academy's midnight. | date |
+| `delete_student_fee(p_fee_id)` (`0016`, guarded `0019`/`0020`) | `SECURITY INVOKER`, admin-only. Refuses if **any** payment row exists on the period — voided ones included ("has payment history … can't be deleted"); the FK is `on delete restrict` anyway. Otherwise deletes the period row, then `assert_credits_not_negative()` (a waived period grants credits, so deleting one can strand bookings). For re-generating a mis-priced, unpaid period. | void |
 | `assert_credits_not_negative(p_student_id, p_action, p_before)` (`0019`) | Helper for the two above. Raises `'<action> would leave this skater N classes short of credits — cancel N upcoming bookings first'` when `class_credit_balance()` is now negative **and** lower than `p_before`. The second condition lets a skater whose balance was already negative (from before this guard existed) still have unrelated periods cleaned up. Interim form of audit invariant I-1; the absolute version comes with the credit ledger. | void |
 | `student_fees_list(status?, month?, batch?)` | `SECURITY INVOKER`. The admin fee list: one row per fee matching the filters, with `paid`, `balance`, and `last_reminded_at` pre-computed — the admin dashboard's table and CSV export both read this directly. `month` matches by `due_date`'s calendar month; leaving it null (the "Overdue" quick filter does this) returns every matching fee regardless of month. | one row per matching fee                     |
 | `recompute_open_fees_for_plan(p_fee_plan_id)` (`0018_sync_open_fees_with_plan_and_schedule.sql`) | Re-prices every `pending`/`overdue` `student_fees` row on the given plan from the plan/batch's *current* config (same `amount`/`credits_granted` formulas as `generate_upcoming_fees()`), then re-derives `status` from what's actually been paid against the new amount. Never touches a `paid` or `waived` fee. Not called directly by the UI — fired automatically by the triggers below. | void |

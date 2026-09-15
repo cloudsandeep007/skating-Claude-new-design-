@@ -8,9 +8,34 @@ import {
   isPeriodDue,
   isStubPeriod,
   nextPeriod,
+  paidTotal,
   prorateCycleAmount,
   remainingBalance,
 } from './feeMath'
+
+describe('paidTotal — voided payments count for nothing', () => {
+  it('sums live payments only', () => {
+    expect(
+      paidTotal([
+        { amount: 1000, voidedAt: null },
+        { amount: 600, voidedAt: '2026-09-15T10:00:00Z' },
+        { amount: 500, voidedAt: null },
+      ]),
+    ).toBe(1500)
+  })
+
+  it('is 0 when every payment is voided', () => {
+    expect(paidTotal([{ amount: 1600, voidedAt: '2026-09-15T10:00:00Z' }])).toBe(0)
+  })
+
+  it('is 0 with no payments', () => {
+    expect(paidTotal([])).toBe(0)
+  })
+
+  it('rounds to the nearest paisa', () => {
+    expect(paidTotal([{ amount: 33.33, voidedAt: null }, { amount: 33.33, voidedAt: null }, { amount: 33.34, voidedAt: null }])).toBe(100)
+  })
+})
 
 describe('nextPeriod — fee generation', () => {
   it('a first invoice after a mid-month join is a stub to the end of that month', () => {

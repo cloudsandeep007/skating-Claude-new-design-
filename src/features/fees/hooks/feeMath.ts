@@ -117,6 +117,13 @@ export function isOverdue(status: FeeStatus, dueDate: string, today: string): bo
   return status === 'pending' && dueDate < today
 }
 
+/** Mirrors fee_paid_total() in the database: what's been paid on a fee is
+ * the sum of its payments that haven't been voided. A voided payment stays
+ * in the list (it's history) but counts for nothing. */
+export function paidTotal(payments: { amount: number; voidedAt: string | null }[]): number {
+  return round2(payments.reduce((sum, p) => (p.voidedAt ? sum : sum + p.amount), 0))
+}
+
 /** How much is still owed after whatever's been paid so far — never
  * negative (an overpayment doesn't produce a negative balance). */
 export function remainingBalance(amount: number, paidSoFar: number): number {

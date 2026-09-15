@@ -1,4 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod'
+import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 
@@ -41,15 +42,33 @@ interface RecordPaymentDialogProps {
 }
 
 /** Controlled dialog — the fee list owns which fee (if any) is being paid.
- * Defaults the amount to the remaining balance, but any amount is accepted
- * (less = a partial payment, more = an overpayment that still clears it). */
+ * Defaults the amount to the remaining balance; less is a partial payment,
+ * more is refused (the database caps a payment at what's owed). */
 export function RecordPaymentDialog({ fee, onClose }: RecordPaymentDialogProps) {
   const recordPayment = useRecordPayment()
+  const balance = fee ? remainingBalance(fee.amount, fee.paid) : 0
+
+  // One key per opening of the form. If the request is retried (lost
+  // response on rink Wi-Fi), the server returns the payment it already
+  // recorded instead of a second one. A fresh key after every success.
+  const [idempotencyKey, setIdempotencyKey] = useState(() => crypto.randomUUID())
+  useEffect(() => {
+    if (fee) setIdempotencyKey(crypto.randomUUID())
+  }, [fee?.studentFeeId]) // eslint-disable-line react-hooks/exhaustive-deps
+
   const form = useForm<PaymentForm>({
-    resolver: zodResolver(PaymentFormSchema),
+    resolver: zodResolver(
+      PaymentFormSchema.refine((v) => v.amount <= balance, {
+        message: `That's more than the ${formatRupees(balance)} still owed`,
+        path: ['amount'],
+      }).refine((v) => v.paidDate <= todayIso(), {
+        message: "Can't be in the future",
+        path: ['paidDate'],
+      }),
+    ),
     values: fee
       ? {
-          amount: remainingBalance(fee.amount, fee.paid),
+          amount: balance,
           paidDate: todayIso(),
           method: 'cash',
           reference: '',
@@ -61,15 +80,20 @@ export function RecordPaymentDialog({ fee, onClose }: RecordPaymentDialogProps) 
   async function onSubmit(values: PaymentForm) {
     if (!fee) return
     try {
-      await recordPayment.mutateAsync({ studentFeeId: fee.studentFeeId, form: values })
-      toast.success(`Payment of ${formatRupees(values.amount)} recorded for ${fee.studentName}.`)
+      const { receiptNo } = await recordPayment.mutateAsync({
+        studentFeeId: fee.studentFeeId,
+        form: values,
+        idempotencyKey,
+      })
+      toast.success(
+        `Payment of ${formatRupees(values.amount)} recorded for ${fee.studentName}.${receiptNo ? ` Receipt ${receiptNo}.` : ''}`,
+      )
+      setIdempotencyKey(crypto.randomUUID())
       onClose()
-    } catch {
-      toast.error('Could not record this payment.')
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Could not record this payment.')
     }
   }
-
-  const balance = fee ? remainingBalance(fee.amount, fee.paid) : 0
 
   return (
     <Dialog
@@ -85,8 +109,8 @@ export function RecordPaymentDialog({ fee, onClose }: RecordPaymentDialogProps) 
               <DialogTitle>Record a payment — {fee.studentName}</DialogTitle>
               <DialogDescription>
                 {balance > 0
-                  ? `${formatRupees(balance)} of ${formatRupees(fee.amount)} still owed.`
-                  : 'This fee is already fully covered — recording anyway adds an extra payment.'}
+                  ? `${formatRupees(balance)} of ${formatRupees(fee.amount)} still owed. A receipt number is issued automatically.`
+                  : 'This fee is already fully paid.'}
               </DialogDescription>
             </DialogHeader>
             <Form {...form}>
@@ -108,6 +132,7 @@ export function RecordPaymentDialog({ fee, onClose }: RecordPaymentDialogProps) 
                             type="number"
                             step="0.01"
                             min={0}
+                            max={balance}
                             name={field.name}
                             ref={field.ref}
                             onBlur={field.onBlur}

@@ -21,6 +21,9 @@ interface FeeRow {
     method: PaymentMethod
     reference: string | null
     notes: string | null
+    receipt_no: string | null
+    voided_at: string | null
+    void_reason: string | null
     recorded_by: { full_name: string } | null
   }[]
 }
@@ -38,7 +41,8 @@ export function useStudentFees(studentId: string | null) {
         .select(
           `id, period_start, period_end, due_date, amount, status, waived_reason,
            fee_plan:fee_plans(name),
-           payments(id, amount, paid_date, method, reference, notes, recorded_by:profiles(full_name))`,
+           payments(id, amount, paid_date, method, reference, notes, receipt_no, voided_at, void_reason,
+                    recorded_by:profiles!payments_recorded_by_fkey(full_name))`,
         )
         .eq('student_id', studentId ?? '')
         .order('due_date', { ascending: false })
@@ -61,6 +65,9 @@ export function useStudentFees(studentId: string | null) {
             method: p.method,
             reference: p.reference,
             notes: p.notes,
+            receiptNo: p.receipt_no,
+            voidedAt: p.voided_at,
+            voidReason: p.void_reason,
             recordedByName: p.recorded_by?.full_name ?? null,
           }))
           .sort((a, b) => b.paidDate.localeCompare(a.paidDate)),
@@ -72,23 +79,30 @@ export function useStudentFees(studentId: string | null) {
 interface RecordPaymentInput {
   studentFeeId: string
   form: PaymentForm
+  /** Generated once per open of the payment form. A retried request with
+   * the same key returns the payment already recorded instead of a
+   * duplicate — see record_payment(). */
+  idempotencyKey: string
 }
 
 /** record_payment() RPC — one round trip for "add this payment, and flip
- * the fee to paid if it's now fully covered". */
+ * the fee to paid if it's now fully covered". Returns the payment row,
+ * receipt number included. */
 export function useRecordPayment() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: async ({ studentFeeId, form }: RecordPaymentInput) => {
-      const { error } = await supabase.rpc('record_payment', {
+    mutationFn: async ({ studentFeeId, form, idempotencyKey }: RecordPaymentInput) => {
+      const { data, error } = await supabase.rpc('record_payment', {
         p_student_fee_id: studentFeeId,
         p_amount: form.amount,
         p_paid_date: form.paidDate,
         p_method: form.method,
         p_reference: emptyToNull(form.reference) ?? undefined,
         p_notes: emptyToNull(form.notes) ?? undefined,
+        p_idempotency_key: idempotencyKey,
       })
       if (error) throw new Error(error.message)
+      return { receiptNo: data.receipt_no }
     },
     onSuccess: () => {
       invalidateFeesAndCredits(queryClient)
@@ -107,14 +121,23 @@ export function invalidateFeesAndCredits(queryClient: ReturnType<typeof useQuery
   void queryClient.invalidateQueries({ queryKey: ['students'] })
 }
 
-/** delete_payment() RPC — removes one payment and recomputes the fee's
- * status (paid → pending/overdue as appropriate), instead of leaving it
- * falsely marked paid with no payment to show for it. */
-export function useDeletePayment() {
+interface VoidPaymentInput {
+  paymentId: string
+  reason: string
+}
+
+/** void_payment() RPC — a payment is never deleted. Voiding keeps it on
+ * record (struck through, with the reason) but it no longer counts toward
+ * the fee, whose status is recomputed from what's left. Refused if that
+ * would take away credits the skater has already booked with. */
+export function useVoidPayment() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: async (paymentId: string) => {
-      const { error } = await supabase.rpc('delete_payment', { p_payment_id: paymentId })
+    mutationFn: async ({ paymentId, reason }: VoidPaymentInput) => {
+      const { error } = await supabase.rpc('void_payment', {
+        p_payment_id: paymentId,
+        p_reason: reason,
+      })
       if (error) throw new Error(error.message)
     },
     onSuccess: () => {
@@ -123,10 +146,9 @@ export function useDeletePayment() {
   })
 }
 
-/** delete_student_fee() RPC — rolls back an entire fee period: deletes its
- * payments, then the period itself. Use to correct a period that was
- * generated wrong (e.g. a plan edited after its first fee was already
- * created) — delete it here, then Generate now for a clean one. */
+/** delete_student_fee() RPC — removes a fee period that has no payment
+ * history at all. Use to correct a period that was generated wrong —
+ * delete it here, then Generate now for a clean one. */
 export function useDeleteFee() {
   const queryClient = useQueryClient()
   return useMutation({
