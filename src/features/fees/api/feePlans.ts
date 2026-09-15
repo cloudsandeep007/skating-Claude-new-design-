@@ -30,7 +30,7 @@ export function useFeePlanOptions() {
     queryFn: async (): Promise<FeePlanOption[]> => {
       const { data, error } = await supabase
         .from('fee_plans')
-        .select('id, name, amount, billing_cycle')
+        .select('id, name, amount, billing_cycle, batch_id')
         .order('name')
       if (error) throw error
       return data.map((p) => ({
@@ -38,6 +38,7 @@ export function useFeePlanOptions() {
         name: p.name,
         amount: p.amount,
         billingCycle: p.billing_cycle,
+        batchId: p.batch_id,
       }))
     },
   })
@@ -58,6 +59,7 @@ export function useCreateFeePlan() {
         amount: form.amount,
         billing_cycle: form.billingCycle,
         description: emptyToNull(form.description),
+        batch_id: form.batchId ?? null,
       })
       if (error) throw error
     },
@@ -83,6 +85,7 @@ export function useUpdateFeePlan() {
           amount: form.amount,
           billing_cycle: form.billingCycle,
           description: emptyToNull(form.description),
+          batch_id: form.batchId ?? null,
         })
         .eq('id', id)
       if (error) throw error

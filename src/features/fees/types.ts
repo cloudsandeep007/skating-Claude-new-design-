@@ -40,6 +40,8 @@ export interface FeePlanOption {
   name: string
   amount: number
   billingCycle: BillingCycle
+  /** null = academy-wide plan, not scoped to a specific batch. */
+  batchId: string | null
 }
 
 export interface FeeListRow {
@@ -55,6 +57,7 @@ export interface FeeListRow {
   paid: number
   balance: number
   status: FeeStatus
+  lastRemindedAt: string | null
 }
 
 export interface FeeDashboardSummary {
@@ -96,6 +99,8 @@ export const FeePlanFormSchema = z.object({
   amount: z.number().min(0, 'Amount must be 0 or more'),
   billingCycle: z.enum(['monthly', 'quarterly', 'annual']),
   description: z.string().optional(),
+  /** null/'' = academy-wide plan. */
+  batchId: z.string().nullable().optional(),
 })
 export type FeePlanForm = z.infer<typeof FeePlanFormSchema>
 

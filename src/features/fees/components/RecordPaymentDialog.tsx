@@ -4,6 +4,7 @@ import { toast } from 'sonner'
 
 import { todayIso } from '@/shared/lib/format'
 import { Button } from '@/shared/ui/button'
+import { DatePicker } from '@/shared/ui/DatePicker'
 import {
   Dialog,
   DialogContent,
@@ -127,7 +128,7 @@ export function RecordPaymentDialog({ fee, onClose }: RecordPaymentDialogProps) 
                       <FormItem>
                         <FormLabel>Date</FormLabel>
                         <FormControl>
-                          <Input type="date" {...field} />
+                          <DatePicker value={field.value} onChange={field.onChange} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>

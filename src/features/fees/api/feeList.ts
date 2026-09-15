@@ -36,6 +36,7 @@ export function useFeeList(filters: FeeListFilters) {
         paid: r.paid,
         balance: r.balance,
         status: r.status,
+        lastRemindedAt: r.last_reminded_at,
       }))
     },
   })

@@ -469,6 +469,7 @@ export type Database = {
         Row: {
           academy_id: string
           amount: number
+          batch_id: string | null
           billing_cycle: Database["public"]["Enums"]["billing_cycle"]
           created_at: string
           description: string | null
@@ -479,6 +480,7 @@ export type Database = {
         Insert: {
           academy_id: string
           amount: number
+          batch_id?: string | null
           billing_cycle: Database["public"]["Enums"]["billing_cycle"]
           created_at?: string
           description?: string | null
@@ -489,6 +491,7 @@ export type Database = {
         Update: {
           academy_id?: string
           amount?: number
+          batch_id?: string | null
           billing_cycle?: Database["public"]["Enums"]["billing_cycle"]
           created_at?: string
           description?: string | null
@@ -503,6 +506,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "academies"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fee_plans_batch_id_fkey"
+            columns: ["batch_id", "academy_id"]
+            isOneToOne: false
+            referencedRelation: "batches"
+            referencedColumns: ["id", "academy_id"]
           },
         ]
       }
@@ -963,6 +973,7 @@ export type Database = {
           due_date: string
           fee_plan_id: string | null
           id: string
+          last_reminded_at: string | null
           period_end: string
           period_start: string
           status: Database["public"]["Enums"]["fee_status"]
@@ -977,6 +988,7 @@ export type Database = {
           due_date: string
           fee_plan_id?: string | null
           id?: string
+          last_reminded_at?: string | null
           period_end: string
           period_start: string
           status?: Database["public"]["Enums"]["fee_status"]
@@ -991,6 +1003,7 @@ export type Database = {
           due_date?: string
           fee_plan_id?: string | null
           id?: string
+          last_reminded_at?: string | null
           period_end?: string
           period_start?: string
           status?: Database["public"]["Enums"]["fee_status"]
@@ -1366,6 +1379,7 @@ export type Database = {
           due_date: string
           fee_plan_id: string | null
           id: string
+          last_reminded_at: string | null
           period_end: string
           period_start: string
           status: Database["public"]["Enums"]["fee_status"]
@@ -1474,6 +1488,10 @@ export type Database = {
         Args: { p_marks: Json; p_session_id: string }
         Returns: number
       }
+      send_fee_reminders: {
+        Args: { p_student_fee_ids: string[] }
+        Returns: number
+      }
       session_is_editable: { Args: { p_session_id: string }; Returns: boolean }
       stale_students: {
         Args: { p_days?: number }
@@ -1500,6 +1518,7 @@ export type Database = {
           due_date: string
           fee_plan_name: string
           full_name: string
+          last_reminded_at: string
           paid: number
           period_end: string
           period_start: string

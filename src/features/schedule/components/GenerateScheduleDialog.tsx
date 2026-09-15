@@ -16,7 +16,7 @@ import {
   DialogTrigger,
 } from '@/shared/ui/dialog'
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/shared/ui/form'
-import { Input } from '@/shared/ui/input'
+import { DatePicker } from '@/shared/ui/DatePicker'
 
 import { useGenerateSessions } from '../api/generateSessions'
 import { GenerateScheduleSchema, type GenerateSchedule, type GenerateSummary } from '../types'
@@ -88,7 +88,7 @@ export function GenerateScheduleDialog({
                   <FormItem>
                     <FormLabel>From</FormLabel>
                     <FormControl>
-                      <Input type="date" {...field} />
+                      <DatePicker value={field.value} onChange={field.onChange} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -101,7 +101,7 @@ export function GenerateScheduleDialog({
                   <FormItem>
                     <FormLabel>To</FormLabel>
                     <FormControl>
-                      <Input type="date" {...field} />
+                      <DatePicker value={field.value} onChange={field.onChange} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

@@ -8,6 +8,7 @@ import { formatDate } from '@/shared/lib/format'
 import { Button } from '@/shared/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/ui/card'
 import { Form, FormControl, FormField, FormItem, FormMessage } from '@/shared/ui/form'
+import { DatePicker } from '@/shared/ui/DatePicker'
 import { Input } from '@/shared/ui/input'
 
 import { useAddHoliday, useHolidays, useRemoveHoliday } from '../api/holidays'
@@ -57,7 +58,7 @@ export function HolidaysCard() {
               render={({ field }) => (
                 <FormItem>
                   <FormControl>
-                    <Input type="date" className="w-[160px]" {...field} />
+                    <DatePicker value={field.value} onChange={field.onChange} className="w-[160px]" />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

@@ -5,6 +5,29 @@ non-technical person can follow it. Newest first.
 
 ---
 
+## 2026-09-15 — Batch-priced fee plans, dues reminders, and a date-picker fix
+
+- **Fee plans can now be tied to a specific batch.** When adding or
+  editing a fee plan, there's a new "Batch" option — pick a batch (e.g.
+  your weekend-only batch) to give it its own pricing, or leave it as
+  "All batches" for a plan any student can be assigned to, like before.
+  When adding or editing a student, once you've picked their batch, that
+  batch's own plans show up first in the fee-plan list.
+- **Admins can now see, and nudge, everyone with an outstanding fee.** A
+  new "Overdue" button on the Fees screen shows every unpaid fee
+  academy-wide in one click, instead of hunting month by month. Select
+  any number of overdue rows (or use the reminder button on a single
+  row) and click "Send reminder" — the parent gets a notification in the
+  app pointing them straight to their Fees page, and the row shows when
+  it was last reminded so nobody gets double-nagged by accident.
+  Reminders are sent by the admin on demand, not automatically, and stay
+  in-app only for now — no SMS or WhatsApp yet.
+- **Fixed the date picker not opening.** Clicking a date field (in Fees,
+  Reports, Attendance, adding a student, scheduling a session, and a few
+  other places) sometimes didn't pop up a calendar at all. Every date and
+  month field across the app now uses the same custom calendar popup
+  instead of relying on the browser's own picker.
+
 ## 2026-09-15 — Full app redesign: new dark theme ("Kinetic Obsidian")
 
 - **Every screen in the app was restyled** to match a new dark design —

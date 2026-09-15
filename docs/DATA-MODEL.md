@@ -62,6 +62,7 @@ batches   1---* schedule_sessions *---1 coaches
 schedule_sessions 1---* attendance *---1 students
 students  1---* student_skills *---1 skills
 academies 1---* fee_plans 1---* student_fees *---1 students
+fee_plans *---1 batches (optional — null = academy-wide)
 student_fees 1---* payments
 academies 1---* announcements *---1 batches (optional)
 academies 1---* notifications *---1 profiles
@@ -304,9 +305,10 @@ own children.
 | amount        | numeric(10,2) | no       |                   | ≥ 0, rupees               |
 | billing_cycle | billing_cycle | no       |                   |                           |
 | description   | text          | yes      |                   |                           |
+| batch_id      | uuid          | yes      |                   | composite FK → batches; set null on batch delete; `0010_fee_batch_plans_and_reminders.sql` — null = academy-wide plan, non-null = scoped to that one batch (e.g. a cheaper plan for a weekend-only batch). Purely a picker-filtering field — `generate_upcoming_fees()` still bills off `students.fee_plan_id`, so this never makes billing ambiguous. |
 | created_at / updated_at | timestamptz | no | now()       | trigger                   |
 
-Indexes: `(academy_id)`.
+Indexes: `(academy_id)`, `(batch_id)`.
 **RLS:** super_admin all · academy_admin all in academy · members select.
 
 ### `student_fees` — one billable period for one student
@@ -323,6 +325,7 @@ Indexes: `(academy_id)`.
 | due_date     | date          | no       |                   |                                                    |
 | status       | fee_status    | no       | 'pending'         |                                                    |
 | waived_reason | text         | yes      |                   | set together with status='waived'; `0007_fees.sql` |
+| last_reminded_at | timestamptz | yes     |                   | set by `send_fee_reminders()`; `0010_fee_batch_plans_and_reminders.sql` — shown in the admin fee list as "Reminded N days ago" |
 | created_at / updated_at | timestamptz | no | now()       | trigger                                            |
 
 Unique `(student_id, period_start)` (`0007_fees.sql`) — a student can't have two periods starting the same day.
@@ -551,7 +554,13 @@ from `0001_initial_schema.sql`. `students.fee_plan_id` and
 | `generate_upcoming_fees(p_academy_id?)`   | `SECURITY INVOKER`. For every active student on a fee plan whose current period has ended (or who has none yet): inserts one `student_fees` row for the next period, `status = 'pending'`, `due_date = period_start`. Called two ways: an admin's "Generate now" button passes their own `academy_id` — RLS then only lets rows in their academy actually insert; the scheduled Edge Function calls it with no argument using the service-role key, which bypasses RLS and covers every academy in one run. | one row per fee created                      |
 | `mark_fees_overdue()`                     | `SECURITY INVOKER`. Flips every `pending` fee whose `due_date` has passed to `overdue`. Same academy-scoping story as above — an academy admin could call it for their own academy, but only the scheduled function actually does (see RUNBOOK). | count of fees flipped                        |
 | `record_payment(fee, amount, date?, method?, reference?, notes?)` | `SECURITY INVOKER`. Inserts one `payments` row, then flips the fee to `paid` if the sum of its payments now covers the full amount — otherwise leaves the status exactly as it was, which is how a partial payment works without a separate status. Refuses a waived fee or a non-positive amount. | the inserted payment row                     |
-| `student_fees_list(status?, month?, batch?)` | `SECURITY INVOKER`. The admin fee list: one row per fee matching the filters, with `paid` and `balance` pre-computed from its payments — the admin dashboard's table and CSV export both read this directly. `month` matches by `due_date`'s calendar month. | one row per matching fee                     |
+| `student_fees_list(status?, month?, batch?)` | `SECURITY INVOKER`. The admin fee list: one row per fee matching the filters, with `paid`, `balance`, and `last_reminded_at` pre-computed — the admin dashboard's table and CSV export both read this directly. `month` matches by `due_date`'s calendar month; leaving it null (the "Overdue" quick filter does this) returns every matching fee regardless of month. | one row per matching fee                     |
+
+### Fee reminders (`0010_fee_batch_plans_and_reminders.sql`)
+
+| Function                                | Does                                                                                                                                                                                                          | Returns                                     |
+| ----------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------- |
+| `send_fee_reminders(p_student_fee_ids uuid[])` | `SECURITY DEFINER` — inserting notifications for other users (the parents) needs to bypass their own RLS, same reasoning as `publish_due_announcements()`. Validates the caller is an `academy_admin` and every fee id belongs to the caller's academy (others are silently skipped). For each `pending`/`overdue` fee: finds every linked parent via `parents_students`, inserts one `notifications` row per parent (`type = 'fee_due'`, `link = '/parent/fees'`), then sets `student_fees.last_reminded_at = now()`. Reuses the existing notifications delivery pipeline as-is (realtime toast + unread badge) — no frontend changes needed there, the same way `session_cancelled` notifications already work. Admin-triggered only (a button click); no scheduled/automatic version exists. | count of notifications actually sent (a student with no linked parent is skipped, not an error) |
 
 **Waiving** a fee is a plain `student_fees` update
 (`status = 'waived', waived_reason = '...'`) under the existing

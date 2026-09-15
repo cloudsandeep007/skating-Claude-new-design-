@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { toast } from 'sonner'
 
 import { useAuth } from '@/features/auth'
+import { useBatchOptions } from '@/features/batches'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -27,6 +28,8 @@ import { FeePlanFormDialog } from './FeePlanFormDialog'
 export function FeePlansManagePage() {
   const { profile } = useAuth()
   const { data: plans, isLoading, isError, refetch } = useFeePlans()
+  const { data: batches } = useBatchOptions()
+  const batchName = (batchId: string | null) => batches?.find((b) => b.id === batchId)?.name
   const createPlan = useCreateFeePlan()
   const updatePlan = useUpdateFeePlan()
   const deletePlan = useDeleteFeePlan()
@@ -116,6 +119,9 @@ export function FeePlansManagePage() {
                   <StatusBadge tone="neutral">
                     {BILLING_CYCLE_LABEL[plan.billing_cycle]}
                   </StatusBadge>
+                  <StatusBadge tone="outline">
+                    {plan.batch_id ? (batchName(plan.batch_id) ?? 'Batch') : 'All batches'}
+                  </StatusBadge>
                 </div>
                 {plan.description && (
                   <div className="mt-0.5 truncate text-sm text-muted-foreground">
@@ -138,6 +144,7 @@ export function FeePlansManagePage() {
                   amount: plan.amount,
                   billingCycle: plan.billing_cycle,
                   description: plan.description ?? '',
+                  batchId: plan.batch_id,
                 }}
                 submitLabel="Save"
                 pending={updatePlan.isPending}

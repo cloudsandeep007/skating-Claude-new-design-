@@ -1,4 +1,4 @@
-import { Input } from '@/shared/ui/input'
+import { DatePicker } from '@/shared/ui/DatePicker'
 
 /** A plain from/to date pair — used by the admin Reports page and anywhere
  * else that needs an explicit range rather than a preset window. */
@@ -13,21 +13,19 @@ export function DateRangePicker({
 }) {
   return (
     <div className="flex flex-wrap items-center gap-2">
-      <Input
-        type="date"
+      <DatePicker
         value={from}
         className="w-[160px] max-w-full"
-        onChange={(event) => {
-          onChange(event.target.value, to)
+        onChange={(next) => {
+          onChange(next, to)
         }}
       />
       <span className="text-sm text-muted-foreground">to</span>
-      <Input
-        type="date"
+      <DatePicker
         value={to}
         className="w-[160px] max-w-full"
-        onChange={(event) => {
-          onChange(from, event.target.value)
+        onChange={(next) => {
+          onChange(from, next)
         }}
       />
     </div>

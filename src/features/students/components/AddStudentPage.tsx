@@ -10,6 +10,7 @@ import { useFeePlanOptions } from '@/features/fees'
 import { Button } from '@/shared/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card'
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/shared/ui/form'
+import { DatePicker } from '@/shared/ui/DatePicker'
 import { Input } from '@/shared/ui/input'
 import { Label } from '@/shared/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/ui/select'
@@ -45,6 +46,13 @@ export function AddStudentPage() {
   })
 
   const parentMode = form.watch('parent.mode')
+  const selectedBatchId = form.watch('batchId')
+  const sortedFeePlans = [...(feePlans ?? [])].sort((a, b) => {
+    const aMatches = a.batchId === selectedBatchId
+    const bMatches = b.batchId === selectedBatchId
+    if (aMatches !== bMatches) return aMatches ? -1 : 1
+    return 0
+  })
 
   async function onSubmit(values: StudentForm) {
     if (!profile?.academy_id) return
@@ -99,7 +107,11 @@ export function AddStudentPage() {
                     <FormItem>
                       <FormLabel>Date of birth</FormLabel>
                       <FormControl>
-                        <Input type="date" {...field} />
+                        <DatePicker
+                          value={field.value ?? ''}
+                          onChange={field.onChange}
+                          withYearDropdown
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -193,9 +205,10 @@ export function AddStudentPage() {
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {feePlans?.map((plan) => (
+                        {sortedFeePlans.map((plan) => (
                           <SelectItem key={plan.id} value={plan.id}>
                             {plan.name} — ₹{plan.amount.toLocaleString('en-IN')}
+                            {plan.batchId && plan.batchId !== selectedBatchId ? ' (other batch)' : ''}
                           </SelectItem>
                         ))}
                       </SelectContent>

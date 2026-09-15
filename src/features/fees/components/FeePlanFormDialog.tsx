@@ -2,6 +2,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 
+import { useBatchOptions } from '@/features/batches'
 import { Button } from '@/shared/ui/button'
 import {
   Dialog,
@@ -12,14 +13,28 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/shared/ui/dialog'
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/shared/ui/form'
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/shared/ui/form'
 import { Input } from '@/shared/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/ui/select'
 import { Textarea } from '@/shared/ui/textarea'
 
 import { BILLING_CYCLES, BILLING_CYCLE_LABEL, FeePlanFormSchema, type FeePlanForm } from '../types'
 
-const EMPTY: FeePlanForm = { name: '', amount: 0, billingCycle: 'monthly', description: '' }
+const EMPTY: FeePlanForm = {
+  name: '',
+  amount: 0,
+  billingCycle: 'monthly',
+  description: '',
+  batchId: null,
+}
 
 interface FeePlanFormDialogProps {
   trigger: React.ReactNode
@@ -39,6 +54,7 @@ export function FeePlanFormDialog({
   onSubmit,
 }: FeePlanFormDialogProps) {
   const [open, setOpen] = useState(false)
+  const { data: batches } = useBatchOptions()
   const form = useForm<FeePlanForm>({
     resolver: zodResolver(FeePlanFormSchema),
     defaultValues: defaultValues ?? EMPTY,
@@ -138,6 +154,41 @@ export function FeePlanFormDialog({
                 )}
               />
             </div>
+            <FormField
+              control={form.control}
+              name="batchId"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Batch (optional)</FormLabel>
+                  <Select
+                    onValueChange={(value) => {
+                      field.onChange(value === 'all' ? null : value)
+                    }}
+                    value={field.value ?? 'all'}
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="all">All batches (academy-wide)</SelectItem>
+                      {batches?.map((batch) => (
+                        <SelectItem key={batch.id} value={batch.id}>
+                          {batch.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormDescription>
+                    Scope this plan to one batch — e.g. a cheaper plan for a weekend-only batch.
+                    Leave as "All batches" for a plan any student can be assigned, regardless of
+                    batch.
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
             <FormField
               control={form.control}
               name="description"

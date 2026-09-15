@@ -17,6 +17,58 @@ Format:
 
 ---
 
+## 2026-09-15 — Batch-scoped fee plans + admin-triggered fee reminders
+
+**Decision:** Added an optional `fee_plans.batch_id` (null = academy-wide,
+today's only behavior; non-null = scoped to one batch) so a batch that
+meets less often can be priced differently, without touching how billing
+is actually computed — `generate_upcoming_fees()` still bills off the
+explicit `students.fee_plan_id` assignment, `batch_id` only filters the
+plan picker. Added `send_fee_reminders(fee_ids[])`, an admin-triggered
+button (per-row and bulk) that inserts one `notifications` row per linked
+parent for each selected unpaid fee, reusing the existing notifications
+pipeline exactly the way `session_cancelled` already does — no new
+delivery mechanism. Also added an "Overdue" quick filter on the admin
+Fees screen that clears the month filter (the `student_fees_list()` RPC
+already supported an unfiltered month; the gap was the UI never exposed
+"show me everything overdue, not just this month" as one click).
+
+**Options considered:**
+1. *Fee-plan scoping* — (a) `fee_plans.batch_id`, optional, additive
+   (chosen); (b) derive a student's fee automatically from their batch,
+   removing the explicit per-student plan assignment.
+2. *Reminders* — (a) admin clicks a button, in-app notification only
+   (chosen); (b) a scheduled daily job, like the existing `generate-fees`
+   Edge Function; (c) both; (d) also send SMS/WhatsApp/email.
+
+**Why:** 1a keeps billing unambiguous for a student enrolled in more than
+one batch (the plan assignment stays an explicit admin choice, just
+guided by batch) and is a strictly additive schema change — every
+existing plan and every existing student's billing is untouched. 1b was
+rejected because it would have made "which plan bills this student"
+implicit and required new conflict-resolution logic for multi-batch
+students, for a use case (per-batch *pricing*, not per-batch *auto-
+assignment*) the admin didn't ask for. 2a was the user's explicit choice
+over a chat conversation — full control over timing, no risk of feeling
+naggy, and no new scheduled infrastructure to build/maintain. 2d was
+explicitly declined — the app has no SMS/WhatsApp/email integration
+today, and adding one is a separate, materially larger project.
+
+**Trade-offs:**
+- No automatic reminders. If the admin forgets to click Remind, nothing
+  is sent — the `last_reminded_at` timestamp shown per row is the only
+  safeguard against re-reminding blindly. A scheduled version (mirroring
+  `generate-fees`'s Edge Function + cron pattern, see RUNBOOK) is a
+  natural follow-up if the admin wants it later.
+- In-app only. A parent who doesn't have the app open won't see a
+  reminder until they next open it — there's no push notification,
+  SMS, or email fallback today.
+- A batch can have any number of scoped fee plans (no uniqueness
+  constraint beyond the existing `unique(academy_id, name)`) — same
+  "no default plan" shape academy-wide plans already have. If the admin
+  wants exactly-one-plan-per-batch enforced later, that's a new
+  constraint to add, not something this change assumes.
+
 ## 2026-09-15 — Full UI redesign to "Kinetic Obsidian", dark-only, restyle-only scope
 
 **Decision:** Reskinned the entire app to match a new dark design system

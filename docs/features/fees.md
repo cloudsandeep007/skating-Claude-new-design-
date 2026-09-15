@@ -1,9 +1,13 @@
 # Fee management
 
-> Restyled to the "Kinetic Obsidian" dark theme 2026-09-15 — visual only,
-> nothing below changed. The redesign mockups showed UPI QR payment,
-> autopay, and self-service plan switching; none of that was built — see
-> docs/DECISIONS.md.
+> Restyled to the "Kinetic Obsidian" dark theme 2026-09-15 — visual only.
+> The redesign mockups showed UPI QR payment, autopay, and self-service
+> plan switching; none of that was built — see docs/DECISIONS.md.
+>
+> Also 2026-09-15: fee plans can now be scoped to a batch, and admins can
+> send an in-app fee reminder to parents with an outstanding balance. See
+> the "Batch-scoped fee plans" and "Dues visibility & reminders" sections
+> below, and docs/DECISIONS.md for the design rationale.
 
 ## Purpose
 
@@ -16,11 +20,15 @@ collected some other way (cash, UPI, bank transfer, etc.).
 
 **Admin — setup** (`/admin/fee-plans`)
 - Fee plans list: name, amount, billing cycle (monthly/quarterly/annual),
-  description. Add/edit/delete.
+  description, and now a **batch badge** — "All batches" for an
+  academy-wide plan, or the specific batch it's scoped to. Add/edit/delete.
 - A plan is assigned to a student from their **Add/Edit student** form
   ("Fee plan" picker) — that's "assign on enrollment"; saving triggers an
   immediate `generate_upcoming_fees()` call so the first invoice appears
-  right away instead of waiting for the next scheduled run.
+  right away instead of waiting for the next scheduled run. Once a batch
+  is picked on that same form, plans scoped to that batch sort to the top
+  of the fee-plan picker (labelled "(other batch)" for ones that aren't,
+  so it's clear a mismatched plan can still be picked deliberately).
 
 **Admin — dashboard** (`/admin/fees`)
 - Three summary cards: **Collected this month** (by payment date, with
@@ -28,8 +36,16 @@ collected some other way (cash, UPI, bank transfer, etc.).
   selected month, with fee count) — see "Business rules" for why collected
   uses a different date than pending/overdue.
 - Filters: month, status, batch. A table of every matching fee (student,
-  batch, plan, due date, amount, balance, status) with **Record payment**
-  and **Waive** actions per row, and **Export CSV**.
+  batch, plan, due date, amount, balance, status) with **Record payment**,
+  **Waive**, and **Remind** actions per row, and **Export CSV**.
+- **Overdue quick filter** — one click sets status to overdue and clears
+  the month filter, showing every outstanding fee academy-wide instead of
+  one month at a time. The status/month controls disable while it's on;
+  click it again to go back to manual filtering.
+- Row checkboxes + a **Send reminder (N)** bulk button next to Export CSV
+  — sends the same in-app reminder as the per-row action to everyone
+  selected in one call. Only rows with a balance can be selected.
+  Reminded rows show "Reminded N days ago" under their balance.
 - **Generate now** — calls `generate_upcoming_fees()` for the admin's own
   academy on demand, for whenever you don't want to wait for the
   scheduled job.
@@ -55,8 +71,12 @@ collected some other way (cash, UPI, bank transfer, etc.).
 | RPC `generate_upcoming_fees`          |      | ✓     | "Generate now" button and the scheduled Edge Function              |
 | RPC `mark_fees_overdue`               |      | ✓     | scheduled Edge Function only                                       |
 | RPC `record_payment`                  |      | ✓     | insert + flip-to-paid in one call                                  |
-| RPC `student_fees_list`               | ✓    |       | admin dashboard table + CSV export                                 |
+| RPC `student_fees_list`               | ✓    |       | admin dashboard table + CSV export; also returns `last_reminded_at` |
+| RPC `send_fee_reminders`              |      | ✓     | per-row Remind button + bulk "Send reminder"                       |
 | view `monthly_collection_totals`      | ✓    |       | dashboard's "Collected this month" card only                       |
+| `notifications`                       |      | ✓     | one row per parent per reminded fee, written by `send_fee_reminders` |
+| `parents_students`                    | ✓    |       | resolves which parents to notify for a reminded student            |
+| `fee_plans.batch_id`                  | ✓    | ✓     | optional batch scope, set from the fee plan form                   |
 | `audit_logs`                          |      | (auto)| existing `audit_student_fees` / `audit_payments` triggers          |
 
 ## Business rules
@@ -90,6 +110,18 @@ collected some other way (cash, UPI, bank transfer, etc.).
   within the selected month (`student_fees_list`, filtered client-side
   by status) — a fee due last month that's still unpaid keeps showing up
   under last month, not this one, until it's paid or waived.
+- **A batch-scoped plan doesn't change billing logic.** `fee_plans.batch_id`
+  is purely a filter/suggestion for the plan picker — `generate_upcoming_fees()`
+  still bills off the explicit `students.fee_plan_id` assignment, so a
+  student in more than one batch is never ambiguous. Nothing about
+  generation, payments, or the waive flow reads `batch_id` at all.
+- **Reminders are admin-triggered, not automatic.** `send_fee_reminders()`
+  only runs when an admin clicks Remind/Send reminder — there's no daily
+  job nudging parents on its own (a deliberate scope decision, see
+  DECISIONS). It reuses the exact same `notifications` delivery the app
+  already uses for `session_cancelled` — one row per linked parent,
+  realtime toast + unread badge — so there was nothing new to build on
+  the delivery side, only the RPC that creates the rows.
 - **The academy scoping trick.** Every fee RPC is `SECURITY INVOKER`.
   Called by an admin (with their session), the existing
   `student_fees_admin_all` / `payments_admin_all` policies silently
@@ -116,6 +148,13 @@ collected some other way (cash, UPI, bank transfer, etc.).
 - **`generate_upcoming_fees()` called twice in a row** (e.g. the button
   clicked twice) — the second call finds every eligible student already
   has a current-or-future period and generates nothing; not an error.
+- **A fee is reminded but the student has no linked parent** —
+  `send_fee_reminders()` silently skips it (not an error); the returned
+  count can be lower than the number of fees selected, and the toast
+  reflects the actual count sent.
+- **A batch used by a scoped fee plan is deleted** — the plan's `batch_id`
+  is set null (`on delete set null`), so the plan survives as an
+  academy-wide one rather than being deleted along with the batch.
 
 ## Known limitations
 
@@ -129,3 +168,9 @@ collected some other way (cash, UPI, bank transfer, etc.).
   independently even if siblings share a parent account.
 - CSV export is exactly what's on screen (the current month/status/batch
   filter), not full history.
+- No scheduled/automatic reminders — an admin has to click Remind. No
+  SMS/WhatsApp/email — reminders are in-app notifications only (toast +
+  badge + a link to the parent's Fees page).
+- A batch can have more than one scoped fee plan (e.g. Monthly and
+  Quarterly for the same batch) — there's no limit or "default" concept,
+  same as academy-wide plans today.

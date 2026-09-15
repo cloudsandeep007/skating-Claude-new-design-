@@ -7,8 +7,9 @@ import { downloadCsv } from '@/shared/lib/csv'
 import { addDays, formatDate, formatTime, todayIso } from '@/shared/lib/format'
 import { cn } from '@/shared/lib/utils'
 import { Button } from '@/shared/ui/button'
+import { DatePicker } from '@/shared/ui/DatePicker'
+import { DateRangePicker } from '@/shared/ui/DateRangePicker'
 import { EmptyState } from '@/shared/ui/EmptyState'
-import { Input } from '@/shared/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/ui/select'
 import { Skeleton } from '@/shared/ui/skeleton'
 import { StatusBadge } from '@/shared/ui/StatusBadge'
@@ -54,12 +55,11 @@ function ByDate() {
 
   return (
     <div className="space-y-4">
-      <Input
-        type="date"
+      <DatePicker
         value={date}
         className="w-[180px]"
-        onChange={(e) => {
-          setDate(e.target.value)
+        onChange={(next) => {
+          setDate(next)
           setOpenId(null)
         }}
       />
@@ -176,27 +176,7 @@ function RangePicker({
   to: string
   onChange: (from: string, to: string) => void
 }) {
-  return (
-    <div className="flex flex-wrap items-center gap-2">
-      <Input
-        type="date"
-        value={from}
-        className="w-[160px] max-w-full"
-        onChange={(e) => {
-          onChange(e.target.value, to)
-        }}
-      />
-      <span className="text-sm text-muted-foreground">to</span>
-      <Input
-        type="date"
-        value={to}
-        className="w-[160px] max-w-full"
-        onChange={(e) => {
-          onChange(from, e.target.value)
-        }}
-      />
-    </div>
-  )
+  return <DateRangePicker from={from} to={to} onChange={onChange} />
 }
 
 function ByBatch() {
