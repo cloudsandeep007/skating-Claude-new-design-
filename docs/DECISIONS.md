@@ -17,6 +17,48 @@ Format:
 
 ---
 
+## 2026-09-15 — Admins can delete a payment or roll back a fee period
+
+**Decision:** Added `delete_payment()` and `delete_student_fee()` RPCs and
+matching UI (a trash icon per payment, a "Delete period" button per fee
+card on the admin skater profile). Both were already permitted at the RLS
+layer — `payments_admin_all` / `student_fees_admin_all` are `for all`
+policies, so an admin could already delete either table's rows directly —
+the gap was purely that no UI action existed, and a raw client-side
+`.delete()` on a payment would leave the fee's `status` stuck on `paid`
+with nothing paid, and a raw delete of a fee with payments on it would
+just fail outright (`payments.student_fee_id` is `on delete restrict`,
+not cascade).
+
+**Options considered:**
+1. *Client-side delete + manual status fix* — two separate calls from the
+   browser (delete the payment, then update the fee status) — rejected:
+   two round trips risk a half-done state if the second fails, and the
+   status-recompute logic (paid if still covered, else overdue/pending by
+   due date) belongs next to `record_payment()`'s own logic, not
+   duplicated in the frontend.
+2. *One RPC per action* (chosen) — `delete_payment()` bundles the delete
+   and the status recompute; `delete_student_fee()` bundles deleting a
+   period's payments (working around the restrict FK) and the period
+   itself — both atomic, both following the exact bundling pattern
+   `record_payment()` and `save_attendance()` already use elsewhere in
+   this codebase.
+
+**Why:** This was requested directly after a real mistake surfaced in
+testing — a per-class plan's fee got generated before the plan's pricing
+was finished being set up, freezing a wrong amount onto that period
+forever (by design — fee amounts don't follow later plan edits). There
+was no way to correct it except editing the database directly.
+
+**Trade-offs:** Both actions are genuinely destructive (payment history,
+specifically) and admin-only, confirmed via an `AlertDialog` naming
+exactly what will be removed before it happens. `audit_payments` /
+`audit_student_fees` already log every delete automatically with the
+actor and the old values, so the record of *that it happened* survives
+even though the row itself doesn't.
+
+---
+
 ## 2026-09-15 — Credits gated behind payment, and surfaced to admins
 
 **Decision:** `class_credit_balance()` now sums `credits_granted` only

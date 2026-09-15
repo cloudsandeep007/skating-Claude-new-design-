@@ -91,7 +91,51 @@ export function useRecordPayment() {
       if (error) throw new Error(error.message)
     },
     onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ['fees'] })
+      invalidateFeesAndCredits(queryClient)
+    },
+  })
+}
+
+/** A payment or fee-status change can change how much of a fee is paid,
+ * and `credits_granted` only counts paid/waived periods — so credit
+ * balances (the students list "Credits" column, the student profile
+ * badge, the parent's booking page) need invalidating alongside the fee
+ * itself. Exported for waive.ts, which changes status the same way. */
+export function invalidateFeesAndCredits(queryClient: ReturnType<typeof useQueryClient>) {
+  void queryClient.invalidateQueries({ queryKey: ['fees'] })
+  void queryClient.invalidateQueries({ queryKey: ['bookings'] })
+  void queryClient.invalidateQueries({ queryKey: ['students'] })
+}
+
+/** delete_payment() RPC — removes one payment and recomputes the fee's
+ * status (paid → pending/overdue as appropriate), instead of leaving it
+ * falsely marked paid with no payment to show for it. */
+export function useDeletePayment() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async (paymentId: string) => {
+      const { error } = await supabase.rpc('delete_payment', { p_payment_id: paymentId })
+      if (error) throw new Error(error.message)
+    },
+    onSuccess: () => {
+      invalidateFeesAndCredits(queryClient)
+    },
+  })
+}
+
+/** delete_student_fee() RPC — rolls back an entire fee period: deletes its
+ * payments, then the period itself. Use to correct a period that was
+ * generated wrong (e.g. a plan edited after its first fee was already
+ * created) — delete it here, then Generate now for a clean one. */
+export function useDeleteFee() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async (studentFeeId: string) => {
+      const { error } = await supabase.rpc('delete_student_fee', { p_fee_id: studentFeeId })
+      if (error) throw new Error(error.message)
+    },
+    onSuccess: () => {
+      invalidateFeesAndCredits(queryClient)
     },
   })
 }

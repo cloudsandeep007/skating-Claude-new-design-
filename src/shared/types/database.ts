@@ -1539,6 +1539,8 @@ export type Database = {
           today_attendance_pct: number
         }[]
       }
+      delete_payment: { Args: { p_payment_id: string }; Returns: undefined }
+      delete_student_fee: { Args: { p_fee_id: string }; Returns: undefined }
       expected_classes_from_schedule: {
         Args: { p_batch_id: string; p_from: string; p_to: string }
         Returns: number

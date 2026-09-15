@@ -1,13 +1,26 @@
-import { Receipt } from 'lucide-react'
+import { Receipt, Trash2 } from 'lucide-react'
 import { useState } from 'react'
+import { toast } from 'sonner'
 
 import { formatDate } from '@/shared/lib/format'
+import { cn } from '@/shared/lib/utils'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/shared/ui/alert-dialog'
 import { Button } from '@/shared/ui/button'
 import { EmptyState } from '@/shared/ui/EmptyState'
 import { Skeleton } from '@/shared/ui/skeleton'
 import { StatusBadge } from '@/shared/ui/StatusBadge'
 
-import { useStudentFees } from '../api/payments'
+import { useDeleteFee, useDeletePayment, useStudentFees } from '../api/payments'
 import { canWaive, remainingBalance } from '../hooks/feeMath'
 import { feeStatusLabel, feeStatusTone, formatRupees } from '../hooks/feeTone'
 import { PAYMENT_METHOD_LABEL } from '../types'
@@ -33,6 +46,8 @@ export function PaymentHistoryList({
   const { data: fees, isLoading, isError, refetch } = useStudentFees(studentId)
   const [payTarget, setPayTarget] = useState<PaymentTarget | null>(null)
   const [waiveTarget, setWaiveTarget] = useState<WaiveTarget | null>(null)
+  const deletePayment = useDeletePayment()
+  const deleteFee = useDeleteFee()
 
   if (isError) {
     return (
@@ -109,8 +124,8 @@ export function PaymentHistoryList({
               </div>
             )}
 
-            {canManage && (balance > 0 || canWaive(fee.status)) && (
-              <div className="mt-2 flex gap-2 border-t pt-2.5">
+            {canManage && (
+              <div className="mt-2 flex flex-wrap items-center gap-2 border-t pt-2.5">
                 {balance > 0 && fee.status !== 'waived' && (
                   <Button
                     variant="outline"
@@ -138,6 +153,47 @@ export function PaymentHistoryList({
                     Waive
                   </Button>
                 )}
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="ml-auto text-brand-400 hover:text-brand-300"
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                      Delete period
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Delete this fee period?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        {formatDate(fee.periodStart)} – {formatDate(fee.periodEnd)},{' '}
+                        {formatRupees(fee.amount)}.
+                        {fee.payments.length > 0 &&
+                          ` This also deletes its ${fee.payments.length} payment${fee.payments.length === 1 ? '' : 's'} (${formatRupees(paid)}).`}{' '}
+                        This can't be undone.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Keep it</AlertDialogCancel>
+                      <AlertDialogAction
+                        onClick={() => {
+                          deleteFee.mutate(fee.id, {
+                            onSuccess: () => {
+                              toast.success('Fee period deleted.')
+                            },
+                            onError: () => {
+                              toast.error('Could not delete this fee period.')
+                            },
+                          })
+                        }}
+                      >
+                        Delete period
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
               </div>
             )}
 
@@ -152,9 +208,54 @@ export function PaymentHistoryList({
                       {p.reference && ` · ${p.reference}`}
                     </span>
                     {p.recordedByName && (
-                      <span className="ml-auto shrink-0 text-xs text-muted-foreground">
+                      <span
+                        className={cn(
+                          'shrink-0 text-xs text-muted-foreground',
+                          !canManage && 'ml-auto',
+                        )}
+                      >
                         by {p.recordedByName}
                       </span>
+                    )}
+                    {canManage && (
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <button
+                            type="button"
+                            aria-label="Delete payment"
+                            className="ml-auto shrink-0 text-muted-foreground hover:text-brand-400"
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Delete this payment?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              {formatRupees(p.amount)} recorded {formatDate(p.paidDate)} via{' '}
+                              {PAYMENT_METHOD_LABEL[p.method]}. The fee's status will be
+                              recalculated from what's left. This can't be undone.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Keep it</AlertDialogCancel>
+                            <AlertDialogAction
+                              onClick={() => {
+                                deletePayment.mutate(p.id, {
+                                  onSuccess: () => {
+                                    toast.success('Payment deleted.')
+                                  },
+                                  onError: () => {
+                                    toast.error('Could not delete this payment.')
+                                  },
+                                })
+                              }}
+                            >
+                              Delete payment
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
                     )}
                   </li>
                 ))}

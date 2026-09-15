@@ -68,6 +68,12 @@ collected some other way (cash, UPI, bank transfer, etc.).
 - The same receipt history as the parent screen, but with **Record
   payment** / **Waive** actions per fee period — the natural place to
   handle one student's fee without leaving their profile.
+- **Delete payment** (a small trash icon on each payment line) and
+  **Delete period** (removes the whole fee period, and any payments on
+  it, in one action) — for correcting a mistake, e.g. a fee generated
+  before its plan was finished being configured. Both ask for
+  confirmation first and can't be undone; use "Delete period" then
+  **Generate now** to get a clean, correctly-priced replacement.
 
 **Parent** (`/parent/fees`, reached from the Fees card on Home)
 - Current dues (amount, due date, status badge) and a receipt-style
@@ -85,6 +91,8 @@ collected some other way (cash, UPI, bank transfer, etc.).
 | RPC `generate_upcoming_fees`          |      | ✓     | "Generate now" button and the scheduled Edge Function              |
 | RPC `mark_fees_overdue`               |      | ✓     | scheduled Edge Function only                                       |
 | RPC `record_payment`                  |      | ✓     | insert + flip-to-paid in one call                                  |
+| RPC `delete_payment`                  |      | ✓     | admin-only; removes one payment and recomputes the fee's status    |
+| RPC `delete_student_fee`               |      | ✓     | admin-only; rolls back a whole period (and its payments) for a redo |
 | RPC `student_fees_list`               | ✓    |       | admin dashboard table + CSV export; also returns `last_reminded_at` |
 | RPC `send_fee_reminders`              |      | ✓     | per-row Remind button + bulk "Send reminder"                       |
 | view `monthly_collection_totals`      | ✓    |       | dashboard's "Collected this month" card only                       |

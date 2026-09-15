@@ -5,6 +5,15 @@ non-technical person can follow it. Newest first.
 
 ---
 
+## 2026-09-15 — Admins can now delete a payment or a fee period
+
+- **Made a mistake on a payment or a fee?** You can now delete it. Each
+  payment on a skater's Fees tab has a small delete icon, and each fee
+  period has a **Delete period** button. Deleting a payment recalculates
+  the fee's status automatically; deleting a whole period also removes
+  any payments recorded on it, so you can generate a clean replacement.
+  Both ask you to confirm first and can't be undone.
+
 ## 2026-09-15 — Credits now require payment, and admins can see the balance
 
 - **Class credits only count once the fee is paid.** A skater's period

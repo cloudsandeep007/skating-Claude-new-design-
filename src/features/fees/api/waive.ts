@@ -2,6 +2,8 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 
 import { supabase } from '@/shared/lib/supabase'
 
+import { invalidateFeesAndCredits } from './payments'
+
 interface WaiveInput {
   studentFeeId: string
   reason: string
@@ -21,7 +23,7 @@ export function useWaiveFee() {
       if (error) throw error
     },
     onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ['fees'] })
+      invalidateFeesAndCredits(queryClient)
     },
   })
 }
