@@ -17,6 +17,50 @@ Format:
 
 ---
 
+## 2026-09-15 — Billing periods align to the calendar month, not join date
+
+**Decision:** `generate_upcoming_fees()` now anchors every new period's
+`period_start` to the 1st of a calendar month
+(`date_trunc('month', coalesce(last_period_end + 1, joined_date))`),
+instead of chaining directly off `last_period_end + 1` /
+`joined_date` as-is. Since `period_end` was already derived by adding a
+full `billing_cycle` interval and subtracting one day, starting from the
+1st automatically makes every period end on a month boundary too
+(Sep 1 – Sep 30, Oct 1 – Oct 31, ...) — no other change to the function
+was needed.
+
+**Options considered:**
+1. *Leave it anniversary-based* (previous behavior) — rejected: the
+   client expected calendar-month billing ("it should start from 1st of
+   each month right?"), and an anniversary date is harder to reconcile
+   against bank statements or month-by-month reports.
+2. *`date_trunc` on `period_start` only* (chosen) — smallest possible
+   change; `period_end` falls out correctly for free because of how it's
+   already computed, so no separate rounding logic was needed for it.
+3. *Prorate the first (partial) period* — e.g. a student joining Sep 15
+   pays a half-price Sep 15–30 fee, then full months after — rejected as
+   out of scope: it needs a proration formula and changes the amount
+   calculation, not just the dates; the client's request was specifically
+   about the date alignment, not billing amount. Can be added later as
+   its own change if wanted.
+
+**Why:** Matches the client's explicit expectation, and is the more
+common convention for a monthly-billed service — easier for parents and
+admins to reason about ("this month's fee") than a rolling window tied to
+an arbitrary join date.
+
+**Trade-offs:** A student's first period after this change can be
+shorter than a full month (e.g. joining Sep 20 gets a Sep 1–30 period
+that's really only ~10 days of enrollment, billed at the full monthly
+amount) — no proration was requested or built, so the first period after
+joining mid-month is full price for a partial month, same as it would
+have been under the old scheme's first period too (that one was also
+never prorated — it just happened to run a full cycle length starting
+from the join date instead of from the 1st). Only periods generated from
+now on are affected; nothing already in `student_fees` is rewritten
+(same historical-snapshot rule as `amount`/`credits_granted` — see the
+"per-class billing" and "credits require payment" entries below).
+
 ## 2026-09-15 — Admins can delete a payment or roll back a fee period
 
 **Decision:** Added `delete_payment()` and `delete_student_fee()` RPCs and

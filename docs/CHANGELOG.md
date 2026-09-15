@@ -5,6 +5,18 @@ non-technical person can follow it. Newest first.
 
 ---
 
+## 2026-09-15 — Billing cycles now align to the calendar month
+
+- **A skater's fee period now always runs 1st–30th/31st of the month**,
+  no matter what day they joined. Before, someone joining on the 15th
+  got billed Sep 15 – Oct 14, Oct 15 – Nov 14, and so on forever, tied
+  to their join date. Now everyone's period lines up with the calendar
+  — easier to read, and easier to match against a bank statement or a
+  month-by-month report.
+- This only affects periods generated from now on — fees already
+  generated keep the dates they were created with, same as every other
+  "generate now" change so far.
+
 ## 2026-09-15 — Admins can now delete a payment or a fee period
 
 - **Made a mistake on a payment or a fee?** You can now delete it. Each

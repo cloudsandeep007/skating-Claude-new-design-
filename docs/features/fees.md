@@ -119,6 +119,13 @@ collected some other way (cash, UPI, bank transfer, etc.).
   a duplicate (`unique(student_id, period_start)` is the backstop).
   (`hooks/feeMath.ts`: `nextPeriod`, `isPeriodDue`, unit-tested including
   the Postgres month-clamping edge case — see DECISIONS.)
+- **Periods are calendar-month-aligned, not tied to join date.** Every
+  period starts on the 1st of a month and ends on a month's last day
+  (Sep 1 – Sep 30), regardless of when the student joined — a student
+  joining Sep 15 gets a Sep 1–30 first period, not Sep 15–Oct 14. This
+  only affects periods generated from now on; already-generated fees
+  keep their original dates (see DECISIONS, 2026-09-15). No proration —
+  a mid-month join's first period is still billed at the full amount.
 - **Overdue is a one-way, pending-only flip.** `mark_fees_overdue()` only
   ever moves `pending` → `overdue`; paid and waived fees are untouched
   regardless of their due date, and a fee due *today* is not yet overdue
