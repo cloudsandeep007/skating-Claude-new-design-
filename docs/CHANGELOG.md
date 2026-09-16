@@ -5,6 +5,40 @@ non-technical person can follow it. Newest first.
 
 ---
 
+## 2026-09-17 — Payments & credits audit, Phase 2 complete: clawback with a preview, and the last guards
+
+- **Voiding a payment that granted credits now shows the consequence
+  first.** If the skater has already booked with those credits, the void
+  dialog lists exactly which upcoming classes will be cancelled ("3
+  upcoming bookings will be cancelled: Thu Sep 24, Fri Sep 25, Mon Sep
+  28") and won't proceed until you tick "Cancel those bookings and
+  notify the parent". The newest bookings go first; the parent gets one
+  notification with the dates. Classes already attended are never
+  undone — if those alone leave the skater short, it shows as "owes N
+  classes". Deleting a waived period works the same way.
+- **A voided top-up is not a debt.** Voiding the payment on a top-up
+  zeroes it ("Top-up · voided · ₹0") instead of leaving a ₹4,000 overdue
+  amount with Record payment and Remind buttons on it.
+- **A period that costs ₹0 is created already paid**, so its classes are
+  usable. If a plan is later corrected to a real amount, such a period
+  re-prices and goes back to pending — "paid is frozen" only protects
+  money that actually changed hands. Re-pricing now also prorates a
+  part-month period correctly (it used to apply the full monthly amount).
+- **Bookings open 7 days ahead, enforced by the database** (a
+  per-academy setting, `booking_window_days`). Trying earlier says when
+  the class opens. No cancellation cut-off was added: with attendance as
+  the final word, a class you cancel late and don't attend is returned
+  anyway, so a cut-off would be a rule with no effect.
+- **Leaving frees your bookings.** Archiving a skater, or moving them out
+  of a batch, cancels their upcoming bookings there and returns the
+  credits.
+- **A session with attendance recorded can't be deleted** — cancel it
+  instead. (Deleting would have refunded everyone's credits and erased
+  the attendance.)
+- **A top-up is refused if the skater isn't enrolled in the plan's
+  batch** — "This plan is for the Beginner batch, which the skater isn't
+  enrolled in — fix the plan or the batch first".
+
 ## 2026-09-16 — Pay-per-class becomes top-ups; attendance is the final word on credits
 
 The credit system is now a proper ledger, and pay-per-class works the way

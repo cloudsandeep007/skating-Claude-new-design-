@@ -75,9 +75,13 @@ collected some other way (cash, UPI, bank transfer, etc.).
 - **Void payment** (the trash icon on each payment line) — a payment is
   never deleted. Voiding asks for a reason, keeps the line on the tab
   crossed out with "Voided — <reason>" under it, and the fee's status
-  and balance recalculate from what's left. Refused if it would leave
-  the skater with more booked classes than credits (names how many
-  bookings to cancel first).
+  and balance recalculate from what's left. If the fee stops granting
+  credits the skater has already booked with, the dialog lists the
+  upcoming classes that will be cancelled (newest first) and requires a
+  "Cancel those bookings and notify the parent" tick before the button
+  enables; the parent gets one notification with the dates. Voiding a
+  top-up's payment turns the row into "Top-up · voided · ₹0" — it's
+  undone, never owed.
 - Each payment line shows its **receipt number** (`PRSA-2026-000012`)
   and who recorded it. The confirmation toast repeats the number.
 - **Delete period** — only for a period with **no payment history at
@@ -144,8 +148,37 @@ collected some other way (cash, UPI, bank transfer, etc.).
 | `batches.days_of_week`                | ✓    |       | read by `recompute_open_fees_for_plan` via `expected_classes_from_schedule`, same as generation |
 | `holidays`                            | ✓    |       | same — an added/removed academy holiday can change a batch-scoped plan's open fees |
 
+## Top-ups and terms (pay-per-class)
+
+- A per-class plan has a **rate** (₹/class) and a **billing cycle**, but
+  no period fees are generated for it. Credits come only from top-ups.
+- **Minimum to start or renew a term:** 8 classes (monthly), 24
+  (quarterly), 96 (annual) — `academies.settings.topup_min_classes`.
+- **Term rules** (`record_credit_topup()`, mirrored by `planTopup()` in
+  the schedule feature, unit-tested): no term or lapsed → a top-up ≥
+  minimum starts a term of one cycle from the payment date (smaller is
+  refused, with the minimum and amount in the message); term active →
+  ≥ minimum renews it, the next term running straight on from the
+  current end; < minimum adds classes to the current term without moving
+  its dates.
+- **Expiry:** when the latest term ends and nothing newer has been paid,
+  the nightly job writes off the remaining balance as an "Expired" line.
+  Renewing before the end keeps every unused class.
+- **Rate snapshot:** a top-up is priced at the rate on the day it's
+  recorded; changing the plan's rate later doesn't reprice it.
+- **Top-ups need the right batch.** A top-up is refused if the skater
+  isn't actively enrolled in the plan's batch (the plan picker allows a
+  mismatch deliberately, so this is where it's caught).
+- **Flat-fee plans follow the same "one active plan" idea:** the paid
+  period is the term; if the next period isn't paid by the time the
+  current one ends, leftover credits expire the same way.
+
 ## Business rules
 
+- **A ₹0 period is born paid** and its classes are usable. Because no
+  money was collected, it isn't frozen: correcting the plan's amount
+  later re-prices it (prorated for a part-month) and it goes back to
+  pending.
 - **Fees stay in sync with plan/batch changes — until they're paid.** A
   `pending`/`overdue` fee's `amount` and `credits_granted` automatically
   recalculate the instant its fee plan's rate/amount/pricing mode/batch,

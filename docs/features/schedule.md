@@ -144,6 +144,14 @@ gives each coach a rink-side view of what they're teaching today.
   classes" and booking is refused until a top-up clears it. Make-up
   credits are no longer created for credit-plan skaters; the refund is
   the make-up.
+- **Bookings open `booking_window_days` ahead** (academy setting, default
+  7) — enforced by `book_class_slot()`, mirrored by the parent page.
+  There is deliberately no cancellation cut-off: a class cancelled late
+  and not attended is returned at session completion anyway.
+- **Leaving frees bookings.** Archiving a skater or moving them to
+  another batch cancels their upcoming bookings (credits returned). A
+  session with attendance recorded can't be deleted — cancel it, which
+  frees everyone's bookings and notifies the parents.
 - **A term must be active to book.** A lapsed plan ("The plan ended on
   31 Jul — top up at the academy to renew it") refuses bookings even if
   the nightly expiry hasn't run yet. See docs/features/fees.md "Top-ups

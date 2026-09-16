@@ -218,6 +218,8 @@ when a key is absent:
   this many days before the current one ends.
 - `fee_grace_days` (default `5`) — a fee is due this many days after its
   period starts (or after the day it was generated, if that's later).
+- `booking_window_days` (default `7`) — how many days ahead a parent can
+  book a class.
 - `topup_min_classes` (default `{"monthly": 8, "quarterly": 24, "annual": 96}`)
   — the smallest top-up that starts or renews a pay-per-class plan term.
 - `receipt_prefix` (default: the first four letters/digits of the academy

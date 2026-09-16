@@ -74,6 +74,8 @@ export interface CreditPlanStatus {
   daysLeft: number | null
   termStatus: TermStatus
   available: number | null
+  /** How many days ahead a class can be booked (academy setting, default 7). */
+  bookingWindowDays: number
 }
 
 /** credit_plan_status() RPC — the skater's current plan term: when it ends,
@@ -100,6 +102,7 @@ export function useCreditPlanStatus(studentId: string | null) {
         daysLeft: data.days_left,
         termStatus: data.term_status as TermStatus,
         available: data.available,
+        bookingWindowDays: data.booking_window_days,
       }
     },
   })

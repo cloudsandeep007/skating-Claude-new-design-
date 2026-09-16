@@ -19,10 +19,9 @@ import { useChildFeeStatus, useChildUpcomingSessions } from '../api/childData'
 import { useCurrentChild } from '../hooks/useSelectedChild'
 import { ChildSelector } from './ChildSelector'
 
-/** A session is bookable through this page within the coming week —
- * matches the "book a week ahead" workflow without a hard server-side
- * lead-time rule. */
-const BOOKING_WINDOW_DAYS = 7
+/** Fallback until the plan status loads; the real window is the academy's
+ * `booking_window_days` setting, which book_class_slot() enforces too. */
+const DEFAULT_BOOKING_WINDOW_DAYS = 7
 
 export function ChildSchedulePage() {
   const { child, isLoading: loadingChild } = useCurrentChild()
@@ -34,7 +33,7 @@ export function ChildSchedulePage() {
   const bookSlot = useBookClassSlot()
   const cancelSlot = useCancelClassSlot()
   const today = todayIso()
-  const bookableUntil = addDays(today, BOOKING_WINDOW_DAYS)
+  const bookableUntil = addDays(today, plan?.bookingWindowDays ?? DEFAULT_BOOKING_WINDOW_DAYS)
 
   if (loadingChild) return <Skeleton className="h-40 w-full rounded-lg" />
   if (!child) return <EmptyState title="No skater linked to your account" />

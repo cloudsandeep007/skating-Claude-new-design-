@@ -17,6 +17,7 @@ import {
   AlertDialogTrigger,
 } from '@/shared/ui/alert-dialog'
 import { Button } from '@/shared/ui/button'
+import { Checkbox } from '@/shared/ui/checkbox'
 import { EmptyState } from '@/shared/ui/EmptyState'
 import { Skeleton } from '@/shared/ui/skeleton'
 import { StatusBadge } from '@/shared/ui/StatusBadge'
@@ -51,6 +52,7 @@ export function PaymentHistoryList({
   const [waiveTarget, setWaiveTarget] = useState<WaiveTarget | null>(null)
   const [voidTarget, setVoidTarget] = useState<VoidTarget | null>(null)
   const [topupTarget, setTopupTarget] = useState<TopupTarget | null>(null)
+  const [deleteCancelsBookings, setDeleteCancelsBookings] = useState(false)
   const deleteFee = useDeleteFee()
   const { data: plan } = useCreditPlanStatus(canManage ? studentId : null)
   const canTopup = canManage && plan?.pricingMode === 'per_class'
@@ -134,7 +136,9 @@ export function PaymentHistoryList({
               <div className="min-w-0 flex-1">
                 <div className="font-bold">
                   {fee.kind === 'topup'
-                    ? `Top-up · ${fee.creditsGranted ?? 0} class${fee.creditsGranted === 1 ? '' : 'es'}`
+                    ? fee.amount === 0 && paid === 0
+                      ? 'Top-up · voided'
+                      : `Top-up · ${fee.creditsGranted ?? 0} class${fee.creditsGranted === 1 ? '' : 'es'}`
                     : `${formatDate(fee.periodStart)} – ${formatDate(fee.periodEnd)}`}
                 </div>
                 <div className="text-xs text-muted-foreground">
@@ -216,6 +220,23 @@ export function PaymentHistoryList({
                           ? `It has payment history (${fee.payments.length} ${fee.payments.length === 1 ? 'entry' : 'entries'}, including any voided). A period with payments on record is kept as history — void a wrong payment instead, and the fee's status and balance recalculate on their own.`
                           : "This can't be undone."}
                       </AlertDialogDescription>
+                      {fee.payments.length === 0 &&
+                        fee.status === 'waived' &&
+                        (fee.creditsGranted ?? 0) > 0 && (
+                          <label className="mt-2 flex items-start gap-2 text-sm">
+                            <Checkbox
+                              checked={deleteCancelsBookings}
+                              onCheckedChange={(v) => {
+                                setDeleteCancelsBookings(v === true)
+                              }}
+                            />
+                            <span>
+                              This period granted {fee.creditsGranted} classes. If the skater has
+                              booked with them, cancel their newest upcoming bookings to cover the
+                              difference and notify the parent.
+                            </span>
+                          </label>
+                        )}
                     </AlertDialogHeader>
                     <AlertDialogFooter>
                       <AlertDialogCancel>
@@ -224,7 +245,7 @@ export function PaymentHistoryList({
                       {fee.payments.length === 0 && (
                         <AlertDialogAction
                           onClick={() => {
-                            deleteFee.mutate(fee.id, {
+                            deleteFee.mutate({ studentFeeId: fee.id, cancelBookings: deleteCancelsBookings }, {
                               onSuccess: () => {
                                 toast.success('Fee period deleted.')
                               },
@@ -302,6 +323,12 @@ export function PaymentHistoryList({
                                 amount: p.amount,
                                 paidDate: p.paidDate,
                                 receiptNo: p.receiptNo,
+                                studentId,
+                                // Credits only go if the fee drops out of 'paid'.
+                                creditsAtRisk:
+                                  fee.status === 'paid' && paid - p.amount < fee.amount
+                                    ? (fee.creditsGranted ?? 0)
+                                    : 0,
                               })
                             }}
                           >

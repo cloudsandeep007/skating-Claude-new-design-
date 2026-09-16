@@ -17,6 +17,77 @@ Format:
 
 ---
 
+## 2026-09-17 — Clawback cancels the newest future bookings, with the admin's explicit confirmation
+
+**Decision:** (Migrations 0024–0026.) When an action removes credits a
+skater has already booked with — `void_payment()` on a credit-granting
+fee, `delete_student_fee()` on a waived one — the database refuses unless
+the caller passes `p_cancel_bookings = true`, in which case
+`cancel_bookings_for_shortfall()` cancels the skater's **newest** future
+bookings (scheduled sessions from today on) until the balance is back to
+≥ 0, and writes one `booking_cancelled` notification per parent listing
+the dates. `clawback_preview()` returns the same list beforehand so the
+void dialog can show it and gate the button on a checkbox. Whatever is
+still negative afterwards is attended history — a debt, not an error.
+Voiding a top-up's payment additionally zeroes the top-up (0 classes, ₹0)
+so it never surfaces as an overdue amount.
+
+**Options considered:**
+- *Refuse outright* (the Phase 0 interim guard) — replaced: it left the
+  admin with no path except asking the parent to cancel bookings.
+- *Cancel silently and tell the parent afterwards* — rejected: the admin
+  must see what they're about to do to a family's week.
+- *Oldest bookings first* — rejected: the class the family is about to
+  attend is the one they've planned around; taking the furthest-out
+  ones is the least disruptive.
+- *Leave a voided top-up as a pending fee* — rejected: it would show as
+  ₹N overdue with Record payment / Remind buttons, which is nonsense
+  for "the family paid for N classes and the payment bounced".
+
+**Why:** This is audit invariant I-1 in its final form: the balance can't
+be pushed below zero by an admin action without the admin choosing which
+bookings to give back — while attendance can still make it negative,
+because that reflects a class that really happened.
+
+**Trade-offs:** The newest-first rule is fixed, not a choice in the
+dialog. A skater's two bookings on the same day are ordered by start
+time. The delete-period dialog shows a plain checkbox rather than the
+full preview list (a period with payments can't be deleted at all, so
+the case is rare).
+
+## 2026-09-17 — No cancellation cut-off; booking window in the database; free periods re-price
+
+**Decision:** `book_class_slot()` refuses a session further out than
+`academies.settings.booking_window_days` (default 7), and
+`credit_plan_status()` exposes the value so the parent page uses the
+same number. No cancellation cut-off was built. A period whose amount is
+₹0 is inserted as `paid`; `recompute_open_fees_for_plan()` treats a paid
+period with `amount = 0` or no live payment as open (re-prices it,
+prorating stubs, and re-derives status). Archiving a skater or moving
+them out of a batch releases their future bookings there
+(`release_future_bookings()` via triggers on `students` and
+`student_batches`); a session that is completed or has attendance can't
+be deleted (`sessions_guard_delete`); `record_credit_topup()` refuses a
+skater not enrolled in the plan's batch.
+
+**Options considered:** A `cancel_cutoff_hours` setting was in the audit
+plan. With "attendance is the final word" (0021), a booking cancelled
+after the cut-off and then not attended would be refunded at session
+completion anyway; enforcing a cut-off would require a "late-cancelled,
+not refundable" booking state that contradicts the client's rule. Left
+out deliberately; revisit only if the client wants no-shows to cost a
+class. For F-10 (plan/batch mismatch) a constraint at assignment time was
+considered but the student form creates the student before the
+enrolment, in two requests, so it's enforced where money moves (top-up)
+and where a class is booked (enrolment check) instead.
+
+**Why:** Closes audit findings F-10, F-14, F-15 (window half), F-16,
+F-17. Every rule now lives in the database, not only in the UI.
+
+**Trade-offs:** The booking window is one number per academy, not per
+batch. Releasing bookings on archive is silent to the parent (the skater
+is leaving); moving batches releases only the old batch's bookings.
+
 ## 2026-09-16 — Credits live in a ledger; pay-per-class is prepaid top-ups with a term; attendance is the source of truth
 
 **Decision:** (Migrations 0021–0023, replacing the derived-balance

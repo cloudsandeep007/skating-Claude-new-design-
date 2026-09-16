@@ -1559,10 +1559,6 @@ export type Database = {
           isSetofReturn: false
         }
       }
-      assert_credits_not_negative: {
-        Args: { p_action: string; p_before: number; p_student_id: string }
-        Returns: undefined
-      }
       at_risk_students_for: {
         Args: { p_days?: number; p_min_sessions?: number; p_threshold?: number }
         Returns: {
@@ -1616,6 +1612,10 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      cancel_bookings_for_shortfall: {
+        Args: { p_reason: string; p_student_id: string }
+        Returns: number
+      }
       cancel_class_slot: {
         Args: { p_session_id: string; p_student_id: string }
         Returns: {
@@ -1660,6 +1660,17 @@ export type Database = {
           term_status: string
         }[]
       }
+      clawback_preview: {
+        Args: { p_credits_removed: number; p_student_id: string }
+        Returns: {
+          batch_name: string
+          booking_id: string
+          session_date: string
+          session_id: string
+          shortfall: number
+          start_time: string
+        }[]
+      }
       coach_activity_report: {
         Args: { p_batch_id?: string; p_from: string; p_to: string }
         Returns: {
@@ -1685,6 +1696,7 @@ export type Database = {
         Returns: {
           available: number
           billing_cycle: Database["public"]["Enums"]["billing_cycle"]
+          booking_window_days: number
           days_left: number
           min_topup: number
           pricing_mode: Database["public"]["Enums"]["fee_pricing_mode"]
@@ -1715,7 +1727,10 @@ export type Database = {
           today_attendance_pct: number
         }[]
       }
-      delete_student_fee: { Args: { p_fee_id: string }; Returns: undefined }
+      delete_student_fee: {
+        Args: { p_cancel_bookings?: boolean; p_fee_id: string }
+        Returns: undefined
+      }
       expected_classes_from_schedule: {
         Args: { p_batch_id: string; p_from: string; p_to: string }
         Returns: number
@@ -1927,6 +1942,10 @@ export type Database = {
         }
       }
       rederive_fee_status: { Args: { p_fee_id: string }; Returns: undefined }
+      release_future_bookings: {
+        Args: { p_batch_id?: string; p_student_id: string }
+        Returns: number
+      }
       renewals_due: {
         Args: { p_within_days?: number }
         Returns: {
@@ -1998,6 +2017,16 @@ export type Database = {
         Returns: number
       }
       session_is_editable: { Args: { p_session_id: string }; Returns: boolean }
+      settle_credit_shortfall: {
+        Args: {
+          p_action: string
+          p_before: number
+          p_cancel_bookings: boolean
+          p_reason: string
+          p_student_id: string
+        }
+        Returns: undefined
+      }
       stale_students: {
         Args: { p_days?: number }
         Returns: {
@@ -2063,7 +2092,11 @@ export type Database = {
         }[]
       }
       void_payment: {
-        Args: { p_payment_id: string; p_reason: string }
+        Args: {
+          p_cancel_bookings?: boolean
+          p_payment_id: string
+          p_reason: string
+        }
         Returns: {
           academy_id: string
           amount: number

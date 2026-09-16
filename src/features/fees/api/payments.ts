@@ -128,19 +128,25 @@ export function invalidateFeesAndCredits(queryClient: ReturnType<typeof useQuery
 interface VoidPaymentInput {
   paymentId: string
   reason: string
+  /** Confirms the clawback: cancel the skater's newest upcoming bookings
+   * (and notify the parent) if voiding leaves them short of credits. */
+  cancelBookings: boolean
 }
 
 /** void_payment() RPC — a payment is never deleted. Voiding keeps it on
  * record (struck through, with the reason) but it no longer counts toward
- * the fee, whose status is recomputed from what's left. Refused if that
- * would take away credits the skater has already booked with. */
+ * the fee, whose status is recomputed from what's left. If that would take
+ * away credits the skater has already booked with, the database refuses
+ * unless `cancelBookings` confirms cancelling the newest upcoming ones —
+ * see useClawbackPreview() for what that would be. */
 export function useVoidPayment() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: async ({ paymentId, reason }: VoidPaymentInput) => {
+    mutationFn: async ({ paymentId, reason, cancelBookings }: VoidPaymentInput) => {
       const { error } = await supabase.rpc('void_payment', {
         p_payment_id: paymentId,
         p_reason: reason,
+        p_cancel_bookings: cancelBookings,
       })
       if (error) throw new Error(error.message)
     },
@@ -150,14 +156,75 @@ export function useVoidPayment() {
   })
 }
 
+export interface ClawbackPreview {
+  /** How many classes short the skater would be. 0 = nothing to cancel. */
+  shortfall: number
+  bookings: { bookingId: string; sessionDate: string; startTime: string; batchName: string }[]
+}
+
+/** clawback_preview() RPC — before voiding/deleting something that granted
+ * credits: how short would the skater be, and which upcoming bookings
+ * (newest first) would be cancelled to cover it. */
+export function useClawbackPreview(studentId: string | null, creditsRemoved: number) {
+  return useQuery({
+    queryKey: ['bookings', 'clawback-preview', studentId, creditsRemoved],
+    enabled: studentId !== null && creditsRemoved > 0,
+    queryFn: async (): Promise<ClawbackPreview> => {
+      // The function LEFT JOINs the bookings, so with no shortfall it returns
+      // one row of nulls — the generated types don't know that.
+      const { data, error } = await supabase
+        .rpc('clawback_preview', {
+          p_student_id: studentId ?? '',
+          p_credits_removed: creditsRemoved,
+        })
+        .overrideTypes<
+          {
+            shortfall: number
+            booking_id: string | null
+            session_date: string | null
+            start_time: string | null
+            batch_name: string | null
+          }[],
+          { merge: false }
+        >()
+      if (error) throw error
+      return {
+        shortfall: data[0]?.shortfall ?? 0,
+        bookings: data.flatMap((r) =>
+          r.booking_id && r.session_date && r.start_time && r.batch_name
+            ? [
+                {
+                  bookingId: r.booking_id,
+                  sessionDate: r.session_date,
+                  startTime: r.start_time,
+                  batchName: r.batch_name,
+                },
+              ]
+            : [],
+        ),
+      }
+    },
+  })
+}
+
 /** delete_student_fee() RPC — removes a fee period that has no payment
  * history at all. Use to correct a period that was generated wrong —
- * delete it here, then Generate now for a clean one. */
+ * delete it here, then Generate now for a clean one. A waived period
+ * granted credits; `cancelBookings` confirms the clawback if needed. */
 export function useDeleteFee() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: async (studentFeeId: string) => {
-      const { error } = await supabase.rpc('delete_student_fee', { p_fee_id: studentFeeId })
+    mutationFn: async ({
+      studentFeeId,
+      cancelBookings,
+    }: {
+      studentFeeId: string
+      cancelBookings: boolean
+    }) => {
+      const { error } = await supabase.rpc('delete_student_fee', {
+        p_fee_id: studentFeeId,
+        p_cancel_bookings: cancelBookings,
+      })
       if (error) throw new Error(error.message)
     },
     onSuccess: () => {
