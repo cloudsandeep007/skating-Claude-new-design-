@@ -27,7 +27,9 @@ export function EmptyState({
     <div
       className={cn(
         'rounded-lg border px-5 py-8',
-        tone === 'dark' ? 'border-white/10 bg-ink-surface text-neutral-100' : 'border-border bg-card',
+        tone === 'dark'
+          ? 'border-white/10 bg-ink-surface text-neutral-100'
+          : 'border-border bg-card',
         className,
       )}
     >

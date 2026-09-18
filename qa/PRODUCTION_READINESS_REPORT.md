@@ -1,19 +1,19 @@
 # Production Readiness Report — PRSA Skating Academy
 
-**Date:** 18 Sep 2026 · **Build:** commit `4a9cd32` + working tree · **Assessment by:** Claude, Senior QA / SDET · **Basis:** 187 identified cases, 153 executed in Chromium against the live Supabase project, 21 defects, automated suite green.
+**Date:** 18 Sep 2026, updated 19 Sep 2026 after fixes · **Build:** commit `4a9cd32` (tested) → fix commit on 19 Sep (migrations `0033`/`0034`) · **Assessment by:** Claude, Senior QA / SDET · **Basis:** 187 identified cases, 153 executed in Chromium against the live Supabase project, 21 defects, automated suite green.
 
 ## Verdict
 
 | | |
 |---|---|
-| **Overall** | **CONDITIONAL — not ready today; ready after 4 fixes** |
+| **Overall** | **READY, pending one configuration item (SMTP provider — BUG-007)** |
 | Critical defects | 0 |
-| High defects | 3 (BUG-003, BUG-005, BUG-006 — all in the Add-student flow) |
-| Medium defects | 5 (BUG-001, 004, 007, 010, 012) |
-| Low defects | 13 |
+| High defects | 3 found → **0 open** (BUG-003/005/006 fixed and re-verified 19 Sep) |
+| Medium defects | 5 found → **0 open in code** (BUG-007 mitigated; needs SMTP config) |
+| Low defects | 13 found → **0 open** |
 | Security / isolation failures | 0 |
-| Money-integrity failures | 0 in the ledger; 2 display defects (BUG-010, BUG-012) |
-| Automated regression | typecheck ✅ lint ✅ unit 91/91 ✅ e2e 7/7 ✅ |
+| Money-integrity failures | 0 in the ledger; the 2 display defects (BUG-010, BUG-012) are fixed |
+| Automated regression | 18 Sep: unit 91/91, e2e 7/7 · 19 Sep after fixes: typecheck ✅ lint ✅ unit 122/122 ✅ e2e 8/8 ✅ |
 
 ## Readiness by area
 
@@ -21,18 +21,18 @@
 |---|---|---|
 | Authentication & sessions | ✅ Ready | 11/13 PASS; the two remaining depend on email delivery (config, BUG-007) |
 | Roles & data isolation | ✅ Ready | 10/10 PASS incl. RLS and RPC ownership probes |
-| Fees & payments | 🟡 Ready with caveats | 19/25 PASS; ledger, receipts, void/waive, exports and reconciliation all correct; two display defects (negative balance, advance not applied until nightly) |
+| Fees & payments | ✅ Ready (was 🟡) | Negative balance, voided-top-up row and advance application fixed in `0033`; Apply now button added |
 | Credit ledger & attendance truth | ✅ Ready | 9/12 PASS, 1 copy defect; every spend/return verified in `credit_ledger` |
 | Parent app | ✅ Ready | 14/19 PASS; booking window and ownership enforced server-side; only feedback polish missing |
-| Students | 🔴 Not ready | 7 FAIL — the Add-student flow can create orphans, duplicates and blank names, and cannot link to an existing parent |
-| Coaches | 🟡 Ready with caveats | Creation depends on invite emails (BUG-007); phone validation missing |
+| Students | ✅ Ready (was 🔴) | All 7 Add-student failures fixed and re-verified 19 Sep; invite delivery still depends on SMTP config |
+| Coaches | 🟡 Ready with caveats | Phone validation added; creation still depends on invite emails (SMTP config) |
 | Batches & schedule | ✅ Ready | 17/24 PASS, 1 Low; generate/enrol/remove and duplicate/clash guards behave |
 | Announcements & notifications | ✅ Ready | Audience targeting and notifications correct; one Low validation gap |
 | Reports & dashboard | ✅ Ready | All tabs and exports work; totals reconcile; one Low copy defect |
-| Progression | 🟡 Ready with caveats | Levels CRUD works; ordering bug (Low); skills/assessment NOT RUN |
+| Progression | 🟡 Ready with caveats | Ordering fixed; skills/assessment NOT RUN |
 | Responsive / UI | ✅ Ready | No overflow at 375/768/1280; phone layouts for coach and parent verified |
 | Cross-browser | ⚪ Unknown | Chromium only |
-| Error handling | 🟡 Ready with caveats | Routing/refresh/back all fine; server errors are always shown as a generic toast |
+| Error handling | ✅ Ready (was 🟡) | `describeError()` turns Postgres/Edge errors into specific messages; dialogs keep input on failure |
 
 ## What was proven
 
@@ -50,13 +50,13 @@
 
 ## Go-live conditions
 
-1. Fix and re-test BUG-003, BUG-005, BUG-006 (Add-student flow) — one PR.
-2. Configure a production SMTP provider in Supabase Auth and send one real invite end-to-end (BUG-007).
-3. Strongly recommended in the same release: BUG-010, BUG-012 (money display), BUG-001, BUG-004.
-4. Run the "would mutate live data" NOT RUN cases on a staging copy of the database.
-5. One manual smoke pass of the parent app on an iPhone (Safari) and one on Firefox.
+1. ~~Fix and re-test BUG-003, BUG-005, BUG-006~~ — **done 19 Sep**.
+2. Configure a production SMTP provider in Supabase Auth and send one real invite end-to-end (BUG-007) — **open, configuration only**.
+3. ~~BUG-010, BUG-012, BUG-001, BUG-004~~ — **done 19 Sep** (every other defect too).
+4. Run the "would mutate live data" NOT RUN cases on a staging copy of the database — recommended.
+5. One manual smoke pass of the parent app on an iPhone (Safari) and one on Firefox — recommended.
 
-With 1–2 done the application is fit for a single-academy launch; with 3–5 done it is fit for daily use by a non-technical owner without engineering support on standby.
+With 2 done the application is fit for a single-academy launch; 4–5 are good hygiene before handing it to a non-technical owner without engineering support on standby.
 
 ## Deliverables
 

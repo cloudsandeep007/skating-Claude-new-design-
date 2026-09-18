@@ -17,6 +17,45 @@ Format:
 
 ---
 
+## 2026-09-19 — A payment's fee portion is what counts; a voided top-up is not a fee
+
+**Decision:** `fee_paid_total()` sums `payment_fee_portion()` — a payment's
+amount minus any advance deposited out of it — instead of raw amounts.
+Voided top-ups (`kind = 'topup' and amount = 0`) are excluded from the Fees
+dashboard list and the fee collection report but kept on the skater's own
+Fees tab with a "Voided" badge. Advances are applied at the end of every
+`generate_upcoming_fees()` run and on demand via `apply_student_advances()`.
+**Options considered:** storing a separate `fee_portion` column on
+`payments` (denormalised, one more thing to keep in step); clamping the
+displayed balance at zero (hides the double count instead of fixing it);
+deleting voided top-ups (loses the receipt trail).
+**Why:** the deposit row already links to its payment, so the fee portion
+is derivable with no new column; every consumer (status derivation, list,
+report, record_payment's cap) goes through the one function. Keeping
+voided top-ups off the money lists but on the skater's tab matches how
+voided payments are shown.
+**Trade-offs:** `generate_upcoming_fees()` is now a wrapper around the
+0030 body (`generate_upcoming_fees_core`) — a future rewrite must keep the
+`apply_all_advances()` call at the end.
+
+## 2026-09-19 — Add-student compensates instead of a single transaction
+
+**Decision:** `createStudent()` inserts the skater, then enrols and links
+the parent; if either later step fails it deletes the skater again and
+rethrows the cause. A `useRef` submit lock stops a second tap before the
+first request starts.
+**Options considered:** one `create_student_with_parent` RPC (a true
+transaction) — but inviting a new parent goes through an Edge Function
+that creates an auth user and sends email, which cannot run inside a
+Postgres transaction; two-phase "invite first, then create" (an invite
+with no skater on failure is worse than the reverse).
+**Why:** compensation gives the same outcome the admin cares about — no
+orphan, one clear error — without splitting the parent invite from its
+link. The unit test pins the order and the rollback.
+**Trade-offs:** a network drop between the insert and the delete could
+still leave a skater; the admin sees the error and the skater is visible
+in the list to archive. Revisit if invites move server-side.
+
 ## 2026-09-19 — A booking is a request; the credit is held at request time
 
 **Decision:** Parent bookings go through a `pending` status that the batch

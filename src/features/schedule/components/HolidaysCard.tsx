@@ -5,6 +5,17 @@ import { toast } from 'sonner'
 
 import { useAuth } from '@/features/auth'
 import { formatDate } from '@/shared/lib/format'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/shared/ui/alert-dialog'
 import { Button } from '@/shared/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/ui/card'
 import { Form, FormControl, FormField, FormItem, FormMessage } from '@/shared/ui/form'
@@ -58,7 +69,11 @@ export function HolidaysCard() {
               render={({ field }) => (
                 <FormItem>
                   <FormControl>
-                    <DatePicker value={field.value} onChange={field.onChange} className="w-[160px]" />
+                    <DatePicker
+                      value={field.value}
+                      onChange={field.onChange}
+                      className="w-[160px]"
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -90,17 +105,42 @@ export function HolidaysCard() {
                   {formatDate(holiday.date)}
                 </span>
                 <span className="flex-1 font-medium">{holiday.name}</span>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-8 w-8"
-                  aria-label={`Remove ${holiday.name}`}
-                  onClick={() => {
-                    removeHoliday.mutate(holiday.id)
-                  }}
-                >
-                  <X className="h-4 w-4" />
-                </Button>
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8"
+                      aria-label={`Remove ${holiday.name}`}
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Remove {holiday.name}?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        {formatDate(holiday.date)} goes back to being a normal day: the next
+                        schedule generation will create sessions on it. Sessions already on the
+                        calendar are not affected.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Keep holiday</AlertDialogCancel>
+                      <AlertDialogAction
+                        onClick={() => {
+                          removeHoliday.mutate(holiday.id, {
+                            onError: () => {
+                              toast.error('Could not remove the holiday.')
+                            },
+                          })
+                        }}
+                      >
+                        Remove
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
               </li>
             ))}
           </ul>

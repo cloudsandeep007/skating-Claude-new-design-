@@ -128,7 +128,9 @@ export function useCreditLedger(studentId: string | null) {
       if (!studentId) return []
       const { data, error } = await supabase
         .from('credit_ledger')
-        .select('id, delta, kind, reason, created_at, actor:profiles!credit_ledger_actor_id_fkey(full_name)')
+        .select(
+          'id, delta, kind, reason, created_at, actor:profiles!credit_ledger_actor_id_fkey(full_name)',
+        )
         .eq('student_id', studentId)
         .order('created_at', { ascending: false })
         .overrideTypes<

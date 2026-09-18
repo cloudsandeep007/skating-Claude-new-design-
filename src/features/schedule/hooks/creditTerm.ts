@@ -79,10 +79,20 @@ export function planTopup(
       return { kind: 'extra', termStart: status.termStart, termEnd: status.termEnd, amount }
     }
     const start = addDays(status.termEnd, 1)
-    return { kind: 'renewal', termStart: start, termEnd: addDays(addMonths(start, months), -1), amount }
+    return {
+      kind: 'renewal',
+      termStart: start,
+      termEnd: addDays(addMonths(start, months), -1),
+      amount,
+    }
   }
   if (classes < status.minTopup) return null
-  return { kind: 'new', termStart: paidDate, termEnd: addDays(addMonths(paidDate, months), -1), amount }
+  return {
+    kind: 'new',
+    termStart: paidDate,
+    termEnd: addDays(addMonths(paidDate, months), -1),
+    amount,
+  }
 }
 
 export function termTone(status: TermStatus): StatusTone {

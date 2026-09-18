@@ -46,7 +46,9 @@ async function fetchSessions({ from, to, coachId }: SessionFilters): Promise<Ses
 
   const batchIds = [...new Set(data.map((s) => s.batch_id))]
   const cancelledIds = data.filter((s) => s.status === 'cancelled').map((s) => s.id)
-  const originalIds = [...new Set(data.map((s) => s.makeup_for_session_id).filter((id) => id != null))]
+  const originalIds = [
+    ...new Set(data.map((s) => s.makeup_for_session_id).filter((id) => id != null)),
+  ]
   const [counts, marked, makeupScheduled, originalDates, booked] = await Promise.all([
     fetchStudentCounts(batchIds),
     fetchMarkedCounts(data.map((s) => s.id)),

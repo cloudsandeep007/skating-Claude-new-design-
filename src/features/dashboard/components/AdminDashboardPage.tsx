@@ -121,7 +121,13 @@ export function AdminDashboardPage() {
                 : '—'
             }
             trend={attendanceTrend}
-            trendCaption="pts vs last month"
+            trendCaption={
+              stats?.lastMonthAttendancePct === null || stats?.lastMonthAttendancePct === undefined
+                ? 'no data for last month'
+                : attendanceTrend.direction === 'flat'
+                  ? `same as last month (${stats.lastMonthAttendancePct}%)`
+                  : `pts vs ${stats.lastMonthAttendancePct}% last month`
+            }
             isLoading={loadingStats}
           />
           <StatCard

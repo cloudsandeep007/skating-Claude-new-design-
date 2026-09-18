@@ -75,12 +75,19 @@ export const AnnouncementFormSchema = z
     if (data.publishMode === 'later' && !data.publishAt) {
       ctx.addIssue({ code: 'custom', path: ['publishAt'], message: 'Choose when to publish' })
     }
-    if (data.expiresAt && data.publishAt && data.expiresAt <= data.publishAt) {
-      ctx.addIssue({
-        code: 'custom',
-        path: ['expiresAt'],
-        message: 'Expiry must be after publishing',
-      })
+    if (data.expiresAt) {
+      const publishAt =
+        data.publishMode === 'later' && data.publishAt ? new Date(data.publishAt) : new Date()
+      if (new Date(data.expiresAt) <= publishAt) {
+        ctx.addIssue({
+          code: 'custom',
+          path: ['expiresAt'],
+          message:
+            data.publishMode === 'later'
+              ? 'Expiry must be after the publish time'
+              : 'Expiry must be in the future',
+        })
+      }
     }
   })
 export type AnnouncementForm = z.infer<typeof AnnouncementFormSchema>

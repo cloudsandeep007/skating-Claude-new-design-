@@ -1,5 +1,7 @@
 import { z } from 'zod'
 
+import { addDays, todayIso } from '@/shared/lib/format'
+
 import type { Enums, Tables } from '@/shared/types'
 
 export type Session = Tables<'schedule_sessions'>
@@ -61,6 +63,12 @@ export const ExtraSessionSchema = z
   .refine((d) => d.endTime > d.startTime, {
     message: 'End time must be after start time',
     path: ['endTime'],
+  })
+  // Yesterday is allowed so a forgotten class can still be marked (the
+  // coach's marking window); anything older is a typo.
+  .refine((d) => d.sessionDate >= addDays(todayIso(), -1), {
+    message: 'That date has passed — pick today, yesterday, or a date ahead',
+    path: ['sessionDate'],
   })
 export type ExtraSession = z.infer<typeof ExtraSessionSchema>
 

@@ -54,7 +54,12 @@ export function RevenueChart({ months }: { months: number }) {
             />
             <Legend wrapperStyle={{ fontSize: 12, color: 'hsl(var(--muted-foreground))' }} />
             <Bar dataKey="collected" name="Collected" fill="#00F2FE" radius={[4, 4, 0, 0]} />
-            <Bar dataKey="expected" name="Expected" fill="hsl(var(--muted))" radius={[4, 4, 0, 0]} />
+            <Bar
+              dataKey="expected"
+              name="Expected"
+              fill="hsl(var(--muted))"
+              radius={[4, 4, 0, 0]}
+            />
           </BarChart>
         </ResponsiveContainer>
       </div>

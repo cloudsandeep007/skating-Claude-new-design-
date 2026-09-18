@@ -47,7 +47,7 @@ const TIME_REGEX = /^([01]\d|2[0-3]):[0-5]\d$/
 
 export const BatchFormSchema = z
   .object({
-    name: z.string().min(1, 'Batch name is required'),
+    name: z.string().trim().min(1, 'Batch name is required'),
     levelRange: z.string().optional(),
     coachId: z.string().optional(),
     capacity: z.number().int().min(1, 'Capacity must be at least 1'),

@@ -39,7 +39,8 @@ function readEnv(): { url: string; anonKey: string } {
   }
   const url = vars.VITE_SUPABASE_URL
   const anonKey = vars.VITE_SUPABASE_ANON_KEY
-  if (!url || !anonKey) throw new Error('VITE_SUPABASE_URL / VITE_SUPABASE_ANON_KEY not found in .env')
+  if (!url || !anonKey)
+    throw new Error('VITE_SUPABASE_URL / VITE_SUPABASE_ANON_KEY not found in .env')
   return { url, anonKey }
 }
 
@@ -126,7 +127,10 @@ async function prepareFixture(db: Db): Promise<Fixture> {
       .insert({ academy_id: academyId, student_id: student.id, batch_id: batch.id })
     if (enrol.error) throw enrol.error
   } else {
-    await db.from('students').update({ fee_plan_id: plan.id, status: 'active' }).eq('id', student.id)
+    await db
+      .from('students')
+      .update({ fee_plan_id: plan.id, status: 'active' })
+      .eq('id', student.id)
   }
 
   const gen = await db.rpc('generate_upcoming_fees', { p_academy_id: academyId })
@@ -200,7 +204,9 @@ test.describe('payment ledger', () => {
     await voidDialog.getByRole('button', { name: 'Void payment' }).click()
 
     await expect(page.getByText('Payment voided.')).toBeVisible()
-    await expect(feeCard.getByText('Voided — e2e: recorded on the wrong skater').last()).toBeVisible()
+    await expect(
+      feeCard.getByText('Voided — e2e: recorded on the wrong skater').last(),
+    ).toBeVisible()
     await expect(feeCard.getByText(/Pending|Overdue/)).toBeVisible()
     await expect(feeCard.getByRole('button', { name: 'Void payment' })).toHaveCount(0)
 

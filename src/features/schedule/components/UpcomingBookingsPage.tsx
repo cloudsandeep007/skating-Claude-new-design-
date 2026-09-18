@@ -147,7 +147,8 @@ export function UpcomingBookingsPage() {
                             to={`/admin/students/${b.studentId}`}
                             className={cn(
                               'flex items-center gap-2 rounded-full border bg-background py-1 pl-1 pr-3 text-sm font-semibold hover:border-primary',
-                              b.status === 'pending' && 'border-dashed border-warning-500/60 text-warning-300',
+                              b.status === 'pending' &&
+                                'border-dashed border-warning-500/60 text-warning-300',
                             )}
                             title={b.status === 'pending' ? 'Awaiting approval' : 'Confirmed'}
                           >

@@ -49,8 +49,25 @@ describe('paidTotal — voided payments count for nothing', () => {
     expect(paidTotal([])).toBe(0)
   })
 
+  it('BUG-010: only the fee portion of a payment that carried an advance counts', () => {
+    // ₹740 paid against ₹240 owed, ₹500 kept as an advance → the fee got ₹240.
+    expect(
+      paidTotal([
+        { amount: 200, voidedAt: null },
+        { amount: 200, voidedAt: null },
+        { amount: 740, voidedAt: null, advanceDeposit: 500 },
+      ]),
+    ).toBe(640)
+  })
+
   it('rounds to the nearest paisa', () => {
-    expect(paidTotal([{ amount: 33.33, voidedAt: null }, { amount: 33.33, voidedAt: null }, { amount: 33.34, voidedAt: null }])).toBe(100)
+    expect(
+      paidTotal([
+        { amount: 33.33, voidedAt: null },
+        { amount: 33.33, voidedAt: null },
+        { amount: 33.34, voidedAt: null },
+      ]),
+    ).toBe(100)
   })
 })
 

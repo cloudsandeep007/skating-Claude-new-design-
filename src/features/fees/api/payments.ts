@@ -27,6 +27,7 @@ interface FeeRow {
     voided_at: string | null
     void_reason: string | null
     recorded_by: { full_name: string } | null
+    advances: { delta: number; kind: 'deposit' | 'applied' }[]
   }[]
 }
 
@@ -44,7 +45,8 @@ export function useStudentFees(studentId: string | null) {
           `id, kind, credits_granted, period_start, period_end, due_date, amount, status, waived_reason,
            fee_plan:fee_plans(name),
            payments(id, amount, paid_date, method, reference, notes, receipt_no, voided_at, void_reason,
-                    recorded_by:profiles!payments_recorded_by_fkey(full_name))`,
+                    recorded_by:profiles!payments_recorded_by_fkey(full_name),
+                    advances:student_advances!student_advances_payment_id_fkey(delta, kind))`,
         )
         .eq('student_id', studentId ?? '')
         .order('due_date', { ascending: false })
@@ -73,6 +75,9 @@ export function useStudentFees(studentId: string | null) {
             voidedAt: p.voided_at,
             voidReason: p.void_reason,
             recordedByName: p.recorded_by?.full_name ?? null,
+            advanceDeposit: p.advances
+              .filter((a) => a.kind === 'deposit')
+              .reduce((sum, a) => sum + a.delta, 0),
           }))
           .sort((a, b) => b.paidDate.localeCompare(a.paidDate)),
       }))
@@ -162,6 +167,25 @@ export function useStudentAdvance(studentId: string | null) {
           createdAt: r.created_at,
         })),
       }
+    },
+  })
+}
+
+/** apply_student_advances() RPC — puts whatever the family has paid ahead
+ * onto their open fees right now, instead of waiting for the nightly job
+ * (BUG-012). Returns the amount applied. */
+export function useApplyStudentAdvances() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async (studentId: string) => {
+      const { data, error } = await supabase.rpc('apply_student_advances', {
+        p_student_id: studentId,
+      })
+      if (error) throw error
+      return data
+    },
+    onSuccess: () => {
+      invalidateFeesAndCredits(queryClient)
     },
   })
 }

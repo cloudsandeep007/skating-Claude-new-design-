@@ -185,8 +185,8 @@ export function RecordPaymentDialog({ fee, onClose }: RecordPaymentDialogProps) 
                               Keep the extra {formatRupees(extra)} as an advance
                             </span>
                             <span className="block text-xs text-muted-foreground">
-                              It's applied automatically to the next fee. The receipt shows the
-                              full {formatRupees(Number.isFinite(amount) ? amount : 0)}.
+                              It's applied automatically to the next fee. The receipt shows the full{' '}
+                              {formatRupees(Number.isFinite(amount) ? amount : 0)}.
                             </span>
                           </span>
                         </label>

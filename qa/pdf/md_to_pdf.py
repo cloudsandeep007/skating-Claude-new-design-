@@ -207,6 +207,9 @@ class MDHTMLWalker(HTMLParser):
             self.buf.append("</a>")
 
     def handle_data(self, data):
+        # Literal text: escape anything ReportLab's mini-markup would read as
+        # a tag (e.g. "<Link>" in a note about a React component).
+        data = data.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
         if self.in_table and not self.list_stack:
             self.cell_buf.append(data)
         else:

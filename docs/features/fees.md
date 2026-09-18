@@ -317,6 +317,21 @@ last receipt, and the older periods collapsed. Voided payments sit behind
 a "Show N voided entries" toggle; a voided top-up reads "Top-up · voided"
 with a neutral badge rather than "₹0 · Paid".
 
+### Money display rules (2026-09-19, BUG-010/011/012)
+
+- A payment that carried an advance counts only its **fee portion** toward
+  the fee — `paidTotal()` in the client subtracts `advanceDeposit`, the
+  database subtracts the deposit rows linked to the payment. A fee balance
+  is never shown negative.
+- A **voided top-up** (amount 0) is hidden from the Fees dashboard list and
+  the fee collection report; on the skater's Fees tab it reads "Top-up ·
+  voided" with a neutral **Voided** badge.
+- An advance is applied at the end of every fee generation and via **Apply
+  now** on the skater's Fees tab (`apply_student_advances`).
+- Fee plan amount is capped at ₹1 crore and per-class rate at ₹10 lakh; a
+  duplicate plan name or other server error keeps the dialog open and shows
+  the reason.
+
 ## Edge cases
 
 - **A plan is deleted while students are on it** — `fee_plan_id` is set

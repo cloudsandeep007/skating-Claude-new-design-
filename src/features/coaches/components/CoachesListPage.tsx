@@ -74,7 +74,13 @@ export function CoachesListPage() {
                   }}
                 >
                   <TableCell>
-                    <div className="flex items-center gap-2.5">
+                    <Link
+                      to={`/admin/coaches/${coach.id}`}
+                      className="flex items-center gap-2.5 rounded-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                      }}
+                    >
                       <PersonAvatar
                         name={coach.fullName}
                         photoUrl={coach.photoUrl ? photoUrls?.[coach.photoUrl] : undefined}
@@ -85,7 +91,7 @@ export function CoachesListPage() {
                         <div className="font-bold">{coach.fullName}</div>
                         <div className="text-xs text-muted-foreground">{coach.email}</div>
                       </div>
-                    </div>
+                    </Link>
                   </TableCell>
                   <TableCell>{coach.specialization ?? '—'}</TableCell>
                   <TableCell>{coach.batchCount}</TableCell>

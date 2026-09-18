@@ -89,13 +89,13 @@ export interface StaleStudentRow {
 }
 
 export const LevelFormSchema = z.object({
-  name: z.string().min(1, 'Level name is required'),
+  name: z.string().trim().min(1, 'Level name is required'),
   description: z.string().optional(),
 })
 export type LevelForm = z.infer<typeof LevelFormSchema>
 
 export const SkillFormSchema = z.object({
-  name: z.string().min(1, 'Skill name is required'),
+  name: z.string().trim().min(1, 'Skill name is required'),
   description: z.string().optional(),
 })
 export type SkillForm = z.infer<typeof SkillFormSchema>

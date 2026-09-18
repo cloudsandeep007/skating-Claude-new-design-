@@ -31,7 +31,22 @@ const FIELD: Record<string, string> = {
   notes: 'notes',
 }
 
-const IGNORE = new Set(['updated_at', 'created_at', 'marked_at', 'marked_by', 'recorded_by', 'voided_by', 'id', 'academy_id', 'student_id', 'session_id', 'student_fee_id', 'idempotency_key', 'last_reminded_at', 'booked_at'])
+const IGNORE = new Set([
+  'updated_at',
+  'created_at',
+  'marked_at',
+  'marked_by',
+  'recorded_by',
+  'voided_by',
+  'id',
+  'academy_id',
+  'student_id',
+  'session_id',
+  'student_fee_id',
+  'idempotency_key',
+  'last_reminded_at',
+  'booked_at',
+])
 
 function show(v: unknown): string {
   if (v === null || v === undefined) return '—'
@@ -54,9 +69,13 @@ export function describeActivity(e: ActivityEntry): { headline: string; details:
     const row = (changes.new ?? {}) as Record<string, unknown>
     const bits: string[] = []
     if (e.entityType === 'payments') {
-      bits.push(`₹${show(row.amount)}${row.method ? ` · ${show(row.method)}` : ''}${row.receipt_no ? ` · ${show(row.receipt_no)}` : ''}`)
+      bits.push(
+        `₹${show(row.amount)}${row.method ? ` · ${show(row.method)}` : ''}${row.receipt_no ? ` · ${show(row.receipt_no)}` : ''}`,
+      )
     } else if (e.entityType === 'student_fees') {
-      bits.push(`${show(row.kind ?? 'period')} · ₹${show(row.amount)} · ${show(row.period_start)} – ${show(row.period_end)}${row.credits_granted != null ? ` · ${show(row.credits_granted)} classes` : ''}`)
+      bits.push(
+        `${show(row.kind ?? 'period')} · ₹${show(row.amount)} · ${show(row.period_start)} – ${show(row.period_end)}${row.credits_granted != null ? ` · ${show(row.credits_granted)} classes` : ''}`,
+      )
     } else if (e.entityType === 'class_bookings') {
       bits.push(`${show(row.status)}${row.source === 'attendance' ? ' (walk-in)' : ''}`)
     } else if (e.entityType === 'attendance') {

@@ -76,7 +76,13 @@ export function FeePlanFormDialog({
   }
 
   async function submit(values: FeePlanForm) {
-    await onSubmit(values)
+    // A failed save keeps the dialog open with everything typed still in
+    // it; the caller has already shown the reason in a toast.
+    try {
+      await onSubmit(values)
+    } catch {
+      return
+    }
     close()
   }
 
@@ -159,18 +165,20 @@ export function FeePlanFormDialog({
                           name={field.name}
                           ref={field.ref}
                           onBlur={field.onBlur}
-                          value={field.value == null || Number.isNaN(field.value) ? '' : field.value}
+                          value={
+                            field.value == null || Number.isNaN(field.value) ? '' : field.value
+                          }
                           onChange={(event) => {
                             field.onChange(
-                              event.target.value === '' ? null : event.target.valueAsNumber
+                              event.target.value === '' ? null : event.target.valueAsNumber,
                             )
                           }}
                         />
                       </FormControl>
                       <FormDescription>
-                        Families top up in classes, not per period. A monthly plan starts
-                        with at least 8 classes, quarterly 24, annual 96; unused classes
-                        expire when the term ends without a renewal.
+                        Families top up in classes, not per period. A monthly plan starts with at
+                        least 8 classes, quarterly 24, annual 96; unused classes expire when the
+                        term ends without a renewal.
                       </FormDescription>
                       <FormMessage />
                     </FormItem>

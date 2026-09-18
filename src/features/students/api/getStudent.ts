@@ -74,5 +74,14 @@ export function useStudent(id: string) {
   return useQuery({
     queryKey: ['students', 'detail', id],
     queryFn: () => fetchStudent(id),
+    // A wrong id (old bookmark, deleted skater) is a not-found, not a blip:
+    // don't retry it three times before admitting it.
+    retry: (count, error) => !isNotFound(error) && count < 2,
   })
+}
+
+/** PostgREST's "no rows" from .single(), or a malformed uuid. */
+export function isNotFound(error: unknown): boolean {
+  const code = (error as { code?: string } | null)?.code
+  return code === 'PGRST116' || code === '22P02'
 }

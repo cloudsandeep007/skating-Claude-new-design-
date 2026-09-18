@@ -386,23 +386,75 @@ function ReconciliationTab({ range, setRange, batchId, setBatchId }: TabProps) {
       voidedCount: t.voidedCount + r.voidedCount,
       advanceApplied: t.advanceApplied + r.advanceApplied,
     }),
-    { cash: 0, upi: 0, card: 0, bankTransfer: 0, cheque: 0, other: 0, collected: 0, paymentCount: 0, voidedTotal: 0, voidedCount: 0, advanceApplied: 0 },
+    {
+      cash: 0,
+      upi: 0,
+      card: 0,
+      bankTransfer: 0,
+      cheque: 0,
+      other: 0,
+      collected: 0,
+      paymentCount: 0,
+      voidedTotal: 0,
+      voidedCount: 0,
+      advanceApplied: 0,
+    },
   )
-  const header = ['Day', 'Cash', 'UPI', 'Card', 'Bank', 'Cheque', 'Other', 'Collected', 'Receipts', 'Receipt range', 'Voided', 'Advance applied']
+  const header = [
+    'Day',
+    'Cash',
+    'UPI',
+    'Card',
+    'Bank',
+    'Cheque',
+    'Other',
+    'Collected',
+    'Receipts',
+    'Receipt range',
+    'Voided',
+    'Advance applied',
+  ]
   const csvRows = () =>
     (rows ?? []).map((r) => [
-      r.day, r.cash, r.upi, r.card, r.bankTransfer, r.cheque, r.other, r.collected, r.paymentCount,
-      r.firstReceipt && r.lastReceipt ? (r.firstReceipt === r.lastReceipt ? r.firstReceipt : `${r.firstReceipt} – ${r.lastReceipt}`) : '',
-      r.voidedTotal, r.advanceApplied,
+      r.day,
+      r.cash,
+      r.upi,
+      r.card,
+      r.bankTransfer,
+      r.cheque,
+      r.other,
+      r.collected,
+      r.paymentCount,
+      r.firstReceipt && r.lastReceipt
+        ? r.firstReceipt === r.lastReceipt
+          ? r.firstReceipt
+          : `${r.firstReceipt} – ${r.lastReceipt}`
+        : '',
+      r.voidedTotal,
+      r.advanceApplied,
     ])
   const totalRow = () => [
-    'Total', totals.cash, totals.upi, totals.card, totals.bankTransfer, totals.cheque, totals.other,
-    totals.collected, totals.paymentCount, '', totals.voidedTotal, totals.advanceApplied,
+    'Total',
+    totals.cash,
+    totals.upi,
+    totals.card,
+    totals.bankTransfer,
+    totals.cheque,
+    totals.other,
+    totals.collected,
+    totals.paymentCount,
+    '',
+    totals.voidedTotal,
+    totals.advanceApplied,
   ]
 
   function exportCsv() {
     if (!rows) return
-    downloadCsv(`reconciliation-${range.from}-to-${range.to}.csv`, [header, ...csvRows(), totalRow()])
+    downloadCsv(`reconciliation-${range.from}-to-${range.to}.csv`, [
+      header,
+      ...csvRows(),
+      totalRow(),
+    ])
   }
   function exportPdf() {
     if (!rows) return
@@ -432,22 +484,36 @@ function ReconciliationTab({ range, setRange, batchId, setBatchId }: TabProps) {
       />
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         <div className="rounded-lg border bg-card p-3">
-          <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Collected</div>
+          <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+            Collected
+          </div>
           <div className="font-display text-xl font-extrabold">{rupees(totals.collected)}</div>
-          <div className="text-xs text-muted-foreground">{totals.paymentCount} receipt{totals.paymentCount === 1 ? '' : 's'}</div>
+          <div className="text-xs text-muted-foreground">
+            {totals.paymentCount} receipt{totals.paymentCount === 1 ? '' : 's'}
+          </div>
         </div>
         <div className="rounded-lg border bg-card p-3">
-          <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Cash</div>
+          <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+            Cash
+          </div>
           <div className="font-display text-xl font-extrabold">{rupees(totals.cash)}</div>
         </div>
         <div className="rounded-lg border bg-card p-3">
-          <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">UPI + bank + card</div>
-          <div className="font-display text-xl font-extrabold">{rupees(totals.upi + totals.bankTransfer + totals.card)}</div>
+          <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+            UPI + bank + card
+          </div>
+          <div className="font-display text-xl font-extrabold">
+            {rupees(totals.upi + totals.bankTransfer + totals.card)}
+          </div>
         </div>
         <div className="rounded-lg border bg-card p-3">
-          <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Voided · advance</div>
+          <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+            Voided · advance
+          </div>
           <div className="font-display text-xl font-extrabold">{rupees(totals.voidedTotal)}</div>
-          <div className="text-xs text-muted-foreground">{rupees(totals.advanceApplied)} covered from advances</div>
+          <div className="text-xs text-muted-foreground">
+            {rupees(totals.advanceApplied)} covered from advances
+          </div>
         </div>
       </div>
       <ReportTable
@@ -489,7 +555,9 @@ function ReconciliationTab({ range, setRange, batchId, setBatchId }: TabProps) {
                   {r.paymentCount}
                   {r.firstReceipt && (
                     <span className="block text-muted-foreground">
-                      {r.firstReceipt === r.lastReceipt ? r.firstReceipt : `${r.firstReceipt} – ${r.lastReceipt}`}
+                      {r.firstReceipt === r.lastReceipt
+                        ? r.firstReceipt
+                        : `${r.firstReceipt} – ${r.lastReceipt}`}
                     </span>
                   )}
                 </TableCell>

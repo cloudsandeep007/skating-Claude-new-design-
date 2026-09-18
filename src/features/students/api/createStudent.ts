@@ -13,7 +13,7 @@ interface CreateStudentInput {
   photoFile: File | null
 }
 
-async function createStudent({ academyId, form, photoFile }: CreateStudentInput) {
+export async function createStudent({ academyId, form, photoFile }: CreateStudentInput) {
   const { data: student, error } = await supabase
     .from('students')
     .insert({
@@ -30,14 +30,23 @@ async function createStudent({ academyId, form, photoFile }: CreateStudentInput)
     .single()
   if (error) throw error
 
-  const { error: enrollError } = await supabase.from('student_batches').insert({
-    academy_id: academyId,
-    student_id: student.id,
-    batch_id: form.batchId,
-  })
-  if (enrollError) throw enrollError
+  // Everything after the insert is compensated: if enrolling or linking the
+  // parent fails (an invite email that can't be sent, a duplicate parent
+  // account…), the half-made skater is removed again so the admin can fix
+  // the form and resubmit without leaving orphans behind.
+  try {
+    const { error: enrollError } = await supabase.from('student_batches').insert({
+      academy_id: academyId,
+      student_id: student.id,
+      batch_id: form.batchId,
+    })
+    if (enrollError) throw enrollError
 
-  await linkParent(academyId, student.id, form.parent)
+    await linkParent(academyId, student.id, form.parent)
+  } catch (cause) {
+    await supabase.from('students').delete().eq('id', student.id)
+    throw cause
+  }
 
   if (photoFile) {
     const path = await uploadStudentPhoto(academyId, student.id, photoFile)

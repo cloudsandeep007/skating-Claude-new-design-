@@ -100,8 +100,8 @@ export function VoidPaymentDialog({ payment, onClose }: VoidPaymentDialogProps) 
               </DialogTitle>
               <DialogDescription>
                 Recorded {formatDate(payment.paidDate)}. The payment stays on record, crossed out
-                with your reason, and stops counting toward the fee — whose status is
-                recalculated from what's left.
+                with your reason, and stops counting toward the fee — whose status is recalculated
+                from what's left.
               </DialogDescription>
             </DialogHeader>
 
@@ -109,8 +109,7 @@ export function VoidPaymentDialog({ payment, onClose }: VoidPaymentDialogProps) 
               <div className="rounded-md border border-brand-500/40 bg-brand-500/10 p-3 text-sm">
                 <p className="font-semibold">
                   This takes back {payment.creditsAtRisk} class
-                  {payment.creditsAtRisk === 1 ? '' : 'es'} the skater has already booked with.
-                  {' '}
+                  {payment.creditsAtRisk === 1 ? '' : 'es'} the skater has already booked with.{' '}
                   {shortfall} upcoming booking{shortfall === 1 ? '' : 's'} will be cancelled:
                 </p>
                 <ul className="mt-1.5 space-y-0.5 text-muted-foreground">

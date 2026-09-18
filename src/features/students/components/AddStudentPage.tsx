@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
 import { Link, useNavigate } from 'react-router-dom'
@@ -7,6 +7,7 @@ import { toast } from 'sonner'
 import { useAuth } from '@/features/auth'
 import { useBatchOptions } from '@/features/batches'
 import { feePlanPriceLabel, useFeePlanOptions } from '@/features/fees'
+import { describeError } from '@/shared/lib/describeError'
 import { Button } from '@/shared/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card'
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/shared/ui/form'
@@ -25,6 +26,9 @@ export function AddStudentPage() {
   const { profile } = useAuth()
   const createStudent = useCreateStudent()
   const [photoFile, setPhotoFile] = useState<File | null>(null)
+  // A second tap before the first request has even started must not
+  // create a second skater — isPending flips too late for that.
+  const submitting = useRef(false)
 
   const { data: batches } = useBatchOptions()
   const { data: levels } = useLevelOptions()
@@ -55,7 +59,8 @@ export function AddStudentPage() {
   })
 
   async function onSubmit(values: StudentForm) {
-    if (!profile?.academy_id) return
+    if (!profile?.academy_id || submitting.current) return
+    submitting.current = true
     try {
       const studentId = await createStudent.mutateAsync({
         academyId: profile.academy_id,
@@ -64,8 +69,10 @@ export function AddStudentPage() {
       })
       toast.success(`${values.fullName} was added.`)
       void navigate(`/admin/students/${studentId}`)
-    } catch {
-      toast.error('Could not add this student. Please try again.')
+    } catch (error) {
+      toast.error(describeError(error, 'Could not add this student. Please try again.'))
+    } finally {
+      submitting.current = false
     }
   }
 
@@ -208,7 +215,9 @@ export function AddStudentPage() {
                         {sortedFeePlans.map((plan) => (
                           <SelectItem key={plan.id} value={plan.id}>
                             {plan.name} — {feePlanPriceLabel(plan)}
-                            {plan.batchId && plan.batchId !== selectedBatchId ? ' (other batch)' : ''}
+                            {plan.batchId && plan.batchId !== selectedBatchId
+                              ? ' (other batch)'
+                              : ''}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -305,22 +314,15 @@ export function AddStudentPage() {
                   <FormItem>
                     <FormLabel>Link to</FormLabel>
                     <Select
-                      onValueChange={(value) => {
-                        if (value === 'existing') {
-                          form.setValue('parent', {
-                            mode: 'existing',
-                            parentProfileId: '',
-                            relationship: 'guardian',
-                          })
-                        } else {
-                          form.setValue('parent', {
-                            mode: 'new',
-                            fullName: '',
-                            email: '',
-                            phone: '',
-                            relationship: 'guardian',
-                          })
-                        }
+                      onValueChange={(value: 'existing' | 'new') => {
+                        // Change the mode through the field so the watcher
+                        // below re-renders, then clear the other mode's inputs.
+                        field.onChange(value)
+                        form.setValue('parent.parentProfileId', '')
+                        form.setValue('parent.fullName', '')
+                        form.setValue('parent.email', '')
+                        form.setValue('parent.phone', '')
+                        form.clearErrors('parent')
                       }}
                       value={field.value}
                     >

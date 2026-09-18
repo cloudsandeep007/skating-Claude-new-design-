@@ -1,5 +1,7 @@
 import { z } from 'zod'
 
+import { phoneSchema, requiredText } from '@/shared/lib/validation'
+
 import type { Enums, Tables } from '@/shared/types'
 
 export type Coach = Tables<'coaches'>
@@ -19,16 +21,16 @@ export interface CoachListItem {
 }
 
 export const CoachFormSchema = z.object({
-  fullName: z.string().min(1, "Coach's name is required"),
+  fullName: requiredText("Coach's name is required"),
   email: z.email('Enter a valid email address'),
-  phone: z.string().min(1, "Coach's phone is required"),
+  phone: phoneSchema,
   specialization: z.string().optional(),
 })
 export type CoachForm = z.infer<typeof CoachFormSchema>
 
 export const CoachEditSchema = z.object({
-  fullName: z.string().min(1, "Coach's name is required"),
-  phone: z.string().min(1, "Coach's phone is required"),
+  fullName: requiredText("Coach's name is required"),
+  phone: phoneSchema,
   specialization: z.string().optional(),
 })
 export type CoachEdit = z.infer<typeof CoachEditSchema>

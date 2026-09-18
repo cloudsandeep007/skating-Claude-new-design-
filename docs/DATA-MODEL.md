@@ -352,6 +352,16 @@ status too: `attendance_credit_truth` (on `attendance`) upserts a
 `booked`/`pending` one on absent/excused; `resolve_session_bookings()`
 (called by `save_attendance`) cancels any still-`booked`/`pending` row with
 no mark once the session is completed.
+**QA fixes (`0033`/`0034`):** `payment_fee_portion(payment_id)` = amount −
+advance deposits out of that payment; `fee_paid_total()` sums it.
+`student_fees_list()` gains a `kind` column, clamps `balance` at 0 and, like
+`fee_collection_report()`, skips voided top-ups (`kind = 'topup' and
+amount = 0`). `generate_upcoming_fees()` wraps `generate_upcoming_fees_core()`
+(the 0030 body) and calls `apply_all_advances()` after it. `ledger_sync_booking()`
+reads a transaction-local `app.ledger_reason` that `attendance_credit_truth()`
+and `resolve_session_bookings()` set ("Marked present", "Marked absent — class
+returned", "Not marked — class returned"); a present mark on a parent-made row
+keeps `source = 'parent'`.
 **Approval RPCs (`0032`):** `approve_booking(id)`, `reject_booking(id,
 note)`, `approve_session_bookings(session_id)` — allowed for an academy
 admin or the session's coach (`can_decide_booking()`, via

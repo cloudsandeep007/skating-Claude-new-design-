@@ -288,7 +288,9 @@ export function StudentsListPage() {
                         ) : (
                           <span
                             className={
-                              student.creditsAvailable > 0 ? 'font-bold' : 'font-bold text-brand-400'
+                              student.creditsAvailable > 0
+                                ? 'font-bold'
+                                : 'font-bold text-brand-400'
                             }
                           >
                             {student.creditsAvailable} left

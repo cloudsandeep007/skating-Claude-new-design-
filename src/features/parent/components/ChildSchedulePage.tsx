@@ -15,6 +15,16 @@ import {
 } from '@/features/schedule'
 import { addDays, formatDate, formatTime, todayIso } from '@/shared/lib/format'
 import { cn } from '@/shared/lib/utils'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/shared/ui/alert-dialog'
 import { Button } from '@/shared/ui/button'
 import { EmptyState } from '@/shared/ui/EmptyState'
 import { Skeleton } from '@/shared/ui/skeleton'
@@ -42,6 +52,9 @@ export function ChildSchedulePage() {
   const cancelSlot = useCancelClassSlot()
   const [filter, setFilter] = useState<Filter>('all')
   const [showLater, setShowLater] = useState(false)
+  // A confirmed place is worth a second look before giving it up; a request
+  // that is still waiting is withdrawn in one tap.
+  const [confirmCancel, setConfirmCancel] = useState<UpcomingSession | null>(null)
   const today = todayIso()
   const windowDays = plan?.bookingWindowDays ?? DEFAULT_BOOKING_WINDOW_DAYS
   const bookableUntil = addDays(today, windowDays)
@@ -179,7 +192,8 @@ export function ChildSchedulePage() {
                     book(s)
                   }}
                   onCancel={() => {
-                    cancel(s)
+                    if (bookings?.get(s.id)?.status === 'booked') setConfirmCancel(s)
+                    else cancel(s)
                   }}
                 />
               ))}
@@ -217,7 +231,8 @@ export function ChildSchedulePage() {
                       book(s)
                     }}
                     onCancel={() => {
-                      cancel(s)
+                      if (bookings?.get(s.id)?.status === 'booked') setConfirmCancel(s)
+                      else cancel(s)
                     }}
                   />
                 ))}
@@ -225,6 +240,36 @@ export function ChildSchedulePage() {
             ))}
         </div>
       )}
+
+      <AlertDialog
+        open={confirmCancel !== null}
+        onOpenChange={(open) => {
+          if (!open) setConfirmCancel(null)
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              Cancel {confirmCancel ? formatDate(confirmCancel.sessionDate) : 'this class'}?
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              The class credit comes straight back to you. You can book again later, but the coach
+              will need to confirm it again.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Keep it</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                if (confirmCancel) cancel(confirmCancel)
+                setConfirmCancel(null)
+              }}
+            >
+              Cancel class
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }

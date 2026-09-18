@@ -40,7 +40,9 @@ export function CreditStatementCard({ studentId }: { studentId: string }) {
             <div className="min-w-0 flex-1">
               <div className="font-semibold">
                 {KIND_LABEL[e.kind]}
-                {e.reason && <span className="font-normal text-muted-foreground"> — {e.reason}</span>}
+                {e.reason && (
+                  <span className="font-normal text-muted-foreground"> — {e.reason}</span>
+                )}
               </div>
               <div className="text-xs text-muted-foreground">
                 {formatDate(e.createdAt.slice(0, 10))}

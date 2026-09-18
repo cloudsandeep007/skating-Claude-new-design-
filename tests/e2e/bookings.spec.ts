@@ -61,6 +61,8 @@ test.describe('booking approval', () => {
       const cancel = page.getByRole('button', { name: 'Cancel', exact: true }).first()
       test.skip((await cancel.count()) === 0, 'No bookable Beginner class in the next 7 days')
       await cancel.click()
+      // A confirmed place asks once before it is given up.
+      await page.getByRole('button', { name: 'Cancel class' }).click()
       await expect(page.getByText(/back in your balance/)).toBeVisible()
       bookButton = page.getByRole('button', { name: 'Book', exact: true }).first()
     }

@@ -83,7 +83,9 @@ export function CoachDetailPage() {
           />
 
           <div className="min-w-[220px] flex-1">
-            <div className="font-display text-2xl font-extrabold tracking-tight">{coach.fullName}</div>
+            <div className="font-display text-2xl font-extrabold tracking-tight">
+              {coach.fullName}
+            </div>
             <div className="mt-2 flex flex-wrap gap-2">
               <StatusBadge tone={isActive ? 'success' : 'neutral'}>
                 {isActive ? 'Active' : 'Inactive'}

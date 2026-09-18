@@ -70,22 +70,48 @@ describe('planTopup — mirrors record_credit_topup()', () => {
   })
 
   it('a lapsed plan is treated like no plan', () => {
-    const lapsed = { ...monthly, termStart: '2026-07-01', termEnd: '2026-07-31', termStatus: 'expired' as const }
+    const lapsed = {
+      ...monthly,
+      termStart: '2026-07-01',
+      termEnd: '2026-07-31',
+      termStatus: 'expired' as const,
+    }
     expect(planTopup(lapsed, 7, '2026-09-16')).toBeNull()
-    expect(planTopup(lapsed, 8, '2026-09-16')).toMatchObject({ kind: 'new', termStart: '2026-09-16' })
+    expect(planTopup(lapsed, 8, '2026-09-16')).toMatchObject({
+      kind: 'new',
+      termStart: '2026-09-16',
+    })
   })
 
   it('quarterly and annual minimums and lengths', () => {
-    const quarterly = { ...monthly, billingCycle: 'quarterly' as const, minTopup: 24, termStatus: 'none' as const, termStart: null, termEnd: null }
+    const quarterly = {
+      ...monthly,
+      billingCycle: 'quarterly' as const,
+      minTopup: 24,
+      termStatus: 'none' as const,
+      termStart: null,
+      termEnd: null,
+    }
     expect(planTopup(quarterly, 23, '2026-09-16')).toBeNull()
-    expect(planTopup(quarterly, 24, '2026-09-16')).toMatchObject({ kind: 'new', termEnd: '2026-12-15', amount: 12000 })
+    expect(planTopup(quarterly, 24, '2026-09-16')).toMatchObject({
+      kind: 'new',
+      termEnd: '2026-12-15',
+      amount: 12000,
+    })
     const annual = { ...quarterly, billingCycle: 'annual' as const, minTopup: 96 }
-    expect(planTopup(annual, 96, '2026-09-16')).toMatchObject({ kind: 'new', termEnd: '2027-09-15', amount: 48000 })
+    expect(planTopup(annual, 96, '2026-09-16')).toMatchObject({
+      kind: 'new',
+      termEnd: '2027-09-15',
+      amount: 48000,
+    })
   })
 
   it('a renewal from a month-end term clamps like Postgres (Jan 31 + 1 month)', () => {
     const jan = { ...monthly, termStart: '2026-01-01', termEnd: '2026-01-31' }
-    expect(planTopup(jan, 8, '2026-01-20')).toMatchObject({ termStart: '2026-02-01', termEnd: '2026-02-28' })
+    expect(planTopup(jan, 8, '2026-01-20')).toMatchObject({
+      termStart: '2026-02-01',
+      termEnd: '2026-02-28',
+    })
   })
 
   it('rejects nonsense', () => {

@@ -328,3 +328,20 @@ update public.academies
 Requests already waiting stay `pending` until decided; approve them from
 the queue ("Approve all" per session) or leave them to be released at
 marking time.
+
+## Email provider (invites and password resets)
+
+Supabase's built-in email sender allows only a few messages per hour. When
+it is exhausted the app shows "The email service limit was reached, so the
+invite could not be sent right now" and the skater is *not* created. Before
+onboarding families in bulk, set a custom SMTP provider (Resend, Postmark,
+SES…) under **Supabase → Authentication → SMTP settings** and raise the
+rate limit under **Authentication → Rate limits**. Until then, link a parent
+who already has an account with "Existing parent" instead of inviting.
+
+## Applying an advance by hand
+
+A family's advance is applied automatically when the next fee is generated
+(nightly, or **Generate now** on the Fees page). To apply it to a fee that is
+already open without waiting, open the skater → **Fees** tab → **Apply now**
+on the green advance banner.

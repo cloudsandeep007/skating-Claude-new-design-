@@ -1963,6 +1963,32 @@ export type Database = {
           isSetofReturn: true
         }
       }
+      generate_upcoming_fees_core: {
+        Args: { p_academy_id?: string }
+        Returns: {
+          academy_id: string
+          amount: number
+          created_at: string
+          credits_granted: number | null
+          due_date: string
+          fee_plan_id: string | null
+          id: string
+          kind: Database["public"]["Enums"]["fee_kind"]
+          last_reminded_at: string | null
+          period_end: string
+          period_start: string
+          status: Database["public"]["Enums"]["fee_status"]
+          student_id: string
+          updated_at: string
+          waived_reason: string | null
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "student_fees"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
       is_academy_admin: { Args: never; Returns: boolean }
       is_coach: { Args: never; Returns: boolean }
       is_parent: { Args: never; Returns: boolean }
@@ -2029,6 +2055,7 @@ export type Database = {
       }
       parent_batch_ids: { Args: never; Returns: string[] }
       parent_student_ids: { Args: never; Returns: string[] }
+      payment_fee_portion: { Args: { p_payment_id: string }; Returns: number }
       payment_method_label: {
         Args: { p_method: Database["public"]["Enums"]["payment_method"] }
         Returns: string
@@ -2296,6 +2323,7 @@ export type Database = {
           due_date: string
           fee_plan_name: string
           full_name: string
+          kind: Database["public"]["Enums"]["fee_kind"]
           last_reminded_at: string
           paid: number
           period_end: string

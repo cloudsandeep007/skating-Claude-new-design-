@@ -33,15 +33,20 @@ export function StudentActivityCard({ studentId }: { studentId: string }) {
     )
   }
   if (!data || data.length === 0) {
-    return <EmptyState title="No activity yet" description="Changes to this skater's fees, payments, bookings and attendance will show up here." />
+    return (
+      <EmptyState
+        title="No activity yet"
+        description="Changes to this skater's fees, payments, bookings and attendance will show up here."
+      />
+    )
   }
 
   return (
     <div className="rounded-lg border bg-card p-4 shadow-sm">
       <h2 className="text-sm font-bold uppercase tracking-wide text-muted-foreground">Activity</h2>
       <p className="mt-1 text-xs text-muted-foreground">
-        Every change to this skater's fees, payments, bookings and attendance, recorded automatically.
-        Newest first.
+        Every change to this skater's fees, payments, bookings and attendance, recorded
+        automatically. Newest first.
       </p>
       <ul className="mt-3 divide-y">
         {data.map((e) => {
@@ -53,7 +58,10 @@ export function StudentActivityCard({ studentId }: { studentId: string }) {
                 <span className="text-xs text-muted-foreground">
                   {formatDate(e.createdAt.slice(0, 10))}
                   {' · '}
-                  {new Date(e.createdAt).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })}
+                  {new Date(e.createdAt).toLocaleTimeString(undefined, {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                  })}
                   {e.actorName ? ` · ${e.actorName}` : ' · system'}
                 </span>
               </div>

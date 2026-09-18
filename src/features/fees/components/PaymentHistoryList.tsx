@@ -22,7 +22,12 @@ import { EmptyState } from '@/shared/ui/EmptyState'
 import { Skeleton } from '@/shared/ui/skeleton'
 import { StatusBadge } from '@/shared/ui/StatusBadge'
 
-import { useDeleteFee, useStudentAdvance, useStudentFees } from '../api/payments'
+import {
+  useApplyStudentAdvances,
+  useDeleteFee,
+  useStudentAdvance,
+  useStudentFees,
+} from '../api/payments'
 import { canWaive, paidTotal, remainingBalance } from '../hooks/feeMath'
 import { feeStatusLabel, feeStatusTone, formatRupees } from '../hooks/feeTone'
 import { PAYMENT_METHOD_LABEL } from '../types'
@@ -57,15 +62,45 @@ export function PaymentHistoryList({
   const { data: plan } = useCreditPlanStatus(canManage ? studentId : null)
   const canTopup = canManage && plan?.pricingMode === 'per_class'
   const { data: advance } = useStudentAdvance(studentId)
+  const applyAdvances = useApplyStudentAdvances()
+  const hasOpenFee = (fees ?? []).some((f) => f.status === 'pending' || f.status === 'overdue')
   const advanceBanner =
     advance && advance.balance > 0 ? (
-      <div className="rounded-lg border border-success-600/40 bg-success-500/10 px-3.5 py-2.5 text-sm">
-        <span className="font-bold">{formatRupees(advance.balance)} paid in advance</span>
-        <span className="text-muted-foreground">
-          {' '}
-          — applied automatically to the next fee.
-          {advance.entries[0]?.reason && ` ${advance.entries[0].reason}.`}
+      <div className="flex flex-wrap items-center gap-2 rounded-lg border border-success-600/40 bg-success-500/10 px-3.5 py-2.5 text-sm">
+        <span>
+          <span className="font-bold">{formatRupees(advance.balance)} paid in advance</span>
+          <span className="text-muted-foreground">
+            {' '}
+            — {hasOpenFee ? 'can go onto the open fee now, or' : 'is'} applied automatically when
+            the next fee is generated.
+          </span>
         </span>
+        {canManage && hasOpenFee && (
+          <Button
+            size="sm"
+            variant="outline"
+            className="ml-auto"
+            disabled={applyAdvances.isPending}
+            onClick={() => {
+              applyAdvances.mutate(studentId, {
+                onSuccess: (applied) => {
+                  toast.success(
+                    applied > 0
+                      ? `${formatRupees(applied)} applied from the advance.`
+                      : 'Nothing to apply right now.',
+                  )
+                },
+                onError: (error) => {
+                  toast.error(
+                    error instanceof Error ? error.message : 'Could not apply the advance.',
+                  )
+                },
+              })
+            }}
+          >
+            Apply now
+          </Button>
+        )}
       </div>
     ) : null
 
@@ -137,9 +172,7 @@ export function PaymentHistoryList({
 
   return (
     <ul className="space-y-3">
-      {topupButton && (
-        <li className="flex justify-end">{topupButton}</li>
-      )}
+      {topupButton && <li className="flex justify-end">{topupButton}</li>}
       {advanceBanner && <li>{advanceBanner}</li>}
       {fees.map((fee) => {
         const paid = paidTotal(fee.payments)
@@ -161,9 +194,13 @@ export function PaymentHistoryList({
                     : `${fee.feePlanName ?? 'Fee'} · due ${formatDate(fee.dueDate)}`}
                 </div>
               </div>
-              <StatusBadge tone={feeStatusTone(fee.status)}>
-                {feeStatusLabel(fee.status)}
-              </StatusBadge>
+              {fee.kind === 'topup' && fee.amount === 0 && paid === 0 ? (
+                <StatusBadge tone="neutral">Voided</StatusBadge>
+              ) : (
+                <StatusBadge tone={feeStatusTone(fee.status)}>
+                  {feeStatusLabel(fee.status)}
+                </StatusBadge>
+              )}
               <div className="text-right">
                 <div className="font-extrabold tracking-tight">{formatRupees(fee.amount)}</div>
                 {balance > 0 && fee.status !== 'waived' && (
@@ -259,18 +296,21 @@ export function PaymentHistoryList({
                       {fee.payments.length === 0 && (
                         <AlertDialogAction
                           onClick={() => {
-                            deleteFee.mutate({ studentFeeId: fee.id, cancelBookings: deleteCancelsBookings }, {
-                              onSuccess: () => {
-                                toast.success('Fee period deleted.')
+                            deleteFee.mutate(
+                              { studentFeeId: fee.id, cancelBookings: deleteCancelsBookings },
+                              {
+                                onSuccess: () => {
+                                  toast.success('Fee period deleted.')
+                                },
+                                onError: (error) => {
+                                  toast.error(
+                                    error instanceof Error
+                                      ? error.message
+                                      : 'Could not delete this fee period.',
+                                  )
+                                },
                               },
-                              onError: (error) => {
-                                toast.error(
-                                  error instanceof Error
-                                    ? error.message
-                                    : 'Could not delete this fee period.',
-                                )
-                              },
-                            })
+                            )
                           }}
                         >
                           Delete period

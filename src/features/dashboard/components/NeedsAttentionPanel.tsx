@@ -67,8 +67,8 @@ export function NeedsAttentionPanel() {
         <div className="p-8">
           <EmptyState
             tone="dark"
-            title="Everyone's attending well"
-            description="No active skater has dropped below 60% attendance in the last 30 days."
+            title="Nobody flagged"
+            description="No active skater with 3 or more marked classes in the last 30 days is below 60% attendance. Skaters with fewer marked classes aren't judged yet."
           />
         </div>
       ) : (

@@ -63,7 +63,7 @@ export function FeeDashboardPage() {
       toast.success(
         sent > 0
           ? `Sent ${sent} reminder${sent === 1 ? '' : 's'}.`
-          : "Nobody selected has a parent on file to remind — nothing sent.",
+          : 'Nobody selected has a parent on file to remind — nothing sent.',
       )
       setSelected(new Set())
     } catch {
@@ -235,16 +235,10 @@ export function FeeDashboardPage() {
               disabled={sendReminders.isPending || selectedRows.some((r) => r.balance <= 0)}
             >
               <BellRing className="h-4 w-4" />
-              {sendReminders.isPending
-                ? 'Sending…'
-                : `Send reminder (${selected.size})`}
+              {sendReminders.isPending ? 'Sending…' : `Send reminder (${selected.size})`}
             </Button>
           )}
-          <Button
-            variant="outline"
-            onClick={exportCsv}
-            disabled={!rows || rows.length === 0}
-          >
+          <Button variant="outline" onClick={exportCsv} disabled={!rows || rows.length === 0}>
             <Download className="h-4 w-4" />
             Export CSV
           </Button>
@@ -288,7 +282,9 @@ export function FeeDashboardPage() {
                     }
                     onCheckedChange={(checked) => {
                       setSelected(
-                        checked ? new Set(rows.filter((r) => r.balance > 0).map((r) => r.studentFeeId)) : new Set(),
+                        checked
+                          ? new Set(rows.filter((r) => r.balance > 0).map((r) => r.studentFeeId))
+                          : new Set(),
                       )
                     }}
                   />

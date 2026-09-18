@@ -30,7 +30,9 @@ export function formatRupees(amount: number): string {
 
 /** e.g. "₹2,500" for a cycle plan, "₹300/class" for a per-class one — used
  * wherever a fee plan is picked (the fee plan list, the student form). */
-export function feePlanPriceLabel(plan: Pick<FeePlanOption, 'amount' | 'pricingMode' | 'perClassRate'>): string {
+export function feePlanPriceLabel(
+  plan: Pick<FeePlanOption, 'amount' | 'pricingMode' | 'perClassRate'>,
+): string {
   if (plan.pricingMode === 'per_class' && plan.perClassRate != null) {
     return `${formatRupees(plan.perClassRate)}/class`
   }

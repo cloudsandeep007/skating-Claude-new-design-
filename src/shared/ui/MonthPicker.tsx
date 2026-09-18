@@ -38,9 +38,7 @@ export function MonthPicker({ value, onChange, className }: MonthPickerProps) {
   const selectedMonth = (month || 1) - 1
   const [viewYear, setViewYear] = useState(selectedYear)
 
-  const label = value
-    ? `${MONTH_SHORT[selectedMonth]} ${selectedYear}`
-    : 'Pick a month'
+  const label = value ? `${MONTH_SHORT[selectedMonth]} ${selectedYear}` : 'Pick a month'
 
   return (
     <Popover

@@ -223,7 +223,9 @@ export function EditStudentPage() {
                         {sortedFeePlans.map((plan) => (
                           <SelectItem key={plan.id} value={plan.id}>
                             {plan.name} — {feePlanPriceLabel(plan)}
-                            {plan.batchId && plan.batchId !== selectedBatchId ? ' (other batch)' : ''}
+                            {plan.batchId && plan.batchId !== selectedBatchId
+                              ? ' (other batch)'
+                              : ''}
                           </SelectItem>
                         ))}
                       </SelectContent>

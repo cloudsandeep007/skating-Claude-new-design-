@@ -15,6 +15,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/shared/ui/alert-dialog'
+import { describeError } from '@/shared/lib/describeError'
 import { Button } from '@/shared/ui/button'
 import { EmptyState } from '@/shared/ui/EmptyState'
 import { Skeleton } from '@/shared/ui/skeleton'
@@ -70,8 +71,9 @@ export function FeePlansManagePage() {
     try {
       await createPlan.mutateAsync({ academyId: profile.academy_id, form: values })
       toast.success('Fee plan added.')
-    } catch {
-      toast.error('Could not add the fee plan.')
+    } catch (error) {
+      toast.error(describeError(error, 'Could not add the fee plan.'))
+      throw error
     }
   }
 
@@ -161,8 +163,9 @@ export function FeePlansManagePage() {
                   try {
                     await updatePlan.mutateAsync({ id: plan.id, form: values })
                     toast.success('Fee plan updated.')
-                  } catch {
-                    toast.error('Could not update the fee plan.')
+                  } catch (error) {
+                    toast.error(describeError(error, 'Could not update the fee plan.'))
+                    throw error
                   }
                 }}
               />
@@ -193,8 +196,8 @@ export function FeePlansManagePage() {
                           onSuccess: () => {
                             toast.success(`${plan.name} removed.`)
                           },
-                          onError: () => {
-                            toast.error('Could not remove this plan.')
+                          onError: (error) => {
+                            toast.error(describeError(error, 'Could not remove this plan.'))
                           },
                         })
                       }}

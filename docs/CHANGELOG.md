@@ -5,6 +5,41 @@ non-technical person can follow it. Newest first.
 
 ---
 
+## 2026-09-19 — QA cycle fixes: all 21 defects from the 18 Sep test run
+
+Every defect in `qa/QA_EXECUTION_REPORT.md` is fixed and re-verified in the
+browser; the report is updated in place with the outcome per bug.
+
+- **Adding a skater is safe again (BUG-003/005/006).** "Existing parent"
+  now shows the parent picker; a second tap on "Add student" can't create a
+  second skater; and if enrolling or inviting the parent fails, the
+  half-made skater is removed again and the *real* reason is shown (e.g.
+  "The email service limit was reached… link an existing parent").
+- **Blank names and nonsense phones are refused (BUG-004/013)** — every
+  name field trims and rejects whitespace-only input; phone fields need
+  7–15 digits.
+- **Money display (BUG-010/011/012).** A payment that carried an advance
+  counts only its fee portion, so no fee ever shows a negative balance.
+  Voided top-ups no longer appear as "₹0 · Paid" in the Fees list or the
+  fee collection report (they stay on the skater's tab, marked Voided). An
+  advance is applied whenever fees are generated ("Generate now" included)
+  and the skater's Fees tab has an **Apply now** button.
+- **Clearer errors instead of "please try again" (BUG-008/009).** Fee
+  plan amount and per-class rate have upper bounds; a duplicate plan name
+  says so; the dialog stays open with what was typed.
+- **Not-found instead of an endless skeleton (BUG-001)**, search ignores
+  surrounding spaces (BUG-002), coach rows are real links (BUG-021).
+- **Guards and confirmations (BUG-014/015/017/018)** — an extra session
+  can't be dated before yesterday; removing a holiday and cancelling a
+  confirmed booking ask first; an announcement can't expire before it is
+  published.
+- **Copy and ordering (BUG-016/019/020)** — credit statement reads "Marked
+  absent — class returned" / "Marked present"; a new level is appended at
+  the end of the ladder; the dashboard attendance caption says "no data
+  for last month" instead of a bare "pts vs last month".
+- BUG-007 (Supabase's default email rate limit) is a configuration item —
+  see RUNBOOK → "Email provider".
+
 ## 2026-09-19 — Bookings need the coach's OK; parent screens redesigned
 
 - **Booking a class is now a request.** When a parent taps **Book**, the

@@ -104,12 +104,7 @@ function SessionCard({ session, muted = false }: { session: SessionItem; muted?:
 
   const inner = (
     <>
-      <div
-        className={cn(
-          'text-xs font-semibold uppercase tracking-wide',
-          'text-muted-foreground',
-        )}
-      >
+      <div className={cn('text-xs font-semibold uppercase tracking-wide', 'text-muted-foreground')}>
         {muted && `${formatDate(session.sessionDate)} · `}
         {formatTime(session.startTime)} – {formatTime(session.endTime)}
         {session.venue && ` · ${session.venue}`}

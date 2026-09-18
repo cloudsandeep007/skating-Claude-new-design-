@@ -29,7 +29,10 @@ function isOpen(fee: StudentFeeWithPayments) {
  * do I owe anything, what is my current period, and where is my last
  * receipt. Older periods are set aside so the screen does not grow month
  * on month. */
-export function summarizeParentFees(fees: StudentFeeWithPayments[], today: string): ParentFeeSummary {
+export function summarizeParentFees(
+  fees: StudentFeeWithPayments[],
+  today: string,
+): ParentFeeSummary {
   const open = fees.filter(isOpen)
   const dueNow = Math.round(open.reduce((sum, f) => sum + feeBalance(f), 0) * 100) / 100
   const dueBy = open.length === 0 ? null : open.map((f) => f.dueDate).sort()[0]
@@ -40,7 +43,9 @@ export function summarizeParentFees(fees: StudentFeeWithPayments[], today: strin
   const current: StudentFeeWithPayments | null = covering ?? (sorted.length > 0 ? sorted[0] : null)
 
   const activeTopups = fees
-    .filter((f) => f.kind === 'topup' && f.periodEnd >= today && f.status !== 'waived' && f.amount > 0)
+    .filter(
+      (f) => f.kind === 'topup' && f.periodEnd >= today && f.status !== 'waived' && f.amount > 0,
+    )
     .sort((a, b) => b.periodStart.localeCompare(a.periodStart))
 
   const keep = new Set<string>(activeTopups.map((f) => f.id))

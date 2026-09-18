@@ -42,7 +42,12 @@ export function StatCard({
     trend.direction === 'up' ? TrendingUp : trend.direction === 'down' ? TrendingDown : Minus
 
   return (
-    <div className={cn('rounded-xl border border-border bg-card p-4 shadow-sm', emphasize && 'border-brand-500/40')}>
+    <div
+      className={cn(
+        'rounded-xl border border-border bg-card p-4 shadow-sm',
+        emphasize && 'border-brand-500/40',
+      )}
+    >
       <div
         className={cn(
           'text-xs font-semibold uppercase tracking-wide text-muted-foreground',

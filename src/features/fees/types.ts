@@ -97,6 +97,9 @@ export interface PaymentRecord {
   /** A voided payment stays on record but counts for nothing. */
   voidedAt: string | null
   voidReason: string | null
+  /** Part of this payment kept as an advance rather than applied to the
+   * fee (BUG-010). 0 for an ordinary payment. */
+  advanceDeposit: number
 }
 
 export interface StudentFeeWithPayments {
@@ -117,15 +120,27 @@ export interface StudentFeeWithPayments {
 
 export const FeePlanFormSchema = z
   .object({
-    name: z.string().min(1, 'Plan name is required'),
-    amount: z.number().min(0, 'Amount must be 0 or more'),
+    name: z
+      .string()
+      .trim()
+      .min(1, 'Plan name is required')
+      .max(80, 'Keep the name under 80 characters'),
+    amount: z
+      .number()
+      .min(0, 'Amount must be 0 or more')
+      .max(10_000_000, 'Amount must be under ₹1 crore'),
     billingCycle: z.enum(['monthly', 'quarterly', 'annual']),
     description: z.string().optional(),
     /** null/'' = academy-wide plan. */
     batchId: z.string().nullable().optional(),
     pricingMode: z.enum(['cycle', 'per_class']),
     /** Required, and only meaningful, when pricingMode is 'per_class'. */
-    perClassRate: z.number().min(0, 'Rate must be 0 or more').nullable().optional(),
+    perClassRate: z
+      .number()
+      .min(0, 'Rate must be 0 or more')
+      .max(1_000_000, 'Rate must be under ₹10 lakh')
+      .nullable()
+      .optional(),
   })
   .refine((v) => v.pricingMode !== 'per_class' || Boolean(v.batchId), {
     message: 'A per-class plan must be scoped to a batch — pick one above',
@@ -149,7 +164,7 @@ export const PaymentFormSchema = z.object({
 export type PaymentForm = z.infer<typeof PaymentFormSchema>
 
 export const WaiveFormSchema = z.object({
-  reason: z.string().min(1, 'A reason is required to waive a fee'),
+  reason: z.string().trim().min(1, 'A reason is required to waive a fee'),
 })
 export type WaiveForm = z.infer<typeof WaiveFormSchema>
 

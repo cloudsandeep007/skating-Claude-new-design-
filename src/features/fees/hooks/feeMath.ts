@@ -25,7 +25,10 @@ export function round2(n: number): number {
 
 /** Mirrors record_payment()'s advance rule: how much of a payment covers
  * the fee and how much is kept ahead for the next one. */
-export function splitAdvance(amount: number, balance: number): { toFee: number; toAdvance: number } {
+export function splitAdvance(
+  amount: number,
+  balance: number,
+): { toFee: number; toAdvance: number } {
   const toFee = round2(Math.min(amount, Math.max(balance, 0)))
   return { toFee, toAdvance: round2(Math.max(amount - toFee, 0)) }
 }
@@ -96,7 +99,11 @@ export function isPeriodDue(
 /** Mirrors generate_upcoming_fees()'s due-date rule: `graceDays` after the
  * period starts, or after today if the period already started (a late
  * run) — a fee is never overdue on the day it's created. */
-export function dueDate(periodStart: string, today: string, graceDays = DEFAULT_GRACE_DAYS): string {
+export function dueDate(
+  periodStart: string,
+  today: string,
+  graceDays = DEFAULT_GRACE_DAYS,
+): string {
   return addDays(periodStart > today ? periodStart : today, graceDays)
 }
 
@@ -125,10 +132,16 @@ export function isOverdue(status: FeeStatus, dueDate: string, today: string): bo
 }
 
 /** Mirrors fee_paid_total() in the database: what's been paid on a fee is
- * the sum of its payments that haven't been voided. A voided payment stays
- * in the list (it's history) but counts for nothing. */
-export function paidTotal(payments: { amount: number; voidedAt: string | null }[]): number {
-  return round2(payments.reduce((sum, p) => (p.voidedAt ? sum : sum + p.amount), 0))
+ * the sum of its live payments' *fee portion* — a payment that carried an
+ * advance (₹740 paid, ₹500 kept ahead) counts only the ₹240 that went to
+ * this fee. A voided payment stays in the list (it's history) but counts
+ * for nothing. */
+export function paidTotal(
+  payments: { amount: number; voidedAt: string | null; advanceDeposit?: number }[],
+): number {
+  return round2(
+    payments.reduce((sum, p) => (p.voidedAt ? sum : sum + p.amount - (p.advanceDeposit ?? 0)), 0),
+  )
 }
 
 /** How much is still owed after whatever's been paid so far — never

@@ -15,6 +15,7 @@ function pay(over: Partial<PaymentRecord>): PaymentRecord {
     receiptNo: 'PRSA-2026-000001',
     voidedAt: null,
     voidReason: null,
+    advanceDeposit: 0,
     ...over,
   }
 }

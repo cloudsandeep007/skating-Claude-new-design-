@@ -28,7 +28,8 @@ async function fetchStudentsPage(params: StudentListParams) {
     .eq('student_batches.status', 'active')
 
   if (params.status !== 'all') query = query.eq('status', params.status)
-  if (params.search) query = query.ilike('full_name', `%${params.search}%`)
+  const search = params.search.trim()
+  if (search) query = query.ilike('full_name', `%${search}%`)
   if (params.batchId !== 'all') query = query.eq('student_batches.batch_id', params.batchId)
 
   query = query.order(params.sortBy, { ascending: params.sortDir === 'asc' }).range(from, to)
@@ -38,14 +39,19 @@ async function fetchStudentsPage(params: StudentListParams) {
 
   const ids = data.map((row) => row.id)
 
-  const [attendanceByStudent, feeByStudent, lastActiveByStudent, parentByStudent, creditsByStudent] =
-    await Promise.all([
-      fetchAttendancePcts(ids),
-      fetchLatestFeeStatuses(ids),
-      fetchLastActive(ids),
-      fetchPrimaryParentNames(ids),
-      fetchCreditBalances(ids),
-    ])
+  const [
+    attendanceByStudent,
+    feeByStudent,
+    lastActiveByStudent,
+    parentByStudent,
+    creditsByStudent,
+  ] = await Promise.all([
+    fetchAttendancePcts(ids),
+    fetchLatestFeeStatuses(ids),
+    fetchLastActive(ids),
+    fetchPrimaryParentNames(ids),
+    fetchCreditBalances(ids),
+  ])
 
   const items: StudentListItem[] = data.map((row) => ({
     id: row.id,

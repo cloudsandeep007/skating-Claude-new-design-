@@ -1,5 +1,7 @@
 import { z } from 'zod'
 
+import { phoneSchema, requiredText } from '@/shared/lib/validation'
+
 import type { Enums, Tables } from '@/shared/types'
 
 export type Student = Tables<'students'>
@@ -46,9 +48,9 @@ export interface StudentListParams {
 }
 
 export const EmergencyContactSchema = z.object({
-  name: z.string().min(1, 'Emergency contact name is required'),
-  phone: z.string().min(1, 'Emergency contact phone is required'),
-  relationship: z.string().min(1, 'Relationship is required'),
+  name: requiredText('Emergency contact name is required'),
+  phone: phoneSchema,
+  relationship: requiredText('Relationship is required'),
 })
 
 // A flat (non-discriminated-union) shape on purpose: react-hook-form's Path<T>
@@ -70,11 +72,16 @@ export const ParentLinkSchema = z
       ctx.addIssue({ code: 'custom', path: ['parentProfileId'], message: 'Choose a parent' })
     }
     if (data.mode === 'new') {
-      if (!data.fullName) {
+      if (!data.fullName?.trim()) {
         ctx.addIssue({ code: 'custom', path: ['fullName'], message: "Parent's name is required" })
       }
-      if (!data.phone) {
-        ctx.addIssue({ code: 'custom', path: ['phone'], message: "Parent's phone is required" })
+      const phone = phoneSchema.safeParse(data.phone ?? '')
+      if (!phone.success) {
+        ctx.addIssue({
+          code: 'custom',
+          path: ['phone'],
+          message: data.phone?.trim() ? 'Enter a valid phone number' : "Parent's phone is required",
+        })
       }
       if (!data.email || !z.email().safeParse(data.email).success) {
         ctx.addIssue({ code: 'custom', path: ['email'], message: 'Enter a valid email address' })
@@ -84,7 +91,7 @@ export const ParentLinkSchema = z
 export type ParentLink = z.infer<typeof ParentLinkSchema>
 
 export const StudentFormSchema = z.object({
-  fullName: z.string().min(1, "Skater's name is required"),
+  fullName: requiredText("Skater's name is required"),
   dateOfBirth: z.string().optional(),
   gender: z.enum(['male', 'female', 'other']).optional(),
   batchId: z.string().min(1, 'Choose a batch'),

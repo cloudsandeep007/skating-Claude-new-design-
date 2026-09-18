@@ -20,6 +20,8 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { toast } from 'sonner'
 
+import { describeError } from '@/shared/lib/describeError'
+
 import { useAuth } from '@/features/auth'
 import {
   AlertDialog,
@@ -52,6 +54,11 @@ import {
 } from '../api/manageSkills'
 import type { LevelForm, LevelWithSkills, SkillRow } from '../types'
 import { NameDescriptionDialog } from './NameDescriptionDialog'
+
+/** The next free slot at the end of an ordered list. */
+function nextSequence(items: { sequence: number }[]): number {
+  return items.reduce((max, i) => Math.max(max, i.sequence), 0) + 1
+}
 
 export function LevelsManagePage() {
   const { profile } = useAuth()
@@ -142,11 +149,13 @@ export function LevelsManagePage() {
         academyId: profile.academy_id,
         name: values.name,
         description: values.description,
-        sequence: order.length + 1,
+        // Past the highest existing sequence, not the count — after a
+        // deletion the two differ and a new level would land mid-ladder.
+        sequence: nextSequence(order),
       })
       toast.success('Level added.')
-    } catch {
-      toast.error('Could not add the level.')
+    } catch (error) {
+      toast.error(describeError(error, 'Could not add the level.'))
     }
   }
 
@@ -227,11 +236,11 @@ export function LevelsManagePage() {
                         levelId: level.id,
                         name: values.name,
                         description: values.description,
-                        sequence: level.skills.length + 1,
+                        sequence: nextSequence(level.skills),
                       })
                       toast.success('Skill added.')
-                    } catch {
-                      toast.error('Could not add the skill.')
+                    } catch (error) {
+                      toast.error(describeError(error, 'Could not add the skill.'))
                     }
                   }}
                   addSkillPending={createSkill.isPending}

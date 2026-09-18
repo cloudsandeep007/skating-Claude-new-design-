@@ -69,6 +69,19 @@ deliberate — see DECISIONS.md.
 - Only an `academy_admin` can add/edit/archive (enforced by RLS on the
   tables and by the Edge Function checking the caller's role).
 
+### Add-student safety (2026-09-19, BUG-003/004/005/006/013)
+
+- "Existing parent" shows the parent picker (the mode change goes through
+  the form field, then the other mode's inputs are cleared).
+- Names are trimmed and must not be blank; phones must have 7–15 digits
+  (`@/shared/lib/validation`).
+- A second tap on **Add student** while the first is in flight is ignored.
+- If enrolment or the parent invite fails, the skater just inserted is
+  deleted again and the real reason is shown (`describeError`): duplicate
+  parent email, email rate limit, missing batch. Nothing is left behind.
+- An unknown skater id shows "Skater not found" with a link back; the
+  list search ignores surrounding spaces.
+
 ## Edge cases
 
 - **Blank optional fields** (DOB, level, medical notes) are stored as

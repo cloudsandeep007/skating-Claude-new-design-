@@ -51,7 +51,12 @@ export function CoachLoadChart({ days }: { days: number }) {
               labelStyle={{ color: 'hsl(var(--foreground))', fontWeight: 600 }}
             />
             <Legend wrapperStyle={{ fontSize: 12, color: 'hsl(var(--muted-foreground))' }} />
-            <Bar dataKey="studentCount" name="Students" fill="hsl(var(--muted))" radius={[4, 4, 0, 0]} />
+            <Bar
+              dataKey="studentCount"
+              name="Students"
+              fill="hsl(var(--muted))"
+              radius={[4, 4, 0, 0]}
+            />
             <Bar dataKey="sessionCount" name="Sessions" fill="#FF4D4D" radius={[4, 4, 0, 0]} />
           </BarChart>
         </ResponsiveContainer>

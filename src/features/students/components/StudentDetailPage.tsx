@@ -21,12 +21,13 @@ import {
 } from '@/shared/ui/alert-dialog'
 import { Button } from '@/shared/ui/button'
 import { PersonAvatar } from '@/shared/ui/PersonAvatar'
+import { EmptyState } from '@/shared/ui/EmptyState'
 import { Skeleton } from '@/shared/ui/skeleton'
 import { StatusBadge } from '@/shared/ui/StatusBadge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/ui/tabs'
 
 import { useSetStudentStatus } from '../api/archiveStudent'
-import { useStudent } from '../api/getStudent'
+import { isNotFound, useStudent } from '../api/getStudent'
 import { attendancePctColorClass } from '../hooks/statusPresentation'
 import { StudentActivityCard } from './StudentActivityCard'
 
@@ -34,10 +35,40 @@ export function StudentDetailPage() {
   const { studentId = '' } = useParams<{ studentId: string }>()
   const navigate = useNavigate()
   const { profile } = useAuth()
-  const { data: student, isLoading } = useStudent(studentId)
+  const { data: student, isLoading, isError, error, refetch } = useStudent(studentId)
   const { data: creditBalance } = useClassCreditBalance(studentId || null)
   const setStatus = useSetStudentStatus()
   const { data: photoUrls } = useSignedPhotoUrls('student-photos', [student?.photoUrl ?? null])
+
+  if (isError) {
+    return isNotFound(error) ? (
+      <EmptyState
+        title="Skater not found"
+        description="This link may be old, or the skater has been removed."
+        action={
+          <Button variant="outline" asChild>
+            <Link to="/admin/students">All skaters</Link>
+          </Button>
+        }
+      />
+    ) : (
+      <EmptyState
+        tone="error"
+        title="Couldn't load this skater"
+        description="Check your connection and try again."
+        action={
+          <Button
+            variant="outline"
+            onClick={() => {
+              void refetch()
+            }}
+          >
+            Try again
+          </Button>
+        }
+      />
+    )
+  }
 
   if (isLoading || !student) {
     return (
@@ -102,7 +133,9 @@ export function StudentDetailPage() {
           />
 
           <div className="min-w-[220px] flex-1">
-            <div className="font-display text-2xl font-extrabold tracking-tight">{student.fullName}</div>
+            <div className="font-display text-2xl font-extrabold tracking-tight">
+              {student.fullName}
+            </div>
             <div className="mt-2 flex flex-wrap gap-2">
               {student.batchName && <StatusBadge tone="neutral">{student.batchName}</StatusBadge>}
               {student.levelName && <StatusBadge tone="dark">{student.levelName}</StatusBadge>}
