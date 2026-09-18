@@ -19,8 +19,15 @@ function addMonths(isoDate: string, months: number): string {
   return toIsoDate(d)
 }
 
-function round2(n: number): number {
+export function round2(n: number): number {
   return Math.round(n * 100) / 100
+}
+
+/** Mirrors record_payment()'s advance rule: how much of a payment covers
+ * the fee and how much is kept ahead for the next one. */
+export function splitAdvance(amount: number, balance: number): { toFee: number; toAdvance: number } {
+  const toFee = round2(Math.min(amount, Math.max(balance, 0)))
+  return { toFee, toAdvance: round2(Math.max(amount - toFee, 0)) }
 }
 
 export interface Period {

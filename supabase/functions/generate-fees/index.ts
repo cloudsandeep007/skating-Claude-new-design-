@@ -12,6 +12,10 @@
 //   3. Expires the remaining class credits of any skater whose plan term
 //      has ended without a renewal — expire_lapsed_credits(). Recorded as
 //      a visible 'expire' line on the skater's credit statement.
+//   4. Applies any advance a family holds to their open fees —
+//      apply_all_advances().
+//   5. Sends automatic fee / renewal reminders for academies that have
+//      turned them on (settings.auto_fee_reminders) — run_auto_reminders().
 //
 // Both RPCs are SECURITY INVOKER; it's the service-role key (which bypasses
 // RLS) that lets this one call cover every academy in one run. An admin's
@@ -70,10 +74,18 @@ Deno.serve(async (req) => {
     const { data: expiredCount, error: expireError } = await admin.rpc('expire_lapsed_credits')
     if (expireError) return json({ error: expireError.message }, 500)
 
+    const { data: advanceApplied, error: advanceError } = await admin.rpc('apply_all_advances')
+    if (advanceError) return json({ error: advanceError.message }, 500)
+
+    const { data: reminders, error: reminderError } = await admin.rpc('run_auto_reminders')
+    if (reminderError) return json({ error: reminderError.message }, 500)
+
     return json({
       generated: generated?.length ?? 0,
       markedOverdue: overdueCount ?? 0,
       creditsExpiredFor: expiredCount ?? 0,
+      advanceApplied: advanceApplied ?? 0,
+      reminders: reminders?.[0] ?? { fee_reminders: 0, renewal_reminders: 0 },
     })
   } catch {
     return json({ error: 'Unexpected error' }, 500)

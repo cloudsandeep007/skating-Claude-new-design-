@@ -104,6 +104,7 @@ export function useRecordPayment() {
         p_reference: emptyToNull(form.reference) ?? undefined,
         p_notes: emptyToNull(form.notes) ?? undefined,
         p_idempotency_key: idempotencyKey,
+        p_accept_advance: form.acceptAdvance,
       })
       if (error) throw new Error(error.message)
       return { receiptNo: data.receipt_no }
@@ -123,6 +124,46 @@ export function invalidateFeesAndCredits(queryClient: ReturnType<typeof useQuery
   void queryClient.invalidateQueries({ queryKey: ['fees'] })
   void queryClient.invalidateQueries({ queryKey: ['bookings'] })
   void queryClient.invalidateQueries({ queryKey: ['students'] })
+}
+
+export interface AdvanceEntry {
+  id: string
+  delta: number
+  kind: 'deposit' | 'applied'
+  reason: string | null
+  createdAt: string
+}
+
+/** student_advance_balance() + the advance ledger — money a family paid
+ * ahead, and where it went. Shown on the Fees tab (admin and parent). */
+export function useStudentAdvance(studentId: string | null) {
+  return useQuery({
+    queryKey: ['fees', 'advance', studentId],
+    enabled: studentId !== null,
+    queryFn: async (): Promise<{ balance: number; entries: AdvanceEntry[] }> => {
+      if (!studentId) return { balance: 0, entries: [] }
+      const [bal, rows] = await Promise.all([
+        supabase.rpc('student_advance_balance', { p_student_id: studentId }),
+        supabase
+          .from('student_advances')
+          .select('id, delta, kind, reason, created_at')
+          .eq('student_id', studentId)
+          .order('created_at', { ascending: false }),
+      ])
+      if (bal.error) throw bal.error
+      if (rows.error) throw rows.error
+      return {
+        balance: bal.data,
+        entries: rows.data.map((r) => ({
+          id: r.id,
+          delta: r.delta,
+          kind: r.kind as 'deposit' | 'applied',
+          reason: r.reason,
+          createdAt: r.created_at,
+        })),
+      }
+    },
+  })
 }
 
 interface VoidPaymentInput {

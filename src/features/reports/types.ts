@@ -43,6 +43,23 @@ export interface CoachReportRow {
   attendancePct: number | null
 }
 
+export interface ReconciliationRow {
+  day: string
+  cash: number
+  upi: number
+  card: number
+  bankTransfer: number
+  cheque: number
+  other: number
+  collected: number
+  paymentCount: number
+  voidedTotal: number
+  voidedCount: number
+  advanceApplied: number
+  firstReceipt: string | null
+  lastReceipt: string | null
+}
+
 export interface ReportRange {
   from: string
   to: string

@@ -5,6 +5,7 @@ import { toast } from 'sonner'
 
 import { todayIso } from '@/shared/lib/format'
 import { Button } from '@/shared/ui/button'
+import { Checkbox } from '@/shared/ui/checkbox'
 import { DatePicker } from '@/shared/ui/DatePicker'
 import {
   Dialog,
@@ -20,7 +21,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/shared/ui/textarea'
 
 import { useRecordPayment } from '../api/payments'
-import { remainingBalance } from '../hooks/feeMath'
+import { remainingBalance, round2 } from '../hooks/feeMath'
 import { formatRupees } from '../hooks/feeTone'
 import {
   PAYMENT_METHODS,
@@ -58,8 +59,8 @@ export function RecordPaymentDialog({ fee, onClose }: RecordPaymentDialogProps) 
 
   const form = useForm<PaymentForm>({
     resolver: zodResolver(
-      PaymentFormSchema.refine((v) => v.amount <= balance, {
-        message: `That's more than the ${formatRupees(balance)} still owed`,
+      PaymentFormSchema.refine((v) => v.acceptAdvance || v.amount <= balance, {
+        message: `That's more than the ${formatRupees(balance)} still owed — tick "keep the extra as an advance" below to accept it`,
         path: ['amount'],
       }).refine((v) => v.paidDate <= todayIso(), {
         message: "Can't be in the future",
@@ -73,9 +74,13 @@ export function RecordPaymentDialog({ fee, onClose }: RecordPaymentDialogProps) 
           method: 'cash',
           reference: '',
           notes: '',
+          acceptAdvance: false,
         }
       : undefined,
   })
+  const amount = form.watch('amount')
+  const acceptAdvance = form.watch('acceptAdvance')
+  const extra = Number.isFinite(amount) && amount > balance ? round2(amount - balance) : 0
 
   async function onSubmit(values: PaymentForm) {
     if (!fee) return
@@ -85,8 +90,9 @@ export function RecordPaymentDialog({ fee, onClose }: RecordPaymentDialogProps) 
         form: values,
         idempotencyKey,
       })
+      const kept = values.amount > balance ? round2(values.amount - balance) : 0
       toast.success(
-        `Payment of ${formatRupees(values.amount)} recorded for ${fee.studentName}.${receiptNo ? ` Receipt ${receiptNo}.` : ''}`,
+        `Payment of ${formatRupees(values.amount)} recorded for ${fee.studentName}.${receiptNo ? ` Receipt ${receiptNo}.` : ''}${kept > 0 ? ` ${formatRupees(kept)} kept as an advance.` : ''}`,
       )
       setIdempotencyKey(crypto.randomUUID())
       onClose()
@@ -132,7 +138,7 @@ export function RecordPaymentDialog({ fee, onClose }: RecordPaymentDialogProps) 
                             type="number"
                             step="0.01"
                             min={0}
-                            max={balance}
+                            max={acceptAdvance ? undefined : balance}
                             name={field.name}
                             ref={field.ref}
                             onBlur={field.onBlur}
@@ -160,6 +166,35 @@ export function RecordPaymentDialog({ fee, onClose }: RecordPaymentDialogProps) 
                     )}
                   />
                 </div>
+
+                {extra > 0 && (
+                  <FormField
+                    control={form.control}
+                    name="acceptAdvance"
+                    render={({ field }) => (
+                      <FormItem>
+                        <label className="flex items-start gap-2 rounded-md border border-primary/30 bg-primary/5 p-3 text-sm">
+                          <Checkbox
+                            checked={field.value}
+                            onCheckedChange={(v) => {
+                              field.onChange(v === true)
+                            }}
+                          />
+                          <span>
+                            <span className="font-semibold">
+                              Keep the extra {formatRupees(extra)} as an advance
+                            </span>
+                            <span className="block text-xs text-muted-foreground">
+                              It's applied automatically to the next fee. The receipt shows the
+                              full {formatRupees(Number.isFinite(amount) ? amount : 0)}.
+                            </span>
+                          </span>
+                        </label>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                )}
 
                 <FormField
                   control={form.control}

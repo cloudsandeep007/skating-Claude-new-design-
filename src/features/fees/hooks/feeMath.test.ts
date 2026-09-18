@@ -11,7 +11,24 @@ import {
   paidTotal,
   prorateCycleAmount,
   remainingBalance,
+  splitAdvance,
 } from './feeMath'
+
+describe('splitAdvance — an overpayment is kept ahead, never lost', () => {
+  it('a payment within the balance all goes to the fee', () => {
+    expect(splitAdvance(500, 640)).toEqual({ toFee: 500, toAdvance: 0 })
+    expect(splitAdvance(640, 640)).toEqual({ toFee: 640, toAdvance: 0 })
+  })
+  it('anything over the balance becomes an advance', () => {
+    expect(splitAdvance(740, 240)).toEqual({ toFee: 240, toAdvance: 500 })
+  })
+  it('a fee already covered takes nothing; the whole payment is advance', () => {
+    expect(splitAdvance(300, 0)).toEqual({ toFee: 0, toAdvance: 300 })
+  })
+  it('rounds to the paisa', () => {
+    expect(splitAdvance(100, 33.335)).toEqual({ toFee: 33.34, toAdvance: 66.66 })
+  })
+})
 
 describe('paidTotal — voided payments count for nothing', () => {
   it('sums live payments only', () => {

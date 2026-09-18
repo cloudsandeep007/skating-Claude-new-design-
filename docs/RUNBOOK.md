@@ -169,12 +169,14 @@ See [DATA-MODEL.md](./DATA-MODEL.md) for what the schema actually contains.
 
 ## Scheduled jobs
 
-**Fee generation, overdue transitions and credit expiry** (`generate-fees`)
-should run once a day. Since 2026-09-16 the same run also calls
-`expire_lapsed_credits()`, which writes off the unused classes of any
-skater whose plan term has ended without a renewal — so if the job isn't
-scheduled, lapsed credits stay on the books until it is (they're still
-unbookable, because `book_class_slot` checks the term itself). After deploying it (above), set up its schedule — either
+**Fee generation, overdue transitions, credit expiry, advances and
+reminders** (`generate-fees`) should run once a day. One run: generates
+the coming periods, flips overdue fees, expires lapsed credits, applies
+any advance a family holds to their open fees, and — only for academies
+with `auto_fee_reminders` on — sends the automatic reminders. If the job
+isn't scheduled none of that happens on its own (the admin buttons still
+work; lapsed credits stay unbookable because `book_class_slot` checks the
+term itself). After deploying it (above), set up its schedule — either
 works, no code change needed either way:
 
 **Option A — Supabase Dashboard (no SQL):** Project → Edge Functions →
@@ -220,6 +222,10 @@ when a key is absent:
   period starts (or after the day it was generated, if that's later).
 - `booking_window_days` (default `7`) — how many days ahead a parent can
   book a class.
+- `auto_fee_reminders` (default `false`) — when `true`, the nightly job
+  sends fee and renewal reminders on its own (see below).
+- `fee_reminder_days_before` (default `3`) — how many days before a fee's
+  due date the automatic reminder goes.
 - `topup_min_classes` (default `{"monthly": 8, "quarterly": 24, "annual": 96}`)
   — the smallest top-up that starts or renews a pay-per-class plan term.
 - `receipt_prefix` (default: the first four letters/digits of the academy

@@ -17,6 +17,67 @@ Format:
 
 ---
 
+## 2026-09-18 — Advances are a ledger; an applied advance is a payment that isn't money
+
+**Decision:** (Migrations 0027–0031.) `student_advances` is an append-only
+ledger (+`deposit` / −`applied`); balance = `sum(delta)`. A deposit is
+created only when `record_payment()` is called with `p_accept_advance`
+and the amount exceeds what's owed — the payment row carries the **full**
+amount (that's what the receipt must say), the excess becomes the
+deposit. Applying an advance to a fee (`apply_student_advance`) inserts a
+`payments` row with the new method `'advance'`, no receipt number, and a
+matching −`applied` entry. `fee_paid_total()` counts it (it covers the
+fee); every "collected" figure — `monthly_collection_totals`,
+`reconciliation_report`, the dashboard — excludes `method = 'advance'`
+(it isn't new money). Advances apply at generation, nightly, and
+immediately after a deposit if an open fee exists. Voiding an `advance`
+payment re-deposits it.
+
+**Options considered:**
+- *Refuse overpayment forever* (Phase 1) — kept as the default; the
+  admin has to tick the box. An accidental extra ₹1,000 shouldn't
+  silently become a credit.
+- *Record only the owed amount and a separate "advance receipt"* —
+  rejected: the family handed over one sum and expects one receipt for
+  it.
+- *Apply an advance by shrinking the next fee's amount* — rejected:
+  the fee's price is what it is; the advance is a payment against it,
+  and the statement should show both.
+- *A wallet balance on `students`* — rejected for the same reason as
+  the credit ledger: a running column can't explain itself; a ledger can.
+
+**Why:** Closes audit F-18 properly and gives month-end a clean answer:
+collected = live non-advance payments; every rupee in
+`student_advances` is money already counted when it came in.
+
+**Trade-offs:** An advance is per skater, not per family — two siblings
+don't share one. `reconciliation_report` treats a voided payment's date
+as its `paid_date`, not the void date.
+
+## 2026-09-18 — Automatic reminders are opt-in and rate-limited; the activity trail is read-only SQL over audit_logs
+
+**Decision:** `run_auto_reminders()` runs nightly but does nothing unless
+`academies.settings.auto_fee_reminders` is `true`. It sends the same
+`fee_due` notification as the manual Remind button for fees due in
+`fee_reminder_days_before` days (default 3) or that went overdue the day
+before, and the same `renewal_due` notification for terms ending within 7
+days or lapsed — each only if the fee's `last_reminded_at` / the
+skater's last renewal notification is more than 7 days old.
+`student_activity()` is a SECURITY DEFINER read over `audit_logs`
+restricted to rows about that skater (their record, fees, payments,
+bookings, make-ups, attendance) with the actor's name joined in; the UI
+turns the stored `{col: {old, new}}` diffs into sentences.
+
+**Options considered:** A per-family opt-out was in the audit plan — left
+out: no parent settings screen exists yet, and the academy-level switch
+plus the once-a-week cap keeps it non-spammy. Building a separate
+"activity" table was rejected: `audit_logs` already has every row.
+
+**Trade-offs:** Reminders fire for flat-fee periods only (top-ups have no
+due date; renewals cover per-class). The activity text is generated
+client-side from column names, so a new column shows up as its raw name
+until a label is added.
+
 ## 2026-09-17 — Clawback cancels the newest future bookings, with the admin's explicit confirmation
 
 **Decision:** (Migrations 0024–0026.) When an action removes credits a

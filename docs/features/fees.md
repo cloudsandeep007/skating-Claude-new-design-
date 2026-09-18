@@ -90,9 +90,14 @@ collected some other way (cash, UPI, bank transfer, etc.).
   it, then **Generate now**, to replace a mis-generated unpaid period —
   though since 0018 an unpaid period re-prices itself when the plan or
   batch changes, so this is rarely needed.
-- **Record payment** defaults to the balance and won't accept more (the
-  field is capped, the form validates, and the database refuses); a
-  date in the future is refused the same way.
+- **Record payment** defaults to the balance. More than the balance is
+  refused unless you tick **"Keep the extra ₹X as an advance"** — then
+  the receipt shows the full amount, the extra appears on the tab as
+  "₹X paid in advance", and it's applied to the next fee automatically
+  (shown on that fee as an "Advance balance" line, no receipt number).
+  A date in the future is refused.
+- **The parent is notified of every payment** with the receipt number,
+  method and what it covered — and again when an advance is applied.
 
 **Admin — top-ups** (skater profile → Fees tab, pay-per-class skaters only)
 - **Top up classes** — "the family paid for N classes". The dialog shows
@@ -109,6 +114,18 @@ collected some other way (cash, UPI, bank transfer, etc.).
   at risk, the parent's phone, and when they were last reminded.
   **Remind** (per row or bulk-selected) sends an in-app notification to
   the parents.
+
+**Admin — Reports → Reconciliation** (`/admin/reports`)
+- Per day: cash / UPI / card / bank / cheque / other, collected total,
+  number of receipts and their number range, voided amount, advances
+  applied; totals row; CSV and PDF. Voided payments and applied advances
+  are never in "collected".
+
+**Admin — skater profile → Activity tab**
+- Every audit-logged change to the skater's fees, payments, bookings,
+  make-ups and attendance, newest first, with who did it — "Payment added
+  ₹740 · cash · PRSA-2026-000018", "Fee changed status: pending → paid",
+  "Payment changed voided · void reason: — → cheque bounced".
 
 **Parent** (`/parent/fees`, reached from the Fees card on Home)
 - Current dues (amount, due date, status badge) and a receipt-style
@@ -131,6 +148,10 @@ collected some other way (cash, UPI, bank transfer, etc.).
 | RPC `waive_fee`                       |      | ✓     | admin-only; the Waive dialog                                       |
 | RPC `delete_student_fee`               |      | ✓     | admin-only; removes a period that has no payment history            |
 | RPC `record_credit_topup`             |      | ✓     | admin-only; a `kind = 'topup'` fee + its payment in one call        |
+| `student_advances` / RPC `student_advance_balance` | ✓ | (RPC) | overpayments kept ahead; written by `record_payment` / `apply_student_advance` / `void_payment` |
+| RPC `reconciliation_report`           | ✓    |       | Reports → Reconciliation (reports feature)                          |
+| RPC `student_activity`                | ✓    |       | skater profile → Activity (students feature)                        |
+| `notifications`                       |      | ✓     | `payment_recorded`, `advance_applied` written by the payment functions; `fee_due` / `renewal_due` by `run_auto_reminders` when enabled |
 | RPC `credit_plan_status`              | ✓    |       | the term shown in the Top-up dialog (via the schedule feature)      |
 | RPC `renewals_due` / `send_renewal_reminders` | ✓ | ✓ | dashboard "Renewals due" panel (dashboard feature)                 |
 | `credit_ledger`                       |      | (auto)| grant/clawback rows follow a fee's status — see docs/features/schedule.md |

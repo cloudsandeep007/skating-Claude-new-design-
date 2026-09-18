@@ -5,6 +5,35 @@ non-technical person can follow it. Newest first.
 
 ---
 
+## 2026-09-18 — Payments & credits audit, Phase 3: receipts to parents, advances, reconciliation, activity trail, auto-reminders
+
+- **Parents get a receipt the moment a payment is recorded** — an in-app
+  notification: "Payment received — ₹4,000 · Receipt PRSA-2026-000014 ·
+  Cash · 8 classes added, valid till 31 Oct 2026." (or, for a flat fee,
+  the period and what's still due).
+- **Overpayments are kept as an advance, never lost.** If a family pays
+  more than what's owed, the payment dialog offers "Keep the extra ₹X as
+  an advance". The receipt shows the full amount; the extra sits on the
+  skater's Fees tab as "₹X paid in advance" and is applied automatically
+  to the next fee — when it's generated, nightly, or straight away if one
+  is already open. An applied advance shows on the fee as "Advance
+  balance" and is never counted as new money in "Collected". Voiding an
+  applied advance puts it back.
+- **Reconciliation report** — a new tab under Reports: for each day, what
+  came in by cash / UPI / card / bank / cheque / other, the receipt-number
+  range, voided amounts and advances applied, with totals. CSV and PDF
+  like the other reports. This is the sheet to check against the cash box
+  and the UPI statement at month-end.
+- **Activity tab on every skater profile** — who changed what, when, in
+  plain language: fees added and re-priced, payments recorded and voided
+  (with reasons), bookings, make-ups, attendance marks. Written by the
+  database automatically; nothing here can be edited.
+- **Automatic reminders (optional, off by default).** Turn on
+  `auto_fee_reminders` for the academy and the nightly job reminds
+  parents 3 days before a fee is due (`fee_reminder_days_before`), the day
+  after it goes overdue, and when a plan term is within 7 days of ending
+  or has lapsed — never more than once a week per fee or skater.
+
 ## 2026-09-17 — Payments & credits audit, Phase 2 complete: clawback with a preview, and the last guards
 
 - **Voiding a payment that granted credits now shows the consequence

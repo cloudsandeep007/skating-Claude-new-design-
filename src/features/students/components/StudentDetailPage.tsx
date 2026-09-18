@@ -28,6 +28,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/ui/tabs'
 import { useSetStudentStatus } from '../api/archiveStudent'
 import { useStudent } from '../api/getStudent'
 import { attendancePctColorClass } from '../hooks/statusPresentation'
+import { StudentActivityCard } from './StudentActivityCard'
 
 export function StudentDetailPage() {
   const { studentId = '' } = useParams<{ studentId: string }>()
@@ -178,7 +179,7 @@ export function StudentDetailPage() {
 
         <Tabs defaultValue="overview">
           <TabsList className="border-t border-t-border">
-            {['overview', 'attendance', 'progress', 'fees', 'notes'].map((tab) => (
+            {['overview', 'attendance', 'progress', 'fees', 'activity', 'notes'].map((tab) => (
               <TabsTrigger key={tab} value={tab} className="capitalize">
                 {tab}
               </TabsTrigger>
@@ -239,6 +240,9 @@ export function StudentDetailPage() {
           </TabsContent>
           <TabsContent value="fees" className="p-5">
             <PaymentHistoryList studentId={student.id} studentName={student.fullName} canManage />
+          </TabsContent>
+          <TabsContent value="activity" className="p-5">
+            <StudentActivityCard studentId={student.id} />
           </TabsContent>
           <TabsContent value="notes" className="p-5 text-sm text-muted-foreground">
             Not built yet.

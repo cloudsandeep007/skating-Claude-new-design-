@@ -13,6 +13,8 @@ export type FeePricingMode = Enums<'fee_pricing_mode'>
 export const FEE_STATUSES: FeeStatus[] = ['pending', 'overdue', 'paid', 'waived']
 export const BILLING_CYCLES: BillingCycle[] = ['monthly', 'quarterly', 'annual']
 export const FEE_PRICING_MODES: FeePricingMode[] = ['cycle', 'per_class']
+/** Methods an admin can pick. 'advance' exists too but is only ever set by
+ * the database when a family's advance balance covers a fee. */
 export const PAYMENT_METHODS: PaymentMethod[] = [
   'cash',
   'upi',
@@ -40,6 +42,7 @@ export const PAYMENT_METHOD_LABEL: Record<PaymentMethod, string> = {
   bank_transfer: 'Bank transfer',
   cheque: 'Cheque',
   other: 'Other',
+  advance: 'Advance balance',
 }
 
 export interface FeePlanOption {
@@ -140,6 +143,8 @@ export const PaymentFormSchema = z.object({
   method: z.enum(['cash', 'upi', 'card', 'bank_transfer', 'cheque', 'other']),
   reference: z.string().optional(),
   notes: z.string().optional(),
+  /** Anything over the balance is kept as an advance for the next fee. */
+  acceptAdvance: z.boolean(),
 })
 export type PaymentForm = z.infer<typeof PaymentFormSchema>
 

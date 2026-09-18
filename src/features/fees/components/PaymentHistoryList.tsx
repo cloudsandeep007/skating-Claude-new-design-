@@ -22,7 +22,7 @@ import { EmptyState } from '@/shared/ui/EmptyState'
 import { Skeleton } from '@/shared/ui/skeleton'
 import { StatusBadge } from '@/shared/ui/StatusBadge'
 
-import { useDeleteFee, useStudentFees } from '../api/payments'
+import { useDeleteFee, useStudentAdvance, useStudentFees } from '../api/payments'
 import { canWaive, paidTotal, remainingBalance } from '../hooks/feeMath'
 import { feeStatusLabel, feeStatusTone, formatRupees } from '../hooks/feeTone'
 import { PAYMENT_METHOD_LABEL } from '../types'
@@ -56,6 +56,18 @@ export function PaymentHistoryList({
   const deleteFee = useDeleteFee()
   const { data: plan } = useCreditPlanStatus(canManage ? studentId : null)
   const canTopup = canManage && plan?.pricingMode === 'per_class'
+  const { data: advance } = useStudentAdvance(studentId)
+  const advanceBanner =
+    advance && advance.balance > 0 ? (
+      <div className="rounded-lg border border-success-600/40 bg-success-500/10 px-3.5 py-2.5 text-sm">
+        <span className="font-bold">{formatRupees(advance.balance)} paid in advance</span>
+        <span className="text-muted-foreground">
+          {' '}
+          — applied automatically to the next fee.
+          {advance.entries[0]?.reason && ` ${advance.entries[0].reason}.`}
+        </span>
+      </div>
+    ) : null
 
   if (isError) {
     return (
@@ -104,6 +116,7 @@ export function PaymentHistoryList({
     return (
       <div className="space-y-3">
         {topupButton && <div className="flex justify-end">{topupButton}</div>}
+        {advanceBanner}
         <EmptyState
           title={canTopup ? 'No top-ups yet' : 'No fees yet'}
           description={
@@ -127,6 +140,7 @@ export function PaymentHistoryList({
       {topupButton && (
         <li className="flex justify-end">{topupButton}</li>
       )}
+      {advanceBanner && <li>{advanceBanner}</li>}
       {fees.map((fee) => {
         const paid = paidTotal(fee.payments)
         const balance = remainingBalance(fee.amount, paid)

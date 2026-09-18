@@ -1175,6 +1175,81 @@ export type Database = {
           },
         ]
       }
+      student_advances: {
+        Row: {
+          academy_id: string
+          actor_id: string | null
+          created_at: string
+          delta: number
+          fee_id: string | null
+          id: string
+          kind: string
+          payment_id: string | null
+          reason: string | null
+          student_id: string
+        }
+        Insert: {
+          academy_id: string
+          actor_id?: string | null
+          created_at?: string
+          delta: number
+          fee_id?: string | null
+          id?: string
+          kind: string
+          payment_id?: string | null
+          reason?: string | null
+          student_id: string
+        }
+        Update: {
+          academy_id?: string
+          actor_id?: string | null
+          created_at?: string
+          delta?: number
+          fee_id?: string | null
+          id?: string
+          kind?: string
+          payment_id?: string | null
+          reason?: string | null
+          student_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "student_advances_academy_id_fkey"
+            columns: ["academy_id"]
+            isOneToOne: false
+            referencedRelation: "academies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "student_advances_actor_id_fkey"
+            columns: ["actor_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "student_advances_fee_id_fkey"
+            columns: ["fee_id"]
+            isOneToOne: false
+            referencedRelation: "student_fees"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "student_advances_payment_id_fkey"
+            columns: ["payment_id"]
+            isOneToOne: false
+            referencedRelation: "payments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "student_advances_student_id_academy_id_fkey"
+            columns: ["student_id", "academy_id"]
+            isOneToOne: false
+            referencedRelation: "students"
+            referencedColumns: ["id", "academy_id"]
+          },
+        ]
+      }
       student_batches: {
         Row: {
           academy_id: string
@@ -1559,6 +1634,12 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      apply_all_advances: { Args: never; Returns: number }
+      apply_student_advance: { Args: { p_fee_id: string }; Returns: number }
+      apply_student_advances: {
+        Args: { p_student_id: string }
+        Returns: number
+      }
       at_risk_students_for: {
         Args: { p_days?: number; p_min_sessions?: number; p_threshold?: number }
         Returns: {
@@ -1858,8 +1939,22 @@ export type Database = {
           student_id: string
         }[]
       }
+      notify_parents_of: {
+        Args: {
+          p_body: string
+          p_link: string
+          p_student_id: string
+          p_title: string
+          p_type: string
+        }
+        Returns: number
+      }
       parent_batch_ids: { Args: never; Returns: string[] }
       parent_student_ids: { Args: never; Returns: string[] }
+      payment_method_label: {
+        Args: { p_method: Database["public"]["Enums"]["payment_method"] }
+        Returns: string
+      }
       promote_student: {
         Args: { p_student_id: string }
         Returns: {
@@ -1871,6 +1966,25 @@ export type Database = {
       recompute_open_fees_for_plan: {
         Args: { p_fee_plan_id: string }
         Returns: undefined
+      }
+      reconciliation_report: {
+        Args: { p_from: string; p_to: string }
+        Returns: {
+          advance_applied: number
+          bank_transfer: number
+          card: number
+          cash: number
+          cheque: number
+          collected: number
+          day: string
+          first_receipt: string
+          last_receipt: string
+          other: number
+          payment_count: number
+          upi: number
+          voided_count: number
+          voided_total: number
+        }[]
       }
       record_credit_topup: {
         Args: {
@@ -1908,6 +2022,7 @@ export type Database = {
       }
       record_payment: {
         Args: {
+          p_accept_advance?: boolean
           p_amount: number
           p_idempotency_key?: string
           p_method?: Database["public"]["Enums"]["payment_method"]
@@ -1976,6 +2091,13 @@ export type Database = {
         Args: { p_session_id: string }
         Returns: number
       }
+      run_auto_reminders: {
+        Args: never
+        Returns: {
+          fee_reminders: number
+          renewal_reminders: number
+        }[]
+      }
       save_attendance: {
         Args: { p_marks: Json; p_session_id: string }
         Returns: number
@@ -2016,6 +2138,10 @@ export type Database = {
         Args: { p_student_ids: string[] }
         Returns: number
       }
+      send_renewal_reminders_for: {
+        Args: { p_academy_id: string; p_student_id: string }
+        Returns: number
+      }
       session_is_editable: { Args: { p_session_id: string }; Returns: boolean }
       settle_credit_shortfall: {
         Args: {
@@ -2038,6 +2164,22 @@ export type Database = {
           level_name: string
           student_id: string
         }[]
+      }
+      student_activity: {
+        Args: { p_limit?: number; p_student_id: string }
+        Returns: {
+          action: string
+          actor_name: string
+          changes: Json
+          created_at: string
+          entity_id: string
+          entity_type: string
+          id: string
+        }[]
+      }
+      student_advance_balance: {
+        Args: { p_student_id: string }
+        Returns: number
       }
       student_fees_list: {
         Args: {
@@ -2171,6 +2313,7 @@ export type Database = {
         | "bank_transfer"
         | "cheque"
         | "other"
+        | "advance"
       plan_tier: "free" | "starter" | "pro"
       profile_status: "active" | "invited" | "inactive"
       session_status: "scheduled" | "completed" | "cancelled"
@@ -2327,6 +2470,7 @@ export const Constants = {
         "bank_transfer",
         "cheque",
         "other",
+        "advance",
       ],
       plan_tier: ["free", "starter", "pro"],
       profile_status: ["active", "invited", "inactive"],

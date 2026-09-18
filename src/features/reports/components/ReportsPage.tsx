@@ -16,6 +16,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/ui/tabs'
 import { useAttendanceReport } from '../api/attendanceReport'
 import { useCoachReport } from '../api/coachReport'
 import { useFeeReport } from '../api/feeReport'
+import { useReconciliationReport } from '../api/reconciliationReport'
 import { useProgressReport } from '../api/progressReport'
 import type { ReportRange } from '../types'
 
@@ -93,6 +94,7 @@ export function ReportsPage() {
         <TabsList>
           <TabsTrigger value="attendance">Attendance</TabsTrigger>
           <TabsTrigger value="fees">Fee collection</TabsTrigger>
+          <TabsTrigger value="reconciliation">Reconciliation</TabsTrigger>
           <TabsTrigger value="progress">Student progress</TabsTrigger>
           <TabsTrigger value="coach">Coach activity</TabsTrigger>
         </TabsList>
@@ -108,6 +110,15 @@ export function ReportsPage() {
         </TabsContent>
         <TabsContent value="fees" className="space-y-4 pt-4">
           <FeeReportTab
+            range={range}
+            setRange={setRange}
+            batchId={batchId}
+            setBatchId={setBatchId}
+            resolvedBatchId={resolvedBatchId}
+          />
+        </TabsContent>
+        <TabsContent value="reconciliation" className="space-y-4 pt-4">
+          <ReconciliationTab
             range={range}
             setRange={setRange}
             batchId={batchId}
@@ -347,6 +358,164 @@ function FeeReportTab({ range, setRange, batchId, setBatchId, resolvedBatchId }:
                 <TableCell className="capitalize">{r.status}</TableCell>
               </TableRow>
             ))}
+          </TableBody>
+        </Table>
+      </ReportTable>
+    </>
+  )
+}
+
+/** Month-end: what was actually received each day, by method, against the
+ * receipt numbers issued — the sheet to check against the cash box and the
+ * UPI statement. Voided payments and advance applications are shown but
+ * kept out of "collected". Batch filter doesn't apply (money isn't per
+ * batch). */
+function ReconciliationTab({ range, setRange, batchId, setBatchId }: TabProps) {
+  const { data: rows, isLoading, isError, refetch } = useReconciliationReport(range)
+  const totals = (rows ?? []).reduce(
+    (t, r) => ({
+      cash: t.cash + r.cash,
+      upi: t.upi + r.upi,
+      card: t.card + r.card,
+      bankTransfer: t.bankTransfer + r.bankTransfer,
+      cheque: t.cheque + r.cheque,
+      other: t.other + r.other,
+      collected: t.collected + r.collected,
+      paymentCount: t.paymentCount + r.paymentCount,
+      voidedTotal: t.voidedTotal + r.voidedTotal,
+      voidedCount: t.voidedCount + r.voidedCount,
+      advanceApplied: t.advanceApplied + r.advanceApplied,
+    }),
+    { cash: 0, upi: 0, card: 0, bankTransfer: 0, cheque: 0, other: 0, collected: 0, paymentCount: 0, voidedTotal: 0, voidedCount: 0, advanceApplied: 0 },
+  )
+  const header = ['Day', 'Cash', 'UPI', 'Card', 'Bank', 'Cheque', 'Other', 'Collected', 'Receipts', 'Receipt range', 'Voided', 'Advance applied']
+  const csvRows = () =>
+    (rows ?? []).map((r) => [
+      r.day, r.cash, r.upi, r.card, r.bankTransfer, r.cheque, r.other, r.collected, r.paymentCount,
+      r.firstReceipt && r.lastReceipt ? (r.firstReceipt === r.lastReceipt ? r.firstReceipt : `${r.firstReceipt} – ${r.lastReceipt}`) : '',
+      r.voidedTotal, r.advanceApplied,
+    ])
+  const totalRow = () => [
+    'Total', totals.cash, totals.upi, totals.card, totals.bankTransfer, totals.cheque, totals.other,
+    totals.collected, totals.paymentCount, '', totals.voidedTotal, totals.advanceApplied,
+  ]
+
+  function exportCsv() {
+    if (!rows) return
+    downloadCsv(`reconciliation-${range.from}-to-${range.to}.csv`, [header, ...csvRows(), totalRow()])
+  }
+  function exportPdf() {
+    if (!rows) return
+    void exportTableToPdf(
+      `reconciliation-${range.from}-to-${range.to}.pdf`,
+      'Reconciliation',
+      `${formatDate(range.from)} – ${formatDate(range.to)}`,
+      header,
+      [...csvRows(), totalRow()].map((row) =>
+        row.map((c, i) => (typeof c === 'number' && i !== 8 ? rupees(c) : String(c))),
+      ),
+    )
+  }
+
+  return (
+    <>
+      <ReportFilters
+        range={range}
+        onRangeChange={(f, t) => {
+          setRange({ from: f, to: t })
+        }}
+        batchId={batchId}
+        onBatchChange={setBatchId}
+        onExportCsv={exportCsv}
+        onExportPdf={exportPdf}
+        exportDisabled={!rows || rows.length === 0}
+      />
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+        <div className="rounded-lg border bg-card p-3">
+          <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Collected</div>
+          <div className="font-display text-xl font-extrabold">{rupees(totals.collected)}</div>
+          <div className="text-xs text-muted-foreground">{totals.paymentCount} receipt{totals.paymentCount === 1 ? '' : 's'}</div>
+        </div>
+        <div className="rounded-lg border bg-card p-3">
+          <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Cash</div>
+          <div className="font-display text-xl font-extrabold">{rupees(totals.cash)}</div>
+        </div>
+        <div className="rounded-lg border bg-card p-3">
+          <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">UPI + bank + card</div>
+          <div className="font-display text-xl font-extrabold">{rupees(totals.upi + totals.bankTransfer + totals.card)}</div>
+        </div>
+        <div className="rounded-lg border bg-card p-3">
+          <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Voided · advance</div>
+          <div className="font-display text-xl font-extrabold">{rupees(totals.voidedTotal)}</div>
+          <div className="text-xs text-muted-foreground">{rupees(totals.advanceApplied)} covered from advances</div>
+        </div>
+      </div>
+      <ReportTable
+        isLoading={isLoading}
+        isError={isError}
+        onRetry={() => {
+          void refetch()
+        }}
+        isEmpty={!rows || rows.length === 0}
+      >
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Day</TableHead>
+              <TableHead>Cash</TableHead>
+              <TableHead>UPI</TableHead>
+              <TableHead>Card</TableHead>
+              <TableHead>Bank</TableHead>
+              <TableHead>Cheque</TableHead>
+              <TableHead>Other</TableHead>
+              <TableHead>Collected</TableHead>
+              <TableHead>Receipts</TableHead>
+              <TableHead>Voided</TableHead>
+              <TableHead>Advance</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {rows?.map((r) => (
+              <TableRow key={r.day}>
+                <TableCell className="font-bold">{formatDate(r.day)}</TableCell>
+                <TableCell>{rupees(r.cash)}</TableCell>
+                <TableCell>{rupees(r.upi)}</TableCell>
+                <TableCell>{rupees(r.card)}</TableCell>
+                <TableCell>{rupees(r.bankTransfer)}</TableCell>
+                <TableCell>{rupees(r.cheque)}</TableCell>
+                <TableCell>{rupees(r.other)}</TableCell>
+                <TableCell className="font-bold">{rupees(r.collected)}</TableCell>
+                <TableCell className="font-mono text-xs">
+                  {r.paymentCount}
+                  {r.firstReceipt && (
+                    <span className="block text-muted-foreground">
+                      {r.firstReceipt === r.lastReceipt ? r.firstReceipt : `${r.firstReceipt} – ${r.lastReceipt}`}
+                    </span>
+                  )}
+                </TableCell>
+                <TableCell className="text-muted-foreground">
+                  {r.voidedCount > 0 ? `${rupees(r.voidedTotal)} (${r.voidedCount})` : '—'}
+                </TableCell>
+                <TableCell className="text-muted-foreground">
+                  {r.advanceApplied > 0 ? rupees(r.advanceApplied) : '—'}
+                </TableCell>
+              </TableRow>
+            ))}
+            {rows && rows.length > 0 && (
+              <TableRow className="bg-muted/50 font-bold">
+                <TableCell>Total</TableCell>
+                <TableCell>{rupees(totals.cash)}</TableCell>
+                <TableCell>{rupees(totals.upi)}</TableCell>
+                <TableCell>{rupees(totals.card)}</TableCell>
+                <TableCell>{rupees(totals.bankTransfer)}</TableCell>
+                <TableCell>{rupees(totals.cheque)}</TableCell>
+                <TableCell>{rupees(totals.other)}</TableCell>
+                <TableCell>{rupees(totals.collected)}</TableCell>
+                <TableCell>{totals.paymentCount}</TableCell>
+                <TableCell>{rupees(totals.voidedTotal)}</TableCell>
+                <TableCell>{rupees(totals.advanceApplied)}</TableCell>
+              </TableRow>
+            )}
           </TableBody>
         </Table>
       </ReportTable>
