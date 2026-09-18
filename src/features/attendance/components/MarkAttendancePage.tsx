@@ -332,12 +332,18 @@ function RosterRow({
             <span
               className={cn(
                 'rounded px-1.5 py-px text-[10px] font-bold uppercase tracking-wide',
-                student.booked
+                student.bookingStatus === 'booked'
                   ? 'bg-success-500/15 text-success-300'
-                  : 'bg-secondary text-muted-foreground',
+                  : student.bookingStatus === 'pending'
+                    ? 'bg-warning-500/15 text-warning-300'
+                    : 'bg-secondary text-muted-foreground',
               )}
             >
-              {student.booked ? 'Booked' : 'Not booked'}
+              {student.bookingStatus === 'booked'
+                ? 'Booked'
+                : student.bookingStatus === 'pending'
+                  ? 'Requested'
+                  : 'Not booked'}
             </span>
           )}
           <span className="truncate">

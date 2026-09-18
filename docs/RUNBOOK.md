@@ -310,3 +310,21 @@ _To be filled in during Phase 4 (Capacitor)._
 _To be filled in as real operational needs come up. At minimum this
 should eventually cover: what to do when payments fail, how to roll
 back a bad deploy, how to restore from a backup._
+
+## Booking approvals
+
+Every parent booking waits for the batch coach or an admin to approve it
+(`/coach/bookings`, `/admin/schedule/bookings`). If nobody approves before
+the class, the request is released when the coach marks attendance (the
+credit goes back), unless the skater is marked present — then it counts as
+attended. To go back to instant booking for an academy:
+
+```sql
+update public.academies
+   set settings = settings || '{"booking_approval_required": false}'
+ where id = '<academy id>';
+```
+
+Requests already waiting stay `pending` until decided; approve them from
+the queue ("Approve all" per session) or leave them to be released at
+marking time.

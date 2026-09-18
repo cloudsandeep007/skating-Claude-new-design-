@@ -1,13 +1,13 @@
-import { PaymentHistoryList } from '@/features/fees'
+import { ParentFeesOverview } from '@/features/fees'
 import { EmptyState } from '@/shared/ui/EmptyState'
 import { Skeleton } from '@/shared/ui/skeleton'
 
 import { useCurrentChild } from '../hooks/useSelectedChild'
 import { ChildSelector } from './ChildSelector'
 
-/** Current dues and a receipt-style payment history — PaymentHistoryList
- * (from the fees feature) already covers both; this screen just adds the
- * child switcher on top, same as the other parent screens. */
+/** What is owed now, the current period, live top-ups and the last receipt
+ * — ParentFeesOverview (from the fees feature) does the work; this screen
+ * just adds the child switcher on top, same as the other parent screens. */
 export function ParentFeesPage() {
   const { child, isLoading } = useCurrentChild()
 
@@ -24,7 +24,7 @@ export function ParentFeesPage() {
   return (
     <div className="space-y-4">
       <ChildSelector subtitle="Fees" />
-      <PaymentHistoryList studentId={child.id} />
+      <ParentFeesOverview studentId={child.id} />
     </div>
   )
 }

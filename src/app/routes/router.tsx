@@ -25,6 +25,7 @@ import {
   LevelsManagePage,
 } from '@/features/progression'
 import {
+  BookingRequestsPage,
   CoachInboxPage,
   CoachTodayPage,
   UpcomingBookingsPage,
@@ -84,6 +85,7 @@ export const router = createBrowserRouter([
           { path: 'batches/:batchId/edit', element: <EditBatchPage /> },
           { path: 'schedule', element: <WeekCalendarPage /> },
           { path: 'schedule/coming-up', element: <UpcomingBookingsPage /> },
+          { path: 'schedule/bookings', element: <BookingRequestsPage variant="admin" /> },
           { path: 'attendance', element: <AdminAttendancePage /> },
           { path: 'announcements', element: <AdminAnnouncementsPage /> },
           { path: 'progression', element: <AdminProgressionPage /> },
@@ -108,6 +110,7 @@ export const router = createBrowserRouter([
           { path: 'skills/session/:sessionId', element: <BulkAssessPage /> },
           { path: 'skills/:studentId', element: <CoachStudentSkillsPage /> },
           { path: 'inbox', element: <CoachInboxPage /> },
+          { path: 'bookings', element: <BookingRequestsPage variant="coach" /> },
         ],
       },
     ],

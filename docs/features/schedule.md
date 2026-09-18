@@ -34,12 +34,24 @@ gives each coach a rink-side view of what they're teaching today.
 - **Coach today** (`/coach`, coach) — the coach's sessions today as ink
   cards (time · venue caption, batch name, skater count), cancelled ones
   greyed with the reason. Empty state when nothing's on.
+- **Bookings queue** (`/coach/bookings`, coach — third nav tab with a
+  count badge; `/admin/schedule/bookings`, admin — button on the Schedule
+  page with the same count) — every parent request grouped by session:
+  **Approve**, **Decline** (dialog with a reason the parent sees),
+  **Approve all N** per session, and a **Decided** tab listing recent
+  confirmations/declines (a confirmed booking can still be declined from
+  there while the session is in the future). A coach sees only sessions
+  they coach (session coach, else batch coach); an admin sees the academy.
 - **Class bookings — parent** (`/parent/schedule`, the skater's Schedule
-  page) — for a skater on any batch-scoped fee plan: a credit-balance
-  card ("12 classes left to book · Valid till Sat, Oct 31", or "2 classes
-  owed" in red) and a **Book** / **Cancel** control on each of the next 7
-  days' upcoming sessions (a booked session further out still shows
-  **Booked**). The button says why when it can't book: "Pay first"
+  page) — for a skater on any batch-scoped fee plan: a credits card
+  ("6 classes left", a **Credits expire** box with the date and days
+  left — amber within a week, red once lapsed — and a strip of
+  confirmed / awaiting approval / declined counts), an **All classes /
+  My bookings** filter, and the sessions grouped into **This week / Next
+  week** with later weeks behind a "Show N later classes" button. Each
+  row has **Book** (inside the booking window), **Awaiting approval ·
+  Withdraw**, **Confirmed · Cancel**, or **Declined · Ask again** with
+  the coach's reason; sessions outside the window read "Opens <date>". The button says why when it can't book: "Pay first"
   (flat-fee period unpaid), "Top up first" (pay-per-class, no classes or
   lapsed), "No credits left". A skater on a legacy academy-wide plan sees
   the page exactly as before this feature — no credit card, no booking
@@ -56,10 +68,30 @@ gives each coach a rink-side view of what they're teaching today.
 | RPC `cancel_session`          |      | ✓     | cancel + notify parents, atomically               |
 | RPC `schedule_makeup_session` |      | ✓     | links a new session to the cancelled one it replaces |
 | `notifications`               |      | ✓     | written by `cancel_session` and `schedule_makeup_session` |
-| `class_bookings`               | ✓    | ✓     | "Booked: N" count on each card; freed by `cancel_session()` |
+| `class_bookings`               | ✓    | ✓     | "Booked: N · Requested: M" on each card; freed by `cancel_session()` |
+| RPC `booking_requests` / `pending_booking_count` | ✓ | | the approvals queue and its badge |
+| RPC `approve_booking` / `reject_booking` / `approve_session_bookings` | | ✓ | decisions; notify parents |
 | RPC `class_credit_balance` / `book_class_slot` / `cancel_class_slot` |  | ✓ | the parent-side booking flow — see "Class bookings" below |
 
 ## Business rules
+
+### Booking approval (0032)
+
+- A parent's **Book** creates a `pending` request (or a `booked` row when
+  the academy has `booking_approval_required` = false). The credit is
+  held at request time and returned on decline, withdraw, session
+  cancellation, leaving the batch, or clawback — every rule that used to
+  say "status = booked" now says "booked or pending".
+- Only the session's coach (session coach, else the batch's coach) or an
+  academy admin can approve or decline. A decline may carry a note; the
+  parent sees it under the row and can **Ask again** while the window is
+  open. A declined or cancelled row is re-used on the next request.
+- Attendance wins: marking a pending skater present promotes the row to
+  `booked` (decided_by = the marker); a pending row never marked is
+  released when the session completes.
+- Notifications: the session coach (or all admins when the session has no
+  coach) on each request → `/coach/bookings`; the parents on approve /
+  decline → `/parent/schedule`.
 
 - **Generation is idempotent.** For every date in the range that matches
   the batch's days, the RPC does one of: `created`, `holiday` (skipped),

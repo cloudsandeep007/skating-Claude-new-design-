@@ -333,20 +333,36 @@ own children. Written only by the `attendance_makeup_credit` trigger and
 | academy_id   | uuid        | no       |                   | FK → academies cascade                             |
 | student_id   | uuid        | no       |                   | composite FK → students cascade                    |
 | session_id   | uuid        | no       |                   | composite FK → schedule_sessions cascade           |
-| status       | text        | no       | 'booked'          | check in ('booked', 'cancelled') — not a Postgres enum |
+| status       | text        | no       | 'booked'          | `0032` — check in ('pending', 'booked', 'rejected', 'cancelled'); not a Postgres enum. `pending` = requested by the parent, credit held; `booked` = approved / walk-in / legacy; `rejected` = declined by coach/admin, credit returned |
 | booked_at    | timestamptz | no       | now()             |                                                     |
 | cancelled_at | timestamptz | yes      |                   |                                                     |
 | source       | text        | no       | 'parent'          | `0021` — 'parent' (booked from the schedule page) or 'attendance' (created/re-activated by a present/late mark — a walk-in) |
+| decided_by   | uuid        | yes      |                   | `0032` — FK → profiles set null; who approved/declined |
+| decided_at   | timestamptz | yes      |                   | `0032` |
+| decision_note| text        | yes      |                   | `0032` — reason given on decline, shown to the parent |
 
 Unique `(student_id, session_id)`. Indexes: `(student_id, status)`,
 `(session_id, status)`. Audit: insert/update/delete → `audit_logs`.
 **Triggers (`0021`):** `class_bookings_ledger` / `_delete` keep the
-`credit_ledger` in step — a `booked` row has spent exactly one credit, a
-`cancelled` one none, a deleted one is refunded first. Attendance drives
+`credit_ledger` in step — a `booked` **or `pending`** row has spent exactly
+one credit, a `cancelled` **or `rejected`** one none, a deleted one is
+refunded first (`0032`). Attendance drives
 status too: `attendance_credit_truth` (on `attendance`) upserts a
-`booked` row on present/late and cancels it on absent/excused;
-`resolve_session_bookings()` (called by `save_attendance`) cancels any
-still-`booked` row with no mark once the session is completed.
+`booked` row on present/late (a `pending` one is promoted) and cancels a
+`booked`/`pending` one on absent/excused; `resolve_session_bookings()`
+(called by `save_attendance`) cancels any still-`booked`/`pending` row with
+no mark once the session is completed.
+**Approval RPCs (`0032`):** `approve_booking(id)`, `reject_booking(id,
+note)`, `approve_session_bookings(session_id)` — allowed for an academy
+admin or the session's coach (`can_decide_booking()`, via
+`session_coach_id()` = session coach else batch coach, and
+`my_coach_id()`); each notifies the parents. `booking_requests(status,
+days)` is the queue (coach: own sessions; admin: academy) and
+`pending_booking_count()` the nav badge. `book_class_slot()` inserts
+`pending` when `booking_approval_required(academy_id)` (settings key,
+default true) else `booked`, and notifies the session coach (or admins
+when there is none). `upcoming_bookings()` now returns a `status` column
+and includes pending rows.
 **RLS:** super_admin all · academy_admin all in academy · coach select in
 academy · parent select own children. No parent insert/update policy —
 writes only happen through `book_class_slot()` / `cancel_class_slot()`

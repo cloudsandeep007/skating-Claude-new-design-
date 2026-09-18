@@ -1,5 +1,6 @@
 export { useFeePlanOptions } from './api/feePlans'
 export { FeeDashboardPage } from './components/FeeDashboardPage'
 export { FeePlansManagePage } from './components/FeePlansManagePage'
+export { ParentFeesOverview } from './components/ParentFeesOverview'
 export { PaymentHistoryList } from './components/PaymentHistoryList'
 export { feePlanPriceLabel } from './hooks/feeTone'

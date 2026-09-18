@@ -169,6 +169,8 @@ export interface UpcomingBooking {
   photoUrl: string | null
   /** 'parent' booked it; 'attendance' means a walk-in recorded at marking. */
   source: 'parent' | 'attendance'
+  /** 'booked' is confirmed; 'pending' is still waiting for approval. */
+  status: 'booked' | 'pending'
 }
 
 /** upcoming_bookings() RPC — every active booking on a scheduled session in
@@ -192,31 +194,53 @@ export function useUpcomingBookings(days = 7) {
         fullName: r.full_name,
         photoUrl: r.photo_url,
         source: r.source as 'parent' | 'attendance',
+        status: r.status as 'booked' | 'pending',
       }))
     },
   })
 }
 
-/** Which of a student's upcoming sessions they've already booked. */
-export function useStudentBookedSessionIds(studentId: string | null) {
+export type BookingStatus = 'pending' | 'booked' | 'rejected' | 'cancelled'
+
+export interface StudentBooking {
+  status: BookingStatus
+  /** Why a request was declined — shown to the parent. */
+  decisionNote: string | null
+  decidedAt: string | null
+}
+
+/** Every booking a student has on any session, keyed by session id —
+ * pending requests, confirmed places, and declined ones (so the parent sees
+ * the reason and can ask again). Cancelled rows are left out. */
+export function useStudentBookings(studentId: string | null) {
   return useQuery({
-    queryKey: ['bookings', 'booked-ids', studentId],
+    queryKey: ['bookings', 'by-student', studentId],
     enabled: studentId !== null,
-    queryFn: async (): Promise<Set<string>> => {
-      if (!studentId) return new Set()
+    queryFn: async (): Promise<Map<string, StudentBooking>> => {
+      if (!studentId) return new Map()
       const { data, error } = await supabase
         .from('class_bookings')
-        .select('session_id')
+        .select('session_id, status, decision_note, decided_at')
         .eq('student_id', studentId)
-        .eq('status', 'booked')
+        .in('status', ['pending', 'booked', 'rejected'])
       if (error) throw error
-      return new Set(data.map((r) => r.session_id))
+      return new Map(
+        data.map((r) => [
+          r.session_id,
+          {
+            status: r.status as BookingStatus,
+            decisionNote: r.decision_note,
+            decidedAt: r.decided_at,
+          },
+        ]),
+      )
     },
   })
 }
 
-function invalidateBookings(queryClient: ReturnType<typeof useQueryClient>) {
+export function invalidateBookings(queryClient: ReturnType<typeof useQueryClient>) {
   void queryClient.invalidateQueries({ queryKey: ['bookings'] })
+  void queryClient.invalidateQueries({ queryKey: ['notifications'] })
   void queryClient.invalidateQueries({ queryKey: ['sessions'] })
   void queryClient.invalidateQueries({ queryKey: ['attendance', 'session'] })
   void queryClient.invalidateQueries({ queryKey: ['parent', 'upcoming'] })

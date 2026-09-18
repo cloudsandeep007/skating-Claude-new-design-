@@ -28,6 +28,8 @@ export interface RosterStudent {
   levelName: string | null
   /** Reserved a place for this session (or was recorded as a walk-in). */
   booked: boolean
+  /** 'pending' = requested but not yet approved by the coach/admin. */
+  bookingStatus: 'booked' | 'pending' | null
   /** On a batch-scoped plan: marking present spends a class credit. */
   onCreditPlan: boolean
 }

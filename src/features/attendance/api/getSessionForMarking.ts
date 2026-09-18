@@ -33,6 +33,7 @@ interface RosterRow {
 }
 
 interface BookedRow {
+  status: 'booked' | 'pending'
   student: {
     id: string
     full_name: string
@@ -67,9 +68,9 @@ async function fetchMarkingData(sessionId: string): Promise<MarkingData> {
       .overrideTypes<RosterRow[], { merge: false }>(),
     supabase
       .from('class_bookings')
-      .select('student:students(id, full_name, photo_url, current_level:levels(name))')
+      .select('status, student:students(id, full_name, photo_url, current_level:levels(name))')
       .eq('session_id', sessionId)
-      .eq('status', 'booked')
+      .in('status', ['booked', 'pending'])
       .overrideTypes<BookedRow[], { merge: false }>(),
     supabase.from('attendance').select('student_id, status').eq('session_id', sessionId),
   ])
@@ -77,22 +78,33 @@ async function fetchMarkingData(sessionId: string): Promise<MarkingData> {
   if (bookedResult.error) throw bookedResult.error
   if (marksResult.error) throw marksResult.error
 
-  const bookedIds = new Set(bookedResult.data.map((r) => r.student.id))
+  const bookingById = new Map(bookedResult.data.map((r) => [r.student.id, r.status]))
   const rosterById = new Map<
     string,
-    (RosterRow['student'] | BookedRow['student']) & { booked: boolean; onCreditPlan: boolean }
+    (RosterRow['student'] | BookedRow['student']) & {
+      booked: boolean
+      bookingStatus: 'booked' | 'pending' | null
+      onCreditPlan: boolean
+    }
   >()
   for (const r of enrolledResult.data) {
+    const status = bookingById.get(r.student.id) ?? null
     rosterById.set(r.student.id, {
       ...r.student,
-      booked: bookedIds.has(r.student.id),
+      booked: status === 'booked',
+      bookingStatus: status,
       onCreditPlan: r.student.fee_plan?.batch_id != null,
     })
   }
   // A booking from a skater no longer enrolled (moved batch) still shows.
   for (const r of bookedResult.data) {
     if (!rosterById.has(r.student.id)) {
-      rosterById.set(r.student.id, { ...r.student, booked: true, onCreditPlan: true })
+      rosterById.set(r.student.id, {
+        ...r.student,
+        booked: r.status === 'booked',
+        bookingStatus: r.status,
+        onCreditPlan: true,
+      })
     }
   }
 
@@ -122,6 +134,7 @@ async function fetchMarkingData(sessionId: string): Promise<MarkingData> {
         photoUrl: s.photo_url,
         levelName: s.current_level?.name ?? null,
         booked: s.booked,
+        bookingStatus: s.bookingStatus,
         onCreditPlan: s.onCreditPlan,
       }))
       .sort(

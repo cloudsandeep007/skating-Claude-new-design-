@@ -302,6 +302,21 @@ collected some other way (cash, UPI, bank transfer, etc.).
   RPC covers every academy in one run. One function, two trust levels —
   see DECISIONS.
 
+### Parent fees page (2026-09-19)
+
+`/parent/fees` renders `ParentFeesOverview` (fees feature) on top of
+`useStudentFees`, `useStudentAdvance` and `useCreditPlanStatus`.
+`summarizeParentFees()` (`hooks/parentFeeSummary.ts`, unit-tested) turns
+the flat fee list into: **due now** (sum of open balances, earliest due
+date, overdue flag), the **current period** (the one covering today, else
+the latest), **active top-ups** (valid today, not voided), **older**
+(everything else, newest first) and the **last live receipt**. The page
+shows a Due now / All paid up card, Classes left + Credits expire tiles,
+the current period expanded with its receipts, top-ups this term, the
+last receipt, and the older periods collapsed. Voided payments sit behind
+a "Show N voided entries" toggle; a voided top-up reads "Top-up · voided"
+with a neutral badge rather than "₹0 · Paid".
+
 ## Edge cases
 
 - **A plan is deleted while students are on it** — `fee_plan_id` is set

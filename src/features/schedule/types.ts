@@ -28,6 +28,8 @@ export interface SessionItem {
   /** Active class_bookings for this session — who's actually expected,
    * as opposed to studentCount (everyone enrolled in the batch). */
   bookedCount: number
+  /** Requests still waiting for the coach's or admin's approval. */
+  requestedCount: number
 }
 
 export type GenerateOutcome = 'created' | 'holiday' | 'exists' | 'coach_conflict'

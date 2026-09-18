@@ -208,3 +208,12 @@ placeholder screens behind it; see DECISIONS 2026-09-15.
 | -------- | --------------------------------- | ---------------------------------------- |
 | Supabase | Database, auth, storage           | `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY` |
 | Sentry   | Error tracking                    | `VITE_SENTRY_DSN`                        |
+
+## Feature notes (2026-09-19)
+
+- `schedule` also owns the booking-approval queue (`api/bookingRequests.ts`,
+  `components/BookingRequestsPage.tsx`, rendered under both `/coach/bookings`
+  and `/admin/schedule/bookings` with a `variant` prop). `fees` exports
+  `ParentFeesOverview` for the parent app; `parent` keeps only the
+  child-switcher and the week/month grouping helpers (`hooks/weekGroups.ts`,
+  `hooks/monthGrid.ts`).

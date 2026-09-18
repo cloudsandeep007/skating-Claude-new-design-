@@ -73,19 +73,25 @@ async function fetchSessions({ from, to, coachId }: SessionFilters): Promise<Ses
       ? (originalDates.get(row.makeup_for_session_id) ?? null)
       : null,
     makeupScheduledDate: makeupScheduled.get(row.id) ?? null,
-    bookedCount: booked.get(row.id) ?? 0,
+    bookedCount: booked.get(row.id)?.booked ?? 0,
+    requestedCount: booked.get(row.id)?.requested ?? 0,
   }))
 }
 
 async function fetchBookedCounts(sessionIds: string[]) {
-  const map = new Map<string, number>()
+  const map = new Map<string, { booked: number; requested: number }>()
   if (sessionIds.length === 0) return map
   const { data } = await supabase
     .from('class_bookings')
-    .select('session_id')
-    .eq('status', 'booked')
+    .select('session_id, status')
+    .in('status', ['booked', 'pending'])
     .in('session_id', sessionIds)
-  for (const row of data ?? []) map.set(row.session_id, (map.get(row.session_id) ?? 0) + 1)
+  for (const row of data ?? []) {
+    const cur = map.get(row.session_id) ?? { booked: 0, requested: 0 }
+    if (row.status === 'pending') cur.requested += 1
+    else cur.booked += 1
+    map.set(row.session_id, cur)
+  }
   return map
 }
 

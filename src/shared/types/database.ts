@@ -338,6 +338,9 @@ export type Database = {
           academy_id: string
           booked_at: string
           cancelled_at: string | null
+          decided_at: string | null
+          decided_by: string | null
+          decision_note: string | null
           id: string
           session_id: string
           source: string
@@ -348,6 +351,9 @@ export type Database = {
           academy_id: string
           booked_at?: string
           cancelled_at?: string | null
+          decided_at?: string | null
+          decided_by?: string | null
+          decision_note?: string | null
           id?: string
           session_id: string
           source?: string
@@ -358,6 +364,9 @@ export type Database = {
           academy_id?: string
           booked_at?: string
           cancelled_at?: string | null
+          decided_at?: string | null
+          decided_by?: string | null
+          decision_note?: string | null
           id?: string
           session_id?: string
           source?: string
@@ -370,6 +379,13 @@ export type Database = {
             columns: ["academy_id"]
             isOneToOne: false
             referencedRelation: "academies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "class_bookings_decided_by_fkey"
+            columns: ["decided_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
           {
@@ -1640,6 +1656,32 @@ export type Database = {
         Args: { p_student_id: string }
         Returns: number
       }
+      approve_booking: {
+        Args: { p_booking_id: string }
+        Returns: {
+          academy_id: string
+          booked_at: string
+          cancelled_at: string | null
+          decided_at: string | null
+          decided_by: string | null
+          decision_note: string | null
+          id: string
+          session_id: string
+          source: string
+          status: string
+          student_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "class_bookings"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      approve_session_bookings: {
+        Args: { p_session_id: string }
+        Returns: number
+      }
       at_risk_students_for: {
         Args: { p_days?: number; p_min_sessions?: number; p_threshold?: number }
         Returns: {
@@ -1680,6 +1722,9 @@ export type Database = {
           academy_id: string
           booked_at: string
           cancelled_at: string | null
+          decided_at: string | null
+          decided_by: string | null
+          decision_note: string | null
           id: string
           session_id: string
           source: string
@@ -1693,6 +1738,35 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      booking_approval_required: {
+        Args: { p_academy_id: string }
+        Returns: boolean
+      }
+      booking_requests: {
+        Args: { p_days?: number; p_status?: string }
+        Returns: {
+          batch_id: string
+          batch_name: string
+          booking_id: string
+          coach_name: string
+          credits_left: number
+          decided_at: string
+          decided_by: string
+          decision_note: string
+          end_time: string
+          full_name: string
+          photo_url: string
+          requested_at: string
+          session_date: string
+          session_id: string
+          source: string
+          start_time: string
+          status: string
+          student_id: string
+          venue: string
+        }[]
+      }
+      can_decide_booking: { Args: { p_session_id: string }; Returns: boolean }
       cancel_bookings_for_shortfall: {
         Args: { p_reason: string; p_student_id: string }
         Returns: number
@@ -1703,6 +1777,9 @@ export type Database = {
           academy_id: string
           booked_at: string
           cancelled_at: string | null
+          decided_at: string | null
+          decided_by: string | null
+          decision_note: string | null
           id: string
           session_id: string
           source: string
@@ -1922,6 +1999,7 @@ export type Database = {
           month: string
         }[]
       }
+      my_coach_id: { Args: never; Returns: string }
       needs_attention: {
         Args: { p_days?: number; p_min_sessions?: number; p_threshold?: number }
         Returns: {
@@ -1955,6 +2033,7 @@ export type Database = {
         Args: { p_method: Database["public"]["Enums"]["payment_method"] }
         Returns: string
       }
+      pending_booking_count: { Args: never; Returns: number }
       promote_student: {
         Args: { p_student_id: string }
         Returns: {
@@ -2057,6 +2136,28 @@ export type Database = {
         }
       }
       rederive_fee_status: { Args: { p_fee_id: string }; Returns: undefined }
+      reject_booking: {
+        Args: { p_booking_id: string; p_note?: string }
+        Returns: {
+          academy_id: string
+          booked_at: string
+          cancelled_at: string | null
+          decided_at: string | null
+          decided_by: string | null
+          decision_note: string | null
+          id: string
+          session_id: string
+          source: string
+          status: string
+          student_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "class_bookings"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       release_future_bookings: {
         Args: { p_batch_id?: string; p_student_id: string }
         Returns: number
@@ -2142,6 +2243,7 @@ export type Database = {
         Args: { p_academy_id: string; p_student_id: string }
         Returns: number
       }
+      session_coach_id: { Args: { p_session_id: string }; Returns: string }
       session_is_editable: { Args: { p_session_id: string }; Returns: boolean }
       settle_credit_shortfall: {
         Args: {
@@ -2229,6 +2331,7 @@ export type Database = {
           session_id: string
           source: string
           start_time: string
+          status: string
           student_id: string
           venue: string
         }[]

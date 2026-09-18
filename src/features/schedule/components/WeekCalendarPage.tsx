@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { CalendarCheck, CalendarX2, ChevronLeft, ChevronRight, Users } from 'lucide-react'
+import { CalendarCheck, CalendarX2, ChevronLeft, ChevronRight, Inbox, Users } from 'lucide-react'
 import { Link } from 'react-router-dom'
 
 import { addDays, formatDate, formatTime, toIsoDate, todayIso } from '@/shared/lib/format'
@@ -8,6 +8,7 @@ import { Button } from '@/shared/ui/button'
 import { EmptyState } from '@/shared/ui/EmptyState'
 import { Skeleton } from '@/shared/ui/skeleton'
 
+import { usePendingBookingCount } from '../api/bookingRequests'
 import { useHolidays } from '../api/holidays'
 import { useSessions } from '../api/listSessions'
 import { batchColorClass } from '../hooks/batchColor'
@@ -34,6 +35,7 @@ function weekLabel(monday: string): string {
 
 export function WeekCalendarPage() {
   const today = todayIso()
+  const { data: pendingRequests } = usePendingBookingCount()
   const [monday, setMonday] = useState(() => startOfWeek(today))
   const [cancelling, setCancelling] = useState<SessionItem | null>(null)
   const [schedulingMakeup, setSchedulingMakeup] = useState<SessionItem | null>(null)
@@ -86,6 +88,17 @@ export function WeekCalendarPage() {
             }}
           >
             <ChevronRight className="h-4 w-4" />
+          </Button>
+          <Button variant="outline" asChild>
+            <Link to="/admin/schedule/bookings">
+              <Inbox className="h-4 w-4" />
+              Bookings
+              {(pendingRequests ?? 0) > 0 && (
+                <span className="ml-1 rounded-full bg-warning-500 px-1.5 text-[11px] font-extrabold leading-5 text-black">
+                  {pendingRequests}
+                </span>
+              )}
+            </Link>
           </Button>
           <Button variant="outline" asChild>
             <Link to="/admin/schedule/coming-up">
@@ -212,8 +225,14 @@ function SessionCard({
           {session.studentCount}
         </span>
       </div>
-      {session.bookedCount > 0 && (
-        <div className="mt-1 text-[11px] font-semibold opacity-80">Booked: {session.bookedCount}</div>
+      {(session.bookedCount > 0 || session.requestedCount > 0) && (
+        <div className="mt-1 text-[11px] font-semibold opacity-80">
+          {session.bookedCount > 0 && `Booked: ${session.bookedCount}`}
+          {session.bookedCount > 0 && session.requestedCount > 0 && ' · '}
+          {session.requestedCount > 0 && (
+            <span className="text-warning-300">Requested: {session.requestedCount}</span>
+          )}
+        </div>
       )}
       {session.makeupForDate && (
         <div className="mt-1 text-[11px] font-semibold">

@@ -5,6 +5,51 @@ non-technical person can follow it. Newest first.
 
 ---
 
+## 2026-09-19 — Bookings need the coach's OK; parent screens redesigned
+
+- **Booking a class is now a request.** When a parent taps **Book**, the
+  class shows as **Awaiting approval** and the batch coach (or an admin)
+  confirms or declines it. The class credit is held from the moment of
+  the request and comes straight back if the request is declined or
+  withdrawn, so a family can never request more classes than they have.
+  Parents get a notification either way ("Booking confirmed — Beginner"
+  / "Booking declined — …: Rink closed for maintenance"). Existing
+  bookings were left as confirmed. An academy can switch back to instant
+  booking with the `booking_approval_required` setting (default on).
+- **New "Bookings" page for coaches and admins** — `/coach/bookings`
+  (third tab in the coach app, with a count badge) and
+  `/admin/schedule/bookings` (button on the Schedule page, also with a
+  count). Requests are grouped by session with **Approve**, **Decline**
+  (with a reason the parent sees) and **Approve all** for a session; a
+  **Decided** tab shows who confirmed what, and lets a confirmed booking
+  be declined later if plans change.
+- **Booking status is visible everywhere.** Parent: Awaiting approval /
+  Confirmed / Declined (with the coach's reason and an "Ask again"
+  button) on the Schedule page and on the home card for the next
+  session. Coach: the marking roster badges each skater Booked /
+  Requested / Not booked. Admin: the week calendar shows "Booked: N ·
+  Requested: M" and "Coming up" lists requested skaters with a dashed
+  outline.
+- **Parent Schedule page** — no longer one long list. Classes are grouped
+  into **This week / Next week**, later weeks sit behind a "Show N later
+  classes" button, and an **All classes / My bookings** filter shows only
+  what's booked. The credits card now shows **when the credits expire**
+  (date and days left, amber when within a week, red when lapsed) and a
+  count of confirmed / awaiting / declined bookings.
+- **Parent Fees page** — rebuilt around the question "do I owe anything?":
+  a **Due now / All paid up** card at the top (with the due date and any
+  advance held), **Classes left** and **Credits expire** tiles, the
+  **current period** expanded with its receipts, **top-ups this term**,
+  the **last receipt**, and everything older collapsed under "Show older
+  periods". Voided entries are hidden behind a toggle instead of being
+  listed in the open.
+- **Parent Attendance page** — a month calendar instead of a list: month
+  chips (last six months, each with its %), a Mon–Sun grid where every
+  class is a coloured dot (green present, amber late, red absent, hollow
+  not marked), and a tap on a day shows that day's classes.
+- **Parent home** — a new **Class credits** card: classes left, the
+  expiry date, and "N confirmed · M awaiting coach approval".
+
 ## 2026-09-18 — Payments & credits audit, Phase 3: receipts to parents, advances, reconciliation, activity trail, auto-reminders
 
 - **Parents get a receipt the moment a payment is recorded** — an in-app

@@ -1,4 +1,4 @@
-import { ArrowLeft, CalendarCheck } from 'lucide-react'
+import { ArrowLeft, CalendarCheck, Inbox } from 'lucide-react'
 import { Link } from 'react-router-dom'
 
 import { formatDate, formatTime, todayIso } from '@/shared/lib/format'
@@ -10,6 +10,7 @@ import { Skeleton } from '@/shared/ui/skeleton'
 import { StatusBadge } from '@/shared/ui/StatusBadge'
 
 import { useUpcomingBookings, type UpcomingBooking } from '../api/classBookings'
+import { cn } from '@/shared/lib/utils'
 
 const DAYS = 7
 
@@ -55,7 +56,8 @@ export function UpcomingBookingsPage() {
     group.skaters.push(b)
     byDay.set(b.sessionDate, sessions)
   }
-  const total = data?.length ?? 0
+  const confirmed = (data ?? []).filter((b) => b.status === 'booked').length
+  const requested = (data ?? []).filter((b) => b.status === 'pending').length
 
   return (
     <div className="space-y-6">
@@ -70,9 +72,16 @@ export function UpcomingBookingsPage() {
           <h1 className="font-display text-2xl font-extrabold tracking-tight">Coming up</h1>
           <div className="mt-1 text-sm text-muted-foreground">
             Who has booked a place in the next {DAYS} days
-            {!isLoading && ` · ${total} booking${total === 1 ? '' : 's'}`}
+            {!isLoading &&
+              ` · ${confirmed} confirmed${requested > 0 ? ` · ${requested} awaiting approval` : ''}`}
           </div>
         </div>
+        <Button variant="outline" asChild>
+          <Link to="/admin/schedule/bookings">
+            <Inbox className="h-4 w-4" />
+            Bookings queue
+          </Link>
+        </Button>
       </div>
 
       {isError ? (
@@ -120,16 +129,27 @@ export function UpcomingBookingsPage() {
                         {s.venue && ` · ${s.venue}`}
                         {s.coachName && ` · Coach ${s.coachName}`}
                       </span>
-                      <StatusBadge tone="success" className="ml-auto">
-                        {s.skaters.length} coming
-                      </StatusBadge>
+                      <span className="ml-auto flex items-center gap-1.5">
+                        <StatusBadge tone="success">
+                          {s.skaters.filter((b) => b.status === 'booked').length} coming
+                        </StatusBadge>
+                        {s.skaters.some((b) => b.status === 'pending') && (
+                          <StatusBadge tone="warning">
+                            {s.skaters.filter((b) => b.status === 'pending').length} requested
+                          </StatusBadge>
+                        )}
+                      </span>
                     </div>
                     <ul className="mt-3 flex flex-wrap gap-2">
                       {s.skaters.map((b) => (
                         <li key={b.studentId}>
                           <Link
                             to={`/admin/students/${b.studentId}`}
-                            className="flex items-center gap-2 rounded-full border bg-background py-1 pl-1 pr-3 text-sm font-semibold hover:border-primary"
+                            className={cn(
+                              'flex items-center gap-2 rounded-full border bg-background py-1 pl-1 pr-3 text-sm font-semibold hover:border-primary',
+                              b.status === 'pending' && 'border-dashed border-warning-500/60 text-warning-300',
+                            )}
+                            title={b.status === 'pending' ? 'Awaiting approval' : 'Confirmed'}
                           >
                             <PersonAvatar
                               name={b.fullName}

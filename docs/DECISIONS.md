@@ -17,6 +17,34 @@ Format:
 
 ---
 
+## 2026-09-19 — A booking is a request; the credit is held at request time
+
+**Decision:** Parent bookings go through a `pending` status that the batch
+coach or an academy admin turns into `booked` (approve) or `rejected`
+(decline, with a note). The credit is spent when the request is made and
+refunded on decline/withdraw — the ledger treats `pending` like `booked`
+and `rejected` like `cancelled`, so no new ledger kinds were needed.
+Attendance stays the last word: a pending skater marked present becomes
+`booked`; one never marked is released when the session completes.
+`academies.settings.booking_approval_required` (default true) turns the
+step off per academy.
+**Options considered:** (a) spend the credit only on approval — simpler to
+explain, but lets a family request ten classes on two credits and leaves
+the coach to sort out the over-commitment; (b) a separate
+`booking_requests` table — cleaner history, but every count, roster and
+clawback rule would have to read two tables; (c) approval by admin only —
+the coach is the person at the rink who knows if the class is full.
+**Why:** holding the credit keeps the balance honest at every moment and
+reuses every existing rule (clawback, release on leaving a batch, session
+cancellation) by adding `pending` to their status lists. Coach *or* admin
+mirrors how the academy actually runs.
+**Trade-offs:** a held credit is invisible to the family until decided —
+mitigated by the "awaiting approval" count on the credits card and the
+notification on decision. Approvals are a second daily chore for the
+coach; the "Approve all" per session and the nav badge keep it to a few
+taps. Revisit if academies ask for auto-approval rules (e.g. approve
+unless the class is full).
+
 ## 2026-09-18 — Advances are a ledger; an applied advance is a payment that isn't money
 
 **Decision:** (Migrations 0027–0031.) `student_advances` is an append-only

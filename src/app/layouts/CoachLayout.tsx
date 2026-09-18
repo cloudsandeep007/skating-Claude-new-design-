@@ -1,20 +1,23 @@
-import { Home, LogOut, Megaphone } from 'lucide-react'
+import { CalendarCheck, Home, LogOut, Megaphone } from 'lucide-react'
 import { NavLink, Outlet } from 'react-router-dom'
 
 import prsaLogo from '@/assets/prsa-logo.png'
 import { NotificationsLive, UnreadBadge } from '@/features/announcements'
 import { PendingSavesIndicator } from '@/features/attendance'
 import { useAuth } from '@/features/auth'
+import { usePendingBookingCount } from '@/features/schedule'
 import { cn } from '@/shared/lib/utils'
 import { Button } from '@/shared/ui/button'
 
 const NAV_ITEMS = [
-  { to: '/coach', label: 'Today', icon: Home, end: true, badge: false },
-  { to: '/coach/inbox', label: 'Inbox', icon: Megaphone, end: false, badge: true },
-]
+  { to: '/coach', label: 'Today', icon: Home, end: true, badge: 'none' },
+  { to: '/coach/bookings', label: 'Bookings', icon: CalendarCheck, end: false, badge: 'requests' },
+  { to: '/coach/inbox', label: 'Inbox', icon: Megaphone, end: false, badge: 'unread' },
+] as const
 
 export function CoachLayout() {
   const { profile, signOut } = useAuth()
+  const { data: pendingRequests } = usePendingBookingCount()
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -42,7 +45,7 @@ export function CoachLayout() {
         <Outlet />
       </main>
 
-      <nav className="fixed inset-x-0 bottom-0 grid h-16 grid-cols-2 border-t border-white/10 bg-card shadow-[0_-8px_24px_rgba(0,0,0,0.4)]">
+      <nav className="fixed inset-x-0 bottom-0 grid h-16 grid-cols-3 border-t border-white/10 bg-card shadow-[0_-8px_24px_rgba(0,0,0,0.4)]">
         {NAV_ITEMS.map(({ to, label, icon: Icon, end, badge }) => (
           <NavLink
             key={to}
@@ -57,9 +60,14 @@ export function CoachLayout() {
           >
             <Icon className="h-[22px] w-[22px]" />
             {label}
-            {badge && (
+            {badge === 'unread' && (
               <span className="absolute right-[calc(50%-22px)] top-2">
                 <UnreadBadge />
+              </span>
+            )}
+            {badge === 'requests' && (pendingRequests ?? 0) > 0 && (
+              <span className="absolute right-[calc(50%-26px)] top-1.5 min-w-[18px] rounded-full bg-warning-500 px-1 text-center text-[10px] font-extrabold leading-[18px] text-black">
+                {pendingRequests}
               </span>
             )}
           </NavLink>

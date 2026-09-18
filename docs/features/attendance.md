@@ -153,6 +153,21 @@ Plus the admin's view/override/export tools and the parent's history.
   credit system (academy-wide plans). For everyone else the returned
   credit is the make-up.
 
+### Requested skaters on the roster (0032)
+
+A skater whose booking is still awaiting approval shows a **Requested**
+badge (amber) between **Booked** and **Not booked**. Marking them present
+approves the booking on the spot; leaving them unmarked releases it (and
+the credit) when the session is confirmed.
+
+### Parent attendance page (2026-09-19)
+
+`/parent/attendance` is a month calendar: chips for the last six months
+(each with its attendance %), a Monday-first grid with one coloured dot
+per class (present / late / absent / excused / not marked), and a tap on
+a day filters the list below to that day. Data is the same
+`useStudentHistory` window as before (six months to today).
+
 ## Edge cases
 
 - **Two coaches mark the same session** — last write wins per student
