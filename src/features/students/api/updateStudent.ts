@@ -56,6 +56,10 @@ export function useUpdateStudent() {
       void queryClient.invalidateQueries({ queryKey: ['students'] })
       void queryClient.invalidateQueries({ queryKey: ['students', 'detail', variables.studentId] })
       void queryClient.invalidateQueries({ queryKey: ['fees'] })
+      // A batch or plan change changes the rate, the term and the credits.
+      void queryClient.invalidateQueries({ queryKey: ['bookings'] })
+      void queryClient.invalidateQueries({ queryKey: ['batches'] })
+      void queryClient.invalidateQueries({ queryKey: ['parent'] })
     },
   })
 }

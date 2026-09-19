@@ -95,6 +95,9 @@ export function useCreditPlanStatus(studentId: string | null) {
   return useQuery({
     queryKey: ['bookings', 'plan-status', studentId],
     enabled: studentId !== null,
+    // Money is quoted from this (the Top-up dialog): always re-read it on
+    // mount rather than trust a copy from before a plan or batch change.
+    staleTime: 0,
     queryFn: async (): Promise<CreditPlanStatus | null> => {
       if (!studentId) return null
       const { data, error } = await supabase

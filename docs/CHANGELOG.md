@@ -18,6 +18,10 @@ non-technical person can follow it. Newest first.
 - **Coming back to a tab re-checks it.** Switching back to the app or
   regaining signal re-fetches anything older than 30 seconds — the safety
   net for changes missed while the tab was in the background.
+- **Top-up quoted the old rate after a batch/plan change** — the Edit
+  student save now refreshes credits and fees, and the Top-up dialog always
+  re-reads the plan when it opens (`credit_plan_status` is never served
+  from cache).
 - Behind it: Realtime is enabled on the operational tables (migration
   `0037`) and one `useLiveSync` hook per signed-in layout maps each table
   to the screens it feeds. Row-level security still applies to what each
