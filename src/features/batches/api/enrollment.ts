@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
 import { todayIso } from '@/shared/lib/format'
+import { invalidateForTable } from '@/shared/hooks/useLiveSync'
 import { supabase } from '@/shared/lib/supabase'
 
 export interface EnrollableStudent {
@@ -75,6 +76,7 @@ function useInvalidateBatch(batchId: string) {
     void queryClient.invalidateQueries({ queryKey: ['batches', 'detail', batchId] })
     void queryClient.invalidateQueries({ queryKey: ['batches', 'enrollable', batchId] })
     void queryClient.invalidateQueries({ queryKey: ['students'] })
+    invalidateForTable(queryClient, 'student_batches')
   }
 }
 

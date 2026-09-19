@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
+import { invalidateForTable } from '@/shared/hooks/useLiveSync'
 import { supabase } from '@/shared/lib/supabase'
 
 import type { ExtraSession } from '../types'
@@ -86,6 +87,7 @@ export function useAddSession() {
     mutationFn: addSession,
     onSuccess: (_data, { form }) => {
       void queryClient.invalidateQueries({ queryKey: ['sessions'] })
+      invalidateForTable(queryClient, 'schedule_sessions')
       void queryClient.invalidateQueries({ queryKey: ['batches', 'detail', form.batchId] })
     },
   })

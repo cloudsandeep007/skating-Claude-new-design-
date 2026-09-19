@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
+import { invalidateForTable } from '@/shared/hooks/useLiveSync'
 import { supabase } from '@/shared/lib/supabase'
 
 import type { MakeupCredit } from '../types'
@@ -62,6 +63,7 @@ export function useFulfillMakeupCredit() {
     },
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['attendance', 'makeup-credits'] })
+      invalidateForTable(queryClient, 'makeup_credits')
     },
   })
 }

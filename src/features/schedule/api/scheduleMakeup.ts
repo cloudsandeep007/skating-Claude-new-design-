@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 
+import { invalidateForTable } from '@/shared/hooks/useLiveSync'
 import { supabase } from '@/shared/lib/supabase'
 
 import type { ScheduleMakeup } from '../types'
@@ -29,6 +30,7 @@ export function useScheduleMakeupSession() {
     mutationFn: scheduleMakeupSession,
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['sessions'] })
+      invalidateForTable(queryClient, 'schedule_sessions')
     },
   })
 }

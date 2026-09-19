@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 
+import { invalidateForTable } from '@/shared/hooks/useLiveSync'
 import { supabase } from '@/shared/lib/supabase'
 
 import type { CoachListItem, CoachStatus } from '../types'
@@ -31,6 +32,7 @@ export function useSetCoachStatus() {
     },
     onSettled: () => {
       void queryClient.invalidateQueries({ queryKey: ['coaches'] })
+      invalidateForTable(queryClient, 'coaches')
     },
   })
 }

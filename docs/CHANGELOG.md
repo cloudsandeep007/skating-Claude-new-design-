@@ -18,6 +18,13 @@ non-technical person can follow it. Newest first.
 - **Coming back to a tab re-checks it.** Switching back to the app or
   regaining signal re-fetches anything older than 30 seconds — the safety
   net for changes missed while the tab was in the background.
+- **Twelve more places with the same stale-cache pattern fixed** — editing
+  a fee plan, editing or deactivating a batch, enrolling/removing a skater,
+  archiving, cancelling a session, adding/generating/make-up sessions, the
+  admin attendance override, the coach's attendance save, fulfilling a
+  make-up credit, generating fees, coach edits and skill assessments now
+  refresh every screen their change touches (through the same table map the
+  live sync uses), so the person who clicked sees the result at once.
 - **Top-up quoted the old rate after a batch/plan change** — the Edit
   student save now refreshes credits and fees, and the Top-up dialog always
   re-reads the plan when it opens (`credit_plan_status` is never served

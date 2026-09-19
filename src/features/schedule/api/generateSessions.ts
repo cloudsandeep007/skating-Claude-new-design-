@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 
+import { invalidateForTable } from '@/shared/hooks/useLiveSync'
 import { supabase } from '@/shared/lib/supabase'
 
 import type { GenerateOutcome, GenerateSummary } from '../types'
@@ -47,6 +48,7 @@ export function useGenerateSessions() {
     mutationFn: generateSessions,
     onSuccess: (_summary, { batchId }) => {
       void queryClient.invalidateQueries({ queryKey: ['sessions'] })
+      invalidateForTable(queryClient, 'schedule_sessions')
       void queryClient.invalidateQueries({ queryKey: ['batches', 'detail', batchId] })
     },
   })

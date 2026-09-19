@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 
+import { invalidateForTable } from '@/shared/hooks/useLiveSync'
 import { supabase } from '@/shared/lib/supabase'
 
 /** cancel_session() RPC: flips the status, stores the reason, and inserts
@@ -19,6 +20,8 @@ export function useCancelSession() {
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['sessions'] })
       void queryClient.invalidateQueries({ queryKey: ['batches'] })
+      invalidateForTable(queryClient, 'schedule_sessions')
+      invalidateForTable(queryClient, 'class_bookings')
     },
   })
 }

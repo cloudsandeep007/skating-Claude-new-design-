@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 
 import { emptyToNull } from '@/shared/lib/emptyToNull'
+import { invalidateForTable } from '@/shared/hooks/useLiveSync'
 import { supabase } from '@/shared/lib/supabase'
 
 import type { CoachEdit } from '../types'
@@ -39,6 +40,7 @@ export function useUpdateCoach() {
     mutationFn: updateCoach,
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['coaches'] })
+      invalidateForTable(queryClient, 'coaches')
     },
   })
 }

@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
 import { emptyToNull } from '@/shared/lib/emptyToNull'
+import { invalidateForTable } from '@/shared/hooks/useLiveSync'
 import { supabase } from '@/shared/lib/supabase'
 
 import type { FeeStatus, PaymentForm, PaymentMethod, StudentFeeWithPayments } from '../types'
@@ -129,6 +130,8 @@ export function invalidateFeesAndCredits(queryClient: ReturnType<typeof useQuery
   void queryClient.invalidateQueries({ queryKey: ['fees'] })
   void queryClient.invalidateQueries({ queryKey: ['bookings'] })
   void queryClient.invalidateQueries({ queryKey: ['students'] })
+  invalidateForTable(queryClient, 'payments')
+  invalidateForTable(queryClient, 'student_fees')
 }
 
 export interface AdvanceEntry {

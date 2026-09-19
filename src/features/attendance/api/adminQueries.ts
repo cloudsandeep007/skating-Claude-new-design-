@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
+import { invalidateForTable } from '@/shared/hooks/useLiveSync'
 import { supabase } from '@/shared/lib/supabase'
 
 import type { AttendanceHistoryRow, AttendanceStatus } from '../types'
@@ -200,6 +201,7 @@ export function useOverrideAttendance() {
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['attendance'] })
       void queryClient.invalidateQueries({ queryKey: ['students'] })
+      invalidateForTable(queryClient, 'attendance')
     },
   })
 }

@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 
+import { invalidateForTable } from '@/shared/hooks/useLiveSync'
 import { supabase } from '@/shared/lib/supabase'
 
 /** generate_upcoming_fees(academy) RPC, scoped to the caller's own academy
@@ -18,6 +19,8 @@ export function useGenerateFees() {
     },
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['fees'] })
+      invalidateForTable(queryClient, 'student_fees')
+      invalidateForTable(queryClient, 'student_advances')
     },
   })
 }

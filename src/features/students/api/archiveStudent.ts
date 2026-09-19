@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 
+import { invalidateForTable } from '@/shared/hooks/useLiveSync'
 import { supabase } from '@/shared/lib/supabase'
 
 import type { StudentListItem, StudentStatus } from '../types'
@@ -46,6 +47,8 @@ export function useSetStudentStatus() {
     },
     onSettled: () => {
       void queryClient.invalidateQueries({ queryKey: ['students'] })
+      invalidateForTable(queryClient, 'students')
+      invalidateForTable(queryClient, 'class_bookings')
     },
   })
 }

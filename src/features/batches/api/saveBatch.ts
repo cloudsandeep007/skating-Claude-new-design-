@@ -2,6 +2,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 
 import { emptyToNull } from '@/shared/lib/emptyToNull'
 import { todayIso } from '@/shared/lib/format'
+import { invalidateForTable } from '@/shared/hooks/useLiveSync'
 import { supabase } from '@/shared/lib/supabase'
 
 import type { BatchForm } from '../types'
@@ -72,6 +73,8 @@ export function useUpdateBatch() {
       void queryClient.invalidateQueries({ queryKey: ['batches'] })
       void queryClient.invalidateQueries({ queryKey: ['batch-options'] })
       void queryClient.invalidateQueries({ queryKey: ['sessions'] })
+      invalidateForTable(queryClient, 'batches')
+      invalidateForTable(queryClient, 'schedule_sessions')
     },
   })
 }

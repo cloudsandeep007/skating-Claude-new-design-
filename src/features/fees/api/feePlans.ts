@@ -1,12 +1,14 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
 import { emptyToNull } from '@/shared/lib/emptyToNull'
+import { invalidateForTable } from '@/shared/hooks/useLiveSync'
 import { supabase } from '@/shared/lib/supabase'
 
 import type { FeePlan, FeePlanForm, FeePlanOption } from '../types'
 
 function invalidatePlans(queryClient: ReturnType<typeof useQueryClient>) {
   void queryClient.invalidateQueries({ queryKey: ['fees', 'plans'] })
+  invalidateForTable(queryClient, 'fee_plans')
 }
 
 /** Every fee plan in the academy, for the "Manage fee plans" admin screen. */

@@ -3,6 +3,7 @@ import { useQueryClient, type QueryClient } from '@tanstack/react-query'
 
 import { toast } from 'sonner'
 
+import { invalidateForTable } from '@/shared/hooks/useLiveSync'
 import { supabase } from '@/shared/lib/supabase'
 
 import { usePendingSaves } from '../hooks/pendingSaves'
@@ -26,6 +27,7 @@ function invalidateAttendance(queryClient: QueryClient, sessionId: string) {
   void queryClient.invalidateQueries({ queryKey: ['attendance'] })
   void queryClient.invalidateQueries({ queryKey: ['sessions'] })
   void queryClient.invalidateQueries({ queryKey: ['attendance', 'session', sessionId] })
+  invalidateForTable(queryClient, 'attendance')
 }
 
 /** A PostgREST/Postgres error (has a SQLSTATE code) as opposed to a network

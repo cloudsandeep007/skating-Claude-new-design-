@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
+import { invalidateForTable } from '@/shared/hooks/useLiveSync'
 import { supabase } from '@/shared/lib/supabase'
 
 import { allSkillsAchieved } from '../hooks/skillStatus'
@@ -143,6 +144,7 @@ export function useAssessSkill() {
     },
     onSuccess: (_data, variables) => {
       void queryClient.invalidateQueries({ queryKey: ['progression'] })
+      invalidateForTable(queryClient, 'student_skills')
       for (const studentId of variables.studentIds) {
         void queryClient.invalidateQueries({ queryKey: ['progression', 'student', studentId] })
       }

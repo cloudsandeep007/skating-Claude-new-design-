@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 
+import { invalidateForTable } from '@/shared/hooks/useLiveSync'
 import { supabase } from '@/shared/lib/supabase'
 
 import type { BatchListItem, BatchStatus } from '../types'
@@ -30,6 +31,7 @@ export function useSetBatchStatus() {
     },
     onSettled: () => {
       void queryClient.invalidateQueries({ queryKey: ['batches'] })
+      invalidateForTable(queryClient, 'batches')
     },
   })
 }
