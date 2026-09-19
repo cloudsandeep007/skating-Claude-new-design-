@@ -217,3 +217,22 @@ placeholder screens behind it; see DECISIONS 2026-09-15.
   `ParentFeesOverview` for the parent app; `parent` keeps only the
   child-switcher and the week/month grouping helpers (`hooks/weekGroups.ts`,
   `hooks/monthGrid.ts`).
+
+## Live sync (2026-09-19)
+
+Server state is TanStack Query; freshness comes from two layers in
+`src/app/providers/QueryProvider.tsx` and `src/shared/hooks/useLiveSync.ts`:
+
+1. **Realtime push.** Each signed-in layout mounts `useLiveSync`, one channel
+   on `postgres_changes` for the public schema. `TABLE_QUERY_KEYS` maps a
+   table to the query-key prefixes it can affect; events are coalesced for
+   250 ms and then those prefixes are invalidated. Tables must be in the
+   `supabase_realtime` publication (migration `0037`); RLS filters what each
+   subscriber receives. Add a row to the map when you add a table or a new
+   top-level query key.
+2. **Focus / reconnect refetch** with a 30 s stale time — the fallback for
+   anything missed while the tab was hidden.
+
+Mutations still invalidate explicitly (and `invalidateForTable()` is
+available to them); the push layer covers whatever they miss and, crucially,
+other users' writes.

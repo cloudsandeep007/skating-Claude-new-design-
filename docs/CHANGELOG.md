@@ -5,6 +5,24 @@ non-technical person can follow it. Newest first.
 
 ---
 
+## 2026-09-19 — Every screen updates by itself; no more hard refresh
+
+- **Live sync.** The app now listens to the database for changes and
+  re-fetches whatever a change could affect — for the person who made it
+  and for everyone else looking. A parent watching their Schedule sees
+  "Awaiting approval" turn into "Confirmed" (or "Declined", with the
+  coach's note) the moment the coach decides; the admin's Bookings queue
+  shows a new request within a second or two of the parent tapping Book;
+  credits, fees, rosters, batches and profiles behave the same way.
+  Verified with two separate sessions acting on each other.
+- **Coming back to a tab re-checks it.** Switching back to the app or
+  regaining signal re-fetches anything older than 30 seconds — the safety
+  net for changes missed while the tab was in the background.
+- Behind it: Realtime is enabled on the operational tables (migration
+  `0037`) and one `useLiveSync` hook per signed-in layout maps each table
+  to the screens it feeds. Row-level security still applies to what each
+  person receives.
+
 ## 2026-09-19 — Credits explain themselves; no marking before a skater joined
 
 - **Reported as "credits deducted twice".** A skater booked five classes

@@ -21,6 +21,7 @@ import prsaLogo from '@/assets/prsa-logo.png'
 import { UnreadBadge } from '@/features/announcements'
 import { useAcademy, useAuth } from '@/features/auth'
 import { useActiveStudentCount } from '@/features/students'
+import { useLiveSync } from '@/shared/hooks/useLiveSync'
 import { cn } from '@/shared/lib/utils'
 import { Avatar, AvatarFallback } from '@/shared/ui/avatar'
 import { Button } from '@/shared/ui/button'
@@ -121,6 +122,7 @@ function Sidebar({ academyName, onNavigate }: { academyName: string; onNavigate?
 
 export function AdminLayout() {
   const { profile, signOut } = useAuth()
+  useLiveSync(!!profile)
   const { data: academy } = useAcademy(profile?.academy_id)
   const navigate = useNavigate()
   const { pathname } = useLocation()

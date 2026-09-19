@@ -4,6 +4,7 @@ import { NavLink, Outlet } from 'react-router-dom'
 import prsaLogo from '@/assets/prsa-logo.png'
 import { NotificationsLive, UnreadBadge } from '@/features/announcements'
 import { useAuth } from '@/features/auth'
+import { useLiveSync } from '@/shared/hooks/useLiveSync'
 import { cn } from '@/shared/lib/utils'
 
 const NAV_ITEMS = [
@@ -16,6 +17,7 @@ const NAV_ITEMS = [
 
 export function ParentLayout() {
   const { profile } = useAuth()
+  useLiveSync(!!profile)
 
   return (
     <div className="flex min-h-screen flex-col">

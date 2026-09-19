@@ -17,6 +17,28 @@ Format:
 
 ---
 
+## 2026-09-19 — Live sync by table-to-query map over Realtime, not per-feature subscriptions
+
+**Decision:** one Realtime channel per signed-in session subscribes to every
+`postgres_changes` event on the published tables; `TABLE_QUERY_KEYS`
+(`src/shared/hooks/useLiveSync.ts`) maps each table to the TanStack Query
+key prefixes that could show it, and a change invalidates those (coalesced
+per 250 ms). `refetchOnWindowFocus` and `refetchOnReconnect` are on, with a
+30 s `staleTime`, as the fallback.
+**Options considered:** (a) polling every screen — simple but wasteful and
+still seconds stale; (b) a subscription inside each feature for its own
+tables — precise, but the same bug the user reported (one feature's write
+not refreshing another feature's screen) would return with every new
+feature; (c) invalidate *all* queries on any event — simplest, but every
+attendance tap would refetch the dashboard for every open admin tab.
+**Why:** the map is one place to look, the invalidations are prefix-based
+so new screens under an existing key prefix are covered for free, and it
+also papers over any mutation that forgot an invalidation.
+**Trade-offs:** the map must grow with new tables/keys — the unit test
+pins the important ones. Realtime events are per-row, so a bulk save
+(a roster of 30) fires 30 events; the coalescing keeps that to one
+refetch. A deliberately broad map means some refetches are unnecessary.
+
 ## 2026-09-19 — Accounts are created with a shareable sign-in link; email is best-effort
 
 **Decision:** `invite-user` creates the auth user with

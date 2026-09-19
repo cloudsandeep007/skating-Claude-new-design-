@@ -7,9 +7,13 @@ export function QueryProvider({ children }: { children: React.ReactNode }) {
       new QueryClient({
         defaultOptions: {
           queries: {
-            staleTime: 60_000,
+            staleTime: 30_000,
             retry: 1,
-            refetchOnWindowFocus: false,
+            // Coming back to a tab or regaining signal re-fetches whatever
+            // went stale — the safety net under the Realtime live sync
+            // (useLiveSync), which handles changes while the tab is open.
+            refetchOnWindowFocus: true,
+            refetchOnReconnect: true,
             // Default 'online' mode pauses a query (status stays 'pending',
             // no error) whenever the browser thinks it's offline — which
             // every screen would render as an empty list. On rink wifi we'd

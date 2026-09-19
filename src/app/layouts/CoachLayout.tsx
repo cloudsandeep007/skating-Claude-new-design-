@@ -6,6 +6,7 @@ import { NotificationsLive, UnreadBadge } from '@/features/announcements'
 import { PendingSavesIndicator } from '@/features/attendance'
 import { useAuth } from '@/features/auth'
 import { usePendingBookingCount } from '@/features/schedule'
+import { useLiveSync } from '@/shared/hooks/useLiveSync'
 import { cn } from '@/shared/lib/utils'
 import { Button } from '@/shared/ui/button'
 
@@ -17,6 +18,7 @@ const NAV_ITEMS = [
 
 export function CoachLayout() {
   const { profile, signOut } = useAuth()
+  useLiveSync(!!profile)
   const { data: pendingRequests } = usePendingBookingCount()
 
   return (
