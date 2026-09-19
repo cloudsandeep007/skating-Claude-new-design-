@@ -5,6 +5,19 @@ non-technical person can follow it. Newest first.
 
 ---
 
+## 2026-09-19 — Changing a batch's days now clears the sessions on the old days
+
+- **Before:** editing a batch from Mon/Wed/Fri to Sat/Sun and generating the
+  schedule again added the Sat/Sun sessions but left every old Mon/Wed/Fri
+  session on the calendar ("Generate" only ever adds).
+- **Now:** with **Also update upcoming sessions** ticked (on by default when
+  editing), sessions from today onward that fall on a day the batch no
+  longer meets are taken off the calendar. One nobody had booked is simply
+  removed; one with bookings is cancelled the normal way — credits go back
+  and the family is told "The batch no longer meets on this day". Completed,
+  cancelled and make-up sessions are never touched. The save confirms what
+  happened ("12 upcoming sessions on old days taken off the calendar").
+
 ## 2026-09-19 — Every screen updates by itself; no more hard refresh
 
 - **Live sync.** The app now listens to the database for changes and

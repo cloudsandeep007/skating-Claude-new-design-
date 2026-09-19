@@ -65,6 +65,16 @@ the schedule is generated from them. This is the academy admin's view.
   count; prefer Deactivate for a batch that's just paused or finished
   for the season.
 
+### Editing days (2026-09-19)
+
+"Also update upcoming sessions" (default on) moves future scheduled
+sessions to the new time/coach **and** calls `realign_batch_sessions()` so
+sessions on days the batch no longer meets come off the calendar — removed
+outright when nobody booked, cancelled with a parent notification when
+someone had. `UpdateBatchResult { removed, cancelled }` feeds the toast.
+Untick to leave existing sessions untouched (only newly generated ones
+follow the new days).
+
 ## Edge cases
 
 - A batch with no coach can still be created and scheduled; generation

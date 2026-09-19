@@ -352,6 +352,7 @@ status too: `attendance_credit_truth` (on `attendance`) upserts a
 `booked`/`pending` one on absent/excused; `resolve_session_bookings()`
 (called by `save_attendance`) cancels any still-`booked`/`pending` row with
 no mark once the session is completed.
+**`0038`:** `realign_batch_sessions(batch_id)` (admin only) — deletes future scheduled sessions on days not in `batches.days_of_week` when they have no bookings/marks, cancels the rest via `cancel_session()`; skips make-ups. Called by the batch edit when "also update upcoming sessions" is ticked.
 **`0037`:** every operational table added to the `supabase_realtime` publication (see ARCHITECTURE → Live sync).
 **`0036`:** `class_credit_summary()` gains `reserved` (credits held by
 booked/pending rows on classes with no present/late mark) and `attended`

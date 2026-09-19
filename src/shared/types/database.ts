@@ -2074,6 +2074,13 @@ export type Database = {
         }[]
       }
       publish_due_announcements: { Args: never; Returns: number }
+      realign_batch_sessions: {
+        Args: { p_batch_id: string }
+        Returns: {
+          cancelled: number
+          removed: number
+        }[]
+      }
       recompute_open_fees_for_plan: {
         Args: { p_fee_plan_id: string }
         Returns: undefined

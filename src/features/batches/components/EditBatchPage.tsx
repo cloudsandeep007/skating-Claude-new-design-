@@ -25,11 +25,16 @@ export function EditBatchPage() {
 
   async function onSubmit(values: BatchFormValues) {
     try {
-      await updateBatch.mutateAsync({ batchId, form: values })
+      const { removed, cancelled } = await updateBatch.mutateAsync({ batchId, form: values })
+      const gone = removed + cancelled
       toast.success(
         values.applyToUpcomingSessions
-          ? 'Batch and its upcoming sessions updated.'
-          : 'Batch updated. Existing sessions keep their times.',
+          ? gone > 0
+            ? `Batch updated. ${gone} upcoming session${gone === 1 ? '' : 's'} on old days taken off the calendar${
+                cancelled > 0 ? ` (${cancelled} had bookings — parents notified)` : ''
+              }.`
+            : 'Batch and its upcoming sessions updated.'
+          : 'Batch updated. Existing sessions keep their days and times.',
       )
       void navigate(`/admin/batches/${batchId}`)
     } catch {
@@ -51,7 +56,7 @@ export function EditBatchPage() {
           endTime: batch.endTime.slice(0, 5),
           daysOfWeek: batch.daysOfWeek,
           venue: batch.venue ?? '',
-          applyToUpcomingSessions: false,
+          applyToUpcomingSessions: true,
         }}
         submitLabel="Save changes"
         pending={updateBatch.isPending}

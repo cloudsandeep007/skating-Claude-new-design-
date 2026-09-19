@@ -229,13 +229,13 @@ export function BatchForm({
                       />
                     </FormControl>
                     <div className="space-y-1">
-                      <FormLabel className="font-bold">
-                        Also move upcoming scheduled sessions
-                      </FormLabel>
+                      <FormLabel className="font-bold">Also update upcoming sessions</FormLabel>
                       <FormDescription>
-                        Applies the new time and coach to sessions from today onward that haven't
-                        happened yet. Completed and cancelled sessions are never changed. Leave
-                        unticked to change only sessions generated from now on.
+                        Moves sessions from today onward to the new time and coach, and takes off
+                        the calendar any that fall on a day this batch no longer meets (if someone
+                        had booked one, it is cancelled and the family is told). Completed,
+                        cancelled and make-up sessions are never changed. Untick to leave existing
+                        sessions exactly as they are.
                       </FormDescription>
                     </div>
                   </FormItem>
