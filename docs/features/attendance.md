@@ -168,6 +168,24 @@ per class (present / late / absent / excused / not marked), and a tap on
 a day filters the list below to that day. Data is the same
 `useStudentHistory` window as before (six months to today).
 
+### What a credit does through the life of a class (confirmed 2026-09-19)
+
+| Event | Ledger | Balance |
+|---|---|---|
+| Parent books (or requests) | −1 "Reserved for <date>" | held |
+| Coach/admin approves | nothing | held |
+| Marked present / late | nothing (already held) | spent |
+| Marked absent | +1 "Returned — absent on <date>" | back |
+| Present → absent → present | +1 then −1 "Attended <date>" | spent |
+| Session completed, never marked | +1 "Returned — <date> not marked" | back |
+| Cancelled / declined / session cancelled | +1 | back |
+| Present with no booking (walk-in) | −1 "Attended <date> (walk-in, not booked)" | spent |
+
+A class dated before the skater's `joined_date` cannot be marked at all
+(`attendance_after_join`, `0036`); the message names the skater and both
+dates. On the coach's phone a rejection like this is shown as a toast and
+removed from the offline queue — only network failures are retried.
+
 ## Edge cases
 
 - **Two coaches mark the same session** — last write wins per student

@@ -1,5 +1,7 @@
 import { toast } from 'sonner'
 
+import { describeError } from '@/shared/lib/describeError'
+
 import { useAuth } from '@/features/auth'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/ui/select'
 
@@ -41,8 +43,8 @@ export function OverrideSelect({ sessionId, studentId, studentName, value }: Ove
                 `${studentName}: ${attendanceLabel(next as AttendanceStatus).toLowerCase()}`,
               )
             },
-            onError: () => {
-              toast.error('Could not save that change.')
+            onError: (error) => {
+              toast.error(describeError(error, 'Could not save that change.'))
             },
           },
         )

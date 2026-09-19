@@ -343,7 +343,7 @@ function RosterRow({
                 ? 'Booked'
                 : student.bookingStatus === 'pending'
                   ? 'Requested'
-                  : 'Not booked'}
+                  : 'Not booked · present uses 1 credit'}
             </span>
           )}
           <span className="truncate">

@@ -9,6 +9,7 @@ import {
   useBookClassSlot,
   useCancelClassSlot,
   useClassCreditBalance,
+  useClassCreditSummary,
   useCreditPlanStatus,
   useStudentBookings,
   type StudentBooking,
@@ -45,6 +46,7 @@ export function ChildSchedulePage() {
   const { child, isLoading: loadingChild } = useCurrentChild()
   const { data: sessions, isLoading } = useChildUpcomingSessions(child?.id ?? null, 40)
   const { data: balance } = useClassCreditBalance(child?.id ?? null)
+  const { data: summary } = useClassCreditSummary(child?.id ?? null)
   const { data: bookings } = useStudentBookings(child?.id ?? null)
   const { data: feeStatus } = useChildFeeStatus(child?.id ?? null)
   const { data: plan } = useCreditPlanStatus(child?.id ?? null)
@@ -127,6 +129,11 @@ export function ChildSchedulePage() {
           billingCycle={plan?.billingCycle ?? null}
           windowDays={windowDays}
           counts={counts}
+          breakdown={
+            summary
+              ? { bought: summary.granted, attended: summary.attended, booked: summary.reserved }
+              : null
+          }
         />
       )}
 
@@ -297,6 +304,7 @@ function CreditsCard({
   billingCycle,
   windowDays,
   counts,
+  breakdown,
 }: {
   balance: number
   owes: boolean
@@ -309,6 +317,7 @@ function CreditsCard({
   billingCycle: string | null
   windowDays: number
   counts: { pending: number; booked: number; rejected: number }
+  breakdown: { bought: number; attended: number; booked: number } | null
 }) {
   const note =
     lapsed && termEnd
@@ -379,6 +388,12 @@ function CreditsCard({
           </div>
         )}
       </div>
+      {breakdown && breakdown.bought > 0 && (
+        <p className="mt-2 text-xs font-semibold text-muted-foreground">
+          {breakdown.bought} bought · {breakdown.attended} attended · {breakdown.booked} booked
+          ahead · {Math.max(balance, 0)} free to book
+        </p>
+      )}
       <p className="mt-2 text-xs text-muted-foreground">{note}</p>
       {(counts.pending > 0 || counts.booked > 0 || counts.rejected > 0) && (
         <div className="mt-3 flex flex-wrap gap-1.5">

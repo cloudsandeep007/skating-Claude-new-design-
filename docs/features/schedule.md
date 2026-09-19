@@ -217,6 +217,15 @@ header): the next 7 days, grouped day → session, with every skater who
 has booked a place shown by name (linked to their profile) and a count
 per session. What the admin and coach plan the rink around.
 
+### Credits explained (2026-09-19)
+
+`ClassCreditsCard` (admin) and the parent Schedule card show *bought ·
+attended · booked ahead · free to book* from `class_credit_summary()`.
+`hooks/ledgerLine.ts` (unit-tested) turns each ledger line into a sentence
+with the class date and batch, distinguishing reservations, attendance,
+walk-ins and every kind of return; `useCreditLedger` embeds the booking's
+session for that.
+
 ## Edge cases
 
 - **Editing a batch's time** after generating: see the batches doc —

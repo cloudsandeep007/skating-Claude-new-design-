@@ -352,6 +352,11 @@ status too: `attendance_credit_truth` (on `attendance`) upserts a
 `booked`/`pending` one on absent/excused; `resolve_session_bookings()`
 (called by `save_attendance`) cancels any still-`booked`/`pending` row with
 no mark once the session is completed.
+**`0036`:** `class_credit_summary()` gains `reserved` (credits held by
+booked/pending rows on classes with no present/late mark) and `attended`
+(booked rows with a present/late mark). Trigger `attendance_after_join`
+(before insert on `attendance`) refuses a mark on a session dated before
+the skater's `joined_date`.
 **`0035`:** `credit_plan_status()` also returns `plan_name`, `plan_batch_id`
 and `plan_batch_name` so the Top-up dialog can name the plan.
 **QA fixes (`0033`/`0034`):** `payment_fee_portion(payment_id)` = amount −

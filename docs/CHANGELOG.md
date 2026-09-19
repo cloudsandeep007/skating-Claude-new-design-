@@ -5,6 +5,31 @@ non-technical person can follow it. Newest first.
 
 ---
 
+## 2026-09-19 — Credits explain themselves; no marking before a skater joined
+
+- **Reported as "credits deducted twice".** A skater booked five classes
+  (balance 8 → 3), was then marked present on two *other* classes from the
+  previous week that were never booked (3 → 1), and the two looked like one
+  charge. They were walk-ins — correct by the rule, but nothing said so, and
+  the two classes were from before the skater had even joined.
+- **Every credit screen now reads "bought · attended · booked ahead · free
+  to book"** — the parent's Schedule card and the admin's Class credits
+  card — instead of a bare "spent". `class_credit_summary()` returns the two
+  new numbers.
+- **The statement names the class:** "Reserved for Mon 21 Sep", "Attended
+  Mon 21 Sep", "Attended Tue 15 Sep (walk-in, not booked)", "Returned —
+  absent on Mon 21 Sep", "Returned — Fri 25 Sep cancelled".
+- **A skater can't be marked for a class before they joined** — the
+  database refuses with "Demo Student joined on 19 Sep — a class on 16 Sep
+  can't be marked for them", on the admin override and the coach roster
+  alike. The coach's offline queue now drops a rejection like this with a
+  toast instead of retrying it forever as if the network were down.
+- Roster badge for an unbooked credit-plan skater reads **"Not booked ·
+  present uses 1 credit"** so a walk-in is a conscious choice.
+- Unchanged, and confirmed against the live ledger: a booking holds one
+  credit; present keeps it (no second charge); absent, unmarked, cancelled
+  or declined returns it.
+
 ## 2026-09-19 — Invites no longer depend on email: share a sign-in link on WhatsApp
 
 - **Why:** Supabase's built-in mailer allows about two emails an hour. After

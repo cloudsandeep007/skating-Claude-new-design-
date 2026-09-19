@@ -1809,10 +1809,12 @@ export type Database = {
         Args: { p_student_id: string }
         Returns: {
           adjusted: number
+          attended: number
           available: number
           expired: number
           granted: number
           refunded: number
+          reserved: number
           spent: number
           term_end: string
           term_status: string

@@ -55,28 +55,34 @@ export function ClassCreditsCard({ studentId }: { studentId: string }) {
               }. Unused classes carry forward if renewed before then.`}
         </p>
       )}
-      <dl className="mt-3 grid grid-cols-2 gap-3 text-sm sm:grid-cols-5">
+      {/* Where the bought classes are right now — the answer to "why 3?". */}
+      <dl className="mt-3 grid grid-cols-2 gap-3 text-sm sm:grid-cols-4">
         <div>
-          <dt className="text-xs text-muted-foreground">Bought / granted</dt>
+          <dt className="text-xs text-muted-foreground">Bought</dt>
           <dd className="font-bold">{summary.granted}</dd>
         </div>
         <div>
-          <dt className="text-xs text-muted-foreground">Spent</dt>
-          <dd className="font-bold">{summary.spent}</dd>
+          <dt className="text-xs text-muted-foreground">Attended</dt>
+          <dd className="font-bold">{summary.attended}</dd>
         </div>
         <div>
-          <dt className="text-xs text-muted-foreground">Returned</dt>
-          <dd className="font-bold">{summary.refunded}</dd>
+          <dt className="text-xs text-muted-foreground">Booked ahead</dt>
+          <dd className="font-bold">{summary.reserved}</dd>
         </div>
         <div>
-          <dt className="text-xs text-muted-foreground">Expired</dt>
-          <dd className="font-bold">{summary.expired}</dd>
-        </div>
-        <div>
-          <dt className="text-xs text-muted-foreground">Adjusted</dt>
-          <dd className="font-bold">{summary.adjusted}</dd>
+          <dt className="text-xs text-muted-foreground">Free to book</dt>
+          <dd className="font-bold">{Math.max(summary.available, 0)}</dd>
         </div>
       </dl>
+      {(summary.expired > 0 || summary.adjusted !== 0 || summary.refunded > 0) && (
+        <p className="mt-2 text-xs text-muted-foreground">
+          Also: {summary.refunded} returned
+          {summary.expired > 0 && ` · ${summary.expired} expired`}
+          {summary.adjusted !== 0 &&
+            ` · ${summary.adjusted > 0 ? '+' : ''}${summary.adjusted} adjusted`}{' '}
+          — see the statement below.
+        </p>
+      )}
       {plan.pricingMode === 'per_class' && plan.minTopup != null && plan.rate != null && (
         <p className="mt-3 text-xs text-muted-foreground">
           Pay-per-class at ₹{plan.rate}/class. A {plan.billingCycle} term is at least{' '}

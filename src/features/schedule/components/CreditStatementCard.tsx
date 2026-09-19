@@ -2,16 +2,8 @@ import { formatDate } from '@/shared/lib/format'
 import { cn } from '@/shared/lib/utils'
 import { Skeleton } from '@/shared/ui/skeleton'
 
-import { useCreditLedger, type CreditLedgerKind } from '../api/classBookings'
-
-const KIND_LABEL: Record<CreditLedgerKind, string> = {
-  grant: 'Added',
-  clawback: 'Taken back',
-  spend: 'Spent',
-  refund: 'Returned',
-  expire: 'Expired',
-  adjust: 'Adjusted',
-}
+import { useCreditLedger } from '../api/classBookings'
+import { ledgerLineLabel } from '../hooks/ledgerLine'
 
 /** Every credit movement, newest first, with the reason and who did it —
  * the answer to "why is my balance 3?". */
@@ -38,12 +30,7 @@ export function CreditStatementCard({ studentId }: { studentId: string }) {
               {e.delta > 0 ? `+${e.delta}` : e.delta}
             </span>
             <div className="min-w-0 flex-1">
-              <div className="font-semibold">
-                {KIND_LABEL[e.kind]}
-                {e.reason && (
-                  <span className="font-normal text-muted-foreground"> — {e.reason}</span>
-                )}
-              </div>
+              <div className="font-semibold">{ledgerLineLabel(e)}</div>
               <div className="text-xs text-muted-foreground">
                 {formatDate(e.createdAt.slice(0, 10))}
                 {e.actorName && ` · by ${e.actorName}`}

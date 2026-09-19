@@ -30,6 +30,10 @@ export interface ClassCreditSummary {
   available: number | null
   termEnd: string | null
   termStatus: TermStatus | null
+  /** Credits held by bookings on classes not yet marked. */
+  reserved: number
+  /** Classes actually attended (booked, and marked present/late). */
+  attended: number
 }
 
 export type TermStatus = 'none' | 'active' | 'expiring' | 'expired'
@@ -57,6 +61,8 @@ export function useClassCreditSummary(studentId: string | null) {
         available: data.available,
         termEnd: data.term_end,
         termStatus: data.term_status as TermStatus | null,
+        reserved: data.reserved,
+        attended: data.attended,
       }
     },
   })
@@ -124,6 +130,11 @@ export interface CreditLedgerEntry {
   reason: string | null
   createdAt: string
   actorName: string | null
+  /** The class this line is about, when it is about a booking. */
+  sessionDate: string | null
+  batchName: string | null
+  /** 'attendance' = a walk-in recorded at marking, 'parent' = booked. */
+  bookingSource: 'parent' | 'attendance' | null
 }
 
 /** Every credit movement for a skater, newest first — the statement. */
@@ -136,7 +147,8 @@ export function useCreditLedger(studentId: string | null) {
       const { data, error } = await supabase
         .from('credit_ledger')
         .select(
-          'id, delta, kind, reason, created_at, actor:profiles!credit_ledger_actor_id_fkey(full_name)',
+          `id, delta, kind, reason, created_at, actor:profiles!credit_ledger_actor_id_fkey(full_name),
+           booking:class_bookings(source, session:schedule_sessions(session_date, batch:batches(name)))`,
         )
         .eq('student_id', studentId)
         .order('created_at', { ascending: false })
@@ -148,6 +160,10 @@ export function useCreditLedger(studentId: string | null) {
             reason: string | null
             created_at: string
             actor: { full_name: string } | null
+            booking: {
+              source: 'parent' | 'attendance'
+              session: { session_date: string; batch: { name: string } } | null
+            } | null
           }[],
           { merge: false }
         >()
@@ -159,6 +175,9 @@ export function useCreditLedger(studentId: string | null) {
         reason: r.reason,
         createdAt: r.created_at,
         actorName: r.actor?.full_name ?? null,
+        sessionDate: r.booking?.session?.session_date ?? null,
+        batchName: r.booking?.session?.batch.name ?? null,
+        bookingSource: r.booking?.source ?? null,
       }))
     },
   })

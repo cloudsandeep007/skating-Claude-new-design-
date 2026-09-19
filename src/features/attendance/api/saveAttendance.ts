@@ -1,6 +1,8 @@
 import { useEffect } from 'react'
 import { useQueryClient, type QueryClient } from '@tanstack/react-query'
 
+import { toast } from 'sonner'
+
 import { supabase } from '@/shared/lib/supabase'
 
 import { usePendingSaves } from '../hooks/pendingSaves'
@@ -15,13 +17,24 @@ async function saveAttendance(sessionId: string, marks: Marks): Promise<void> {
     p_session_id: sessionId,
     p_marks: payload,
   })
-  if (error) throw new Error(error.message)
+  // Keep the PostgREST error object: its `code` is how the queue tells a
+  // server rejection from a dropped connection.
+  if (error) throw error
 }
 
 function invalidateAttendance(queryClient: QueryClient, sessionId: string) {
   void queryClient.invalidateQueries({ queryKey: ['attendance'] })
   void queryClient.invalidateQueries({ queryKey: ['sessions'] })
   void queryClient.invalidateQueries({ queryKey: ['attendance', 'session', sessionId] })
+}
+
+/** A PostgREST/Postgres error (has a SQLSTATE code) as opposed to a network
+ * failure — the former is permanent, the latter is what the queue is for. */
+function isServerRejection(error: unknown): boolean {
+  const e = error as { code?: unknown; message?: unknown } | null
+  const code = typeof e?.code === 'string' ? e.code : ''
+  const message = typeof e?.message === 'string' ? e.message : ''
+  return code.length > 0 && !/^(Failed to fetch|NetworkError)/.test(message)
 }
 
 let flushInFlight: Promise<void> | null = null
@@ -41,7 +54,18 @@ export function flushPendingSaves(queryClient: QueryClient): Promise<void> {
         remove(save.sessionId)
         invalidateAttendance(queryClient, save.sessionId)
       } catch (error) {
-        markFailed(save.sessionId, error instanceof Error ? error.message : 'Save failed')
+        const message = error instanceof Error ? error.message : 'Save failed'
+        if (isServerRejection(error)) {
+          // The server understood the request and said no (e.g. a skater
+          // marked for a class before they joined). Retrying won't help:
+          // drop it from the queue and tell the coach what to fix.
+          remove(save.sessionId)
+          toast.error(message, {
+            description: 'These marks were not saved. Fix and confirm again.',
+          })
+        } else {
+          markFailed(save.sessionId, message)
+        }
       }
     }
   })().finally(() => {
