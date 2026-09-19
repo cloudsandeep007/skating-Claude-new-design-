@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 
+import type { InviteOutcome } from '@/features/auth'
 import { emptyToNull } from '@/shared/lib/emptyToNull'
 import { supabase } from '@/shared/lib/supabase'
 
@@ -34,6 +35,7 @@ export async function createStudent({ academyId, form, photoFile }: CreateStuden
   // parent fails (an invite email that can't be sent, a duplicate parent
   // account…), the half-made skater is removed again so the admin can fix
   // the form and resubmit without leaving orphans behind.
+  let invite: InviteOutcome | null = null
   try {
     const { error: enrollError } = await supabase.from('student_batches').insert({
       academy_id: academyId,
@@ -42,7 +44,7 @@ export async function createStudent({ academyId, form, photoFile }: CreateStuden
     })
     if (enrollError) throw enrollError
 
-    await linkParent(academyId, student.id, form.parent)
+    invite = await linkParent(academyId, student.id, form.parent)
   } catch (cause) {
     await supabase.from('students').delete().eq('id', student.id)
     throw cause
@@ -59,7 +61,7 @@ export async function createStudent({ academyId, form, photoFile }: CreateStuden
     await supabase.rpc('generate_upcoming_fees', { p_academy_id: academyId })
   }
 
-  return student.id
+  return { studentId: student.id, invite }
 }
 
 export function useCreateStudent() {

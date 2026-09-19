@@ -5,6 +5,28 @@ non-technical person can follow it. Newest first.
 
 ---
 
+## 2026-09-19 — Invites no longer depend on email: share a sign-in link on WhatsApp
+
+- **Why:** Supabase's built-in mailer allows about two emails an hour. After
+  that, "Add student → New parent" and "Add coach" silently produced accounts
+  nobody could get into, and the fix (a paid SMTP provider) was the last open
+  go-live blocker.
+- **Now:** creating a parent or coach account never sends anything it can't.
+  The account is created with a one-time **sign-in link**; the admin sees it
+  straight away in a dialog with **Copy** and **Send on WhatsApp** (pre-filled
+  with the parent's number and a short message). An email is *also* sent
+  whenever the mailer allows, and the dialog says which happened.
+- **The link** opens the app's new `/welcome` page: the person sets a
+  password and lands on their home screen — no email round-trip, no "what is
+  my password?". Links work once and for 24 hours.
+- **New link any time:** "Sign-in link" on the parent card of a skater's
+  profile and the key icon on a coach's profile make a fresh link (and try to
+  email it) for someone who lost theirs or forgot their password. A parent
+  who has not signed in yet is badged **Not signed in yet**.
+- Setting up a real email provider is now optional; the steps are in the
+  RUNBOOK and `supabase/config.toml` for when you want emailed invites and
+  password resets to be reliable.
+
 ## 2026-09-19 — A skater can only be put on a fee plan for their own batch
 
 - **Found while testing:** a skater enrolled in *Intermediate* had been put on

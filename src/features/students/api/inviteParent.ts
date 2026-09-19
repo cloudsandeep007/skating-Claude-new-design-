@@ -1,3 +1,4 @@
+import { toInviteOutcome, type InviteOutcome } from '@/features/auth'
 import { invokeFunction } from '@/shared/lib/invokeFunction'
 import { supabase } from '@/shared/lib/supabase'
 
@@ -5,6 +6,10 @@ import type { ParentLink } from '../types'
 
 interface InviteResponse {
   profile_id: string
+  token_hash: string | null
+  token_type: 'invite' | 'recovery' | null
+  emailed: boolean
+  email_error?: string
 }
 
 /** Links a parent to a student — inserts the link directly for an existing
@@ -14,7 +19,7 @@ export async function linkParent(
   academyId: string,
   studentId: string,
   parent: ParentLink,
-): Promise<void> {
+): Promise<InviteOutcome | null> {
   // Zod's superRefine (see types.ts) guarantees the fields for each mode are
   // present before a submit reaches here; the throws below are belt-and-braces.
   if (parent.mode === 'existing') {
@@ -26,11 +31,11 @@ export async function linkParent(
       relationship: parent.relationship,
     })
     if (error) throw error
-    return
+    return null
   }
 
   if (!parent.email || !parent.fullName) throw new Error('Missing parent details')
-  await invokeFunction<InviteResponse>('invite-user', {
+  const raw = await invokeFunction<InviteResponse>('invite-user', {
     role: 'parent',
     email: parent.email,
     full_name: parent.fullName,
@@ -38,4 +43,5 @@ export async function linkParent(
     student_id: studentId,
     relationship: parent.relationship,
   })
+  return toInviteOutcome(raw)
 }

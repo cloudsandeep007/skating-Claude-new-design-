@@ -4,7 +4,8 @@ import { useForm } from 'react-hook-form'
 import { Link, useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
 
-import { useAuth } from '@/features/auth'
+import { ShareSignInLinkDialog, useAuth, type ShareSignInLinkTarget } from '@/features/auth'
+import { describeError } from '@/shared/lib/describeError'
 import { Button } from '@/shared/ui/button'
 import { Card, CardContent } from '@/shared/ui/card'
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/shared/ui/form'
@@ -19,6 +20,7 @@ export function AddCoachPage() {
   const { profile } = useAuth()
   const createCoach = useCreateCoach()
   const [photoFile, setPhotoFile] = useState<File | null>(null)
+  const [share, setShare] = useState<ShareSignInLinkTarget | null>(null)
 
   const form = useForm<CoachForm>({
     resolver: zodResolver(CoachFormSchema),
@@ -28,16 +30,36 @@ export function AddCoachPage() {
   async function onSubmit(values: CoachForm) {
     if (!profile?.academy_id) return
     try {
-      await createCoach.mutateAsync({ academyId: profile.academy_id, form: values, photoFile })
-      toast.success(`Invite sent to ${values.email}.`)
+      const { invite } = await createCoach.mutateAsync({
+        academyId: profile.academy_id,
+        form: values,
+        photoFile,
+      })
+      toast.success(`${values.fullName} was added.`)
+      if (invite.token) {
+        setShare({
+          outcome: invite,
+          personName: values.fullName,
+          phone: values.phone,
+          email: values.email,
+        })
+        return
+      }
       void navigate('/admin/coaches')
-    } catch {
-      toast.error('Could not add this coach. Please try again.')
+    } catch (error) {
+      toast.error(describeError(error, 'Could not add this coach. Please try again.'))
     }
   }
 
   return (
     <div className="mx-auto max-w-lg">
+      <ShareSignInLinkDialog
+        target={share}
+        onClose={() => {
+          setShare(null)
+          void navigate('/admin/coaches')
+        }}
+      />
       <h1 className="mb-4 font-display text-2xl font-extrabold tracking-tight">Add coach</h1>
       <Card>
         <CardContent className="pt-6">

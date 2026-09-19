@@ -1,9 +1,15 @@
-import { ArrowLeft, Pencil } from 'lucide-react'
+import { ArrowLeft, KeyRound, Pencil } from 'lucide-react'
+import { useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { toast } from 'sonner'
 
 import { MakeupCreditsCard } from '@/features/attendance'
-import { useAuth } from '@/features/auth'
+import {
+  ShareSignInLinkDialog,
+  useAuth,
+  useNewSignInLink,
+  type ShareSignInLinkTarget,
+} from '@/features/auth'
 import { PaymentHistoryList } from '@/features/fees'
 import { AchievementHistoryList, SkillAssessmentPanel } from '@/features/progression'
 import { ClassCreditsCard, CreditStatementCard, useClassCreditBalance } from '@/features/schedule'
@@ -38,6 +44,8 @@ export function StudentDetailPage() {
   const { data: student, isLoading, isError, error, refetch } = useStudent(studentId)
   const { data: creditBalance } = useClassCreditBalance(studentId || null)
   const setStatus = useSetStudentStatus()
+  const newLink = useNewSignInLink()
+  const [share, setShare] = useState<ShareSignInLinkTarget | null>(null)
   const { data: photoUrls } = useSignedPhotoUrls('student-photos', [student?.photoUrl ?? null])
 
   if (isError) {
@@ -174,8 +182,40 @@ export function StudentDetailPage() {
               {student.parents[0].email && (
                 <div className="text-sm text-muted-foreground">{student.parents[0].email}</div>
               )}
+              <div className="mt-2 flex items-center gap-2">
+                {student.parents[0].status === 'invited' && (
+                  <StatusBadge tone="warning">Not signed in yet</StatusBadge>
+                )}
+                <button
+                  type="button"
+                  disabled={newLink.isPending}
+                  onClick={() => {
+                    const parent = student.parents[0]
+                    newLink.mutate(parent.id, {
+                      onSuccess: (outcome) => {
+                        setShare({
+                          outcome,
+                          personName: parent.fullName,
+                          phone: parent.phone,
+                          email: parent.email,
+                        })
+                      },
+                      onError: (error) => {
+                        toast.error(
+                          error instanceof Error ? error.message : 'Could not create a link.',
+                        )
+                      },
+                    })
+                  }}
+                  className="inline-flex items-center gap-1 text-xs font-bold text-primary underline-offset-2 hover:underline disabled:opacity-50"
+                >
+                  <KeyRound className="h-3 w-3" />
+                  {newLink.isPending ? 'Making link…' : 'Sign-in link'}
+                </button>
+              </div>
             </div>
           )}
+          <ShareSignInLinkDialog target={share} onClose={() => { setShare(null); }} />
 
           <div className="flex gap-2">
             <Button variant="outline" size="icon" asChild aria-label="Edit student">

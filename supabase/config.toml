@@ -195,7 +195,8 @@ password_requirements = ""
 # rp_origins = ["http://127.0.0.1:3000"]
 
 [auth.rate_limit]
-# Number of emails that can be sent per hour. Requires auth.email.smtp to be enabled.
+# Number of emails that can be sent per hour. Requires auth.email.smtp to be enabled;
+# raise to 100 once a custom SMTP provider is configured.
 email_sent = 2
 # Number of SMS messages that can be sent per hour. Requires auth.sms to be enabled.
 sms_sent = 30
@@ -233,15 +234,25 @@ otp_length = 6
 # Number of seconds before the email OTP expires (defaults to 1 hour).
 otp_expiry = 3600
 
-# Use a production-ready SMTP server
+# Use a production-ready SMTP server.
+# The app no longer depends on email for invites (admins get a sign-in link to
+# share by WhatsApp — see docs/RUNBOOK.md "Inviting parents and coaches"), but
+# invite emails, password-reset emails and any future email notifications need
+# a real provider. Supabase's built-in mailer allows only ~2 emails an hour.
+#
+# To enable: sign up with Resend (resend.com — free tier, simplest), create an
+# API key, verify your sending domain, then set SMTP_PASS in the environment
+# and uncomment the block below. Push it with:
+#   SMTP_PASS=re_xxx npx supabase config push --project-ref lbjzipgeqyuovqwptuul
+# or type the same values into Supabase → Authentication → SMTP Settings.
 # [auth.email.smtp]
 # enabled = true
-# host = "smtp.sendgrid.net"
-# port = 587
-# user = "apikey"
-# pass = "env(SENDGRID_API_KEY)"
-# admin_email = "admin@email.com"
-# sender_name = "Admin"
+# host = "smtp.resend.com"
+# port = 465
+# user = "resend"
+# pass = "env(SMTP_PASS)"
+# admin_email = "noreply@your-domain.com"
+# sender_name = "PRSA Skating Academy"
 
 # Uncomment to customize email template
 # [auth.email.template.invite]

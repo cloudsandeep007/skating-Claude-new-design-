@@ -4,7 +4,7 @@ import { useForm } from 'react-hook-form'
 import { Link, useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
 
-import { useAuth } from '@/features/auth'
+import { ShareSignInLinkDialog, useAuth, type ShareSignInLinkTarget } from '@/features/auth'
 import { useBatchOptions } from '@/features/batches'
 import { feePlanPriceLabel, useFeePlanOptions } from '@/features/fees'
 import { describeError } from '@/shared/lib/describeError'
@@ -30,6 +30,10 @@ export function AddStudentPage() {
   // A second tap before the first request has even started must not
   // create a second skater — isPending flips too late for that.
   const submitting = useRef(false)
+  // Shown after a new parent account is made: the link to send them.
+  const [share, setShare] = useState<{ target: ShareSignInLinkTarget; studentId: string } | null>(
+    null,
+  )
 
   const { data: batches } = useBatchOptions()
   const { data: levels } = useLevelOptions()
@@ -67,12 +71,24 @@ export function AddStudentPage() {
     if (!profile?.academy_id || submitting.current) return
     submitting.current = true
     try {
-      const studentId = await createStudent.mutateAsync({
+      const { studentId, invite } = await createStudent.mutateAsync({
         academyId: profile.academy_id,
         form: values,
         photoFile,
       })
       toast.success(`${values.fullName} was added.`)
+      if (invite?.token && values.parent.mode === 'new') {
+        setShare({
+          studentId,
+          target: {
+            outcome: invite,
+            personName: values.parent.fullName ?? 'the parent',
+            phone: values.parent.phone ?? null,
+            email: values.parent.email ?? null,
+          },
+        })
+        return
+      }
       void navigate(`/admin/students/${studentId}`)
     } catch (error) {
       toast.error(describeError(error, 'Could not add this student. Please try again.'))
@@ -83,6 +99,13 @@ export function AddStudentPage() {
 
   return (
     <div className="mx-auto max-w-2xl">
+      <ShareSignInLinkDialog
+        target={share?.target ?? null}
+        onClose={() => {
+          if (share) void navigate(`/admin/students/${share.studentId}`)
+          setShare(null)
+        }}
+      />
       <h1 className="mb-4 font-display text-2xl font-extrabold tracking-tight">Add student</h1>
 
       <Form {...form}>

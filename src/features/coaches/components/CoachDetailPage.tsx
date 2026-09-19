@@ -1,7 +1,13 @@
-import { ArrowLeft, Pencil, Trash2 } from 'lucide-react'
+import { ArrowLeft, KeyRound, Pencil, Trash2 } from 'lucide-react'
+import { useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { toast } from 'sonner'
 
+import {
+  ShareSignInLinkDialog,
+  useNewSignInLink,
+  type ShareSignInLinkTarget,
+} from '@/features/auth'
 import { useSignedPhotoUrls } from '@/shared/lib/signedPhotoUrls'
 import {
   AlertDialog,
@@ -30,6 +36,8 @@ export function CoachDetailPage() {
   const navigate = useNavigate()
   const { data: coach, isLoading } = useCoach(coachId)
   const setStatus = useSetCoachStatus()
+  const newLink = useNewSignInLink()
+  const [share, setShare] = useState<ShareSignInLinkTarget | null>(null)
   const deleteCoach = useDeleteCoach()
   const { data: photoUrls } = useSignedPhotoUrls('coach-photos', [coach?.photoUrl ?? null])
 
@@ -101,7 +109,32 @@ export function CoachDetailPage() {
             </div>
           </div>
 
+          <ShareSignInLinkDialog target={share} onClose={() => { setShare(null); }} />
           <div className="flex gap-2">
+            <Button
+              variant="outline"
+              size="icon"
+              aria-label="Sign-in link"
+              title="Make a sign-in link to send this coach"
+              disabled={newLink.isPending}
+              onClick={() => {
+                newLink.mutate(coach.profileId, {
+                  onSuccess: (outcome) => {
+                    setShare({
+                      outcome,
+                      personName: coach.fullName,
+                      phone: coach.phone,
+                      email: coach.email,
+                    })
+                  },
+                  onError: (error) => {
+                    toast.error(error instanceof Error ? error.message : 'Could not create a link.')
+                  },
+                })
+              }}
+            >
+              <KeyRound className="h-4 w-4" />
+            </Button>
             <Button variant="outline" size="icon" asChild aria-label="Edit coach">
               <Link to={`/admin/coaches/${coach.id}/edit`}>
                 <Pencil className="h-4 w-4" />

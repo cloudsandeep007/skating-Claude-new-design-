@@ -17,6 +17,31 @@ Format:
 
 ---
 
+## 2026-09-19 — Accounts are created with a shareable sign-in link; email is best-effort
+
+**Decision:** `invite-user` creates the auth user with
+`auth.admin.generateLink({ type: 'invite' })`, which never sends mail, and
+returns the token; the app builds `/welcome?t=<token>&type=invite` on its own
+origin and verifies it with `auth.verifyOtp({ token_hash })`. The function
+then *tries* to email (`resetPasswordForEmail`) and reports whether that
+worked. A new link for an existing account uses `type: 'recovery'`.
+**Options considered:** (a) keep `inviteUserByEmail` and configure SMTP —
+still leaves invites hostage to a third-party account the owner has to
+create and pay for, and to that provider's deliverability; (b) admin sets a
+temporary password and reads it out — passwords in WhatsApp, and the admin
+knows every family's first password; (c) Supabase's action link with a
+`redirectTo` — needs every deploy origin on the auth redirect allow-list,
+which broke on localhost vs Vercel.
+**Why:** an Indian academy runs on WhatsApp; a link the admin can paste
+there works on day one with zero configuration, and verifying the token in
+the app makes it origin-independent. Email stays on as a bonus and gets
+reliable once SMTP is configured — nothing changes in the app then.
+**Trade-offs:** a link in a chat is a bearer credential for 24 hours (same
+as an emailed link); the admin must send it to the right number — the
+dialog pre-fills the number from the form. Profiles flip to `active` from
+the client after the first password is set (RLS: own row), not from a
+trigger.
+
 ## 2026-09-19 — A payment's fee portion is what counts; a voided top-up is not a fee
 
 **Decision:** `fee_paid_total()` sums `payment_fee_portion()` — a payment's

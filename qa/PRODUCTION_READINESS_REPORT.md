@@ -6,10 +6,10 @@
 
 | | |
 |---|---|
-| **Overall** | **READY, pending one configuration item (SMTP provider — BUG-007)** |
+| **Overall** | **READY** — the last item (SMTP for invites) was designed out on 19 Sep; invites now work through a shareable sign-in link |
 | Critical defects | 0 |
 | High defects | 3 found → **0 open** (BUG-003/005/006 fixed and re-verified 19 Sep) |
-| Medium defects | 5 found → **0 open in code** (BUG-007 mitigated; needs SMTP config) |
+| Medium defects | 5 found → **0 open** (BUG-007 resolved: invites no longer depend on email) |
 | Low defects | 13 found → **0 open** |
 | Security / isolation failures | 0 |
 | Money-integrity failures | 0 in the ledger; the 2 display defects (BUG-010, BUG-012) are fixed |
@@ -51,12 +51,12 @@
 ## Go-live conditions
 
 1. ~~Fix and re-test BUG-003, BUG-005, BUG-006~~ — **done 19 Sep**.
-2. Configure a production SMTP provider in Supabase Auth and send one real invite end-to-end (BUG-007) — **open, configuration only**.
+2. ~~Configure a production SMTP provider~~ — **no longer required**; invites and new links work without email. Still recommended so "Forgot password" emails are reliable.
 3. ~~BUG-010, BUG-012, BUG-001, BUG-004~~ — **done 19 Sep** (every other defect too).
 4. Run the "would mutate live data" NOT RUN cases on a staging copy of the database — recommended.
 5. One manual smoke pass of the parent app on an iPhone (Safari) and one on Firefox — recommended.
 
-With 2 done the application is fit for a single-academy launch; 4–5 are good hygiene before handing it to a non-technical owner without engineering support on standby.
+The application is fit for a single-academy launch now; 4–5 are good hygiene before handing it to a non-technical owner without engineering support on standby.
 
 ## Deliverables
 

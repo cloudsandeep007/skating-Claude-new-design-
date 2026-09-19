@@ -43,6 +43,21 @@ Phase 1) or manually in the Supabase dashboard for now.
 - A `SIGNED_OUT` auth event only shows the "your session expired" toast
   when it wasn't caused by the user's own "sign out" click.
 
+### Sign-in links (2026-09-19)
+
+- `/welcome?t=<token_hash>&type=invite|recovery` — public route. `WelcomePage`
+  verifies the token with `supabase.auth.verifyOtp`, then shows the set-
+  password form; on success it marks the profile `active` and goes to the
+  role's home. Expired/used tokens show a friendly dead-end with links to
+  sign in or reset.
+- `ShareSignInLinkDialog` (exported) — shows the link with Copy and a
+  `wa.me` button; `hooks/inviteLink.ts` (unit-tested) builds the link, the
+  message, and normalises the phone number (bare 10 digits → +91).
+- `useNewSignInLink(profileId)` calls `invite-user { action: 'link' }` for a
+  fresh recovery token; used from the student parent card and coach detail.
+- The Edge Function returns `{ token_hash, token_type, emailed, email_error }`
+  alongside `profile_id`; `toInviteOutcome()` maps it for the UI.
+
 ## Edge cases
 
 - **No profile row for a valid Supabase user** (shouldn't happen for a

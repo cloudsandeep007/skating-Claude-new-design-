@@ -4,6 +4,20 @@
 // service-role key (never sent to the browser) so it can call the Supabase
 // Admin API — the anon key the frontend uses cannot create auth users at all.
 //
+// Two actions:
+//   (default)          create the account, link it, and hand back a sign-in
+//                      link — emailing it too when the mailer allows.
+//   { action: 'link' } a fresh sign-in link for an existing account (the
+//                      admin re-shares it when the first one was lost).
+//
+// Why a link and not just an email: Supabase's built-in mailer allows a
+// handful of emails an hour, and until a custom SMTP provider is set up
+// invites simply stop arriving. The account is therefore created with
+// generateLink() — which never sends anything — and the admin gets a link to
+// share over WhatsApp. When the mailer does work, the email goes out as well.
+// The link carries a one-time token the app verifies itself (/welcome), so
+// it works on any origin without touching the auth redirect allow-list.
+//
 // Deploy: npx supabase functions deploy invite-user
 // Called from the frontend via supabase.functions.invoke('invite-user', {...})
 // which automatically forwards the caller's session JWT in the Authorization
@@ -11,7 +25,7 @@
 // privileged, so a non-admin can never use this endpoint to create accounts.
 // =============================================================================
 
-import { createClient } from 'jsr:@supabase/supabase-js@2'
+import { createClient, type SupabaseClient } from 'jsr:@supabase/supabase-js@2'
 
 const CORS_HEADERS = {
   'Access-Control-Allow-Origin': '*',
@@ -35,7 +49,24 @@ interface InviteCoachBody {
   specialization?: string
 }
 
-type InviteBody = InviteParentBody | InviteCoachBody
+interface LinkBody {
+  action: 'link'
+  profile_id: string
+}
+
+type InviteBody = InviteParentBody | InviteCoachBody | LinkBody
+
+/** What the admin gets back: the account, plus how to get the person in. */
+interface InviteResult {
+  profile_id: string
+  coach_id?: string
+  /** One-time token for the app's /welcome page (verifyOtp). */
+  token_hash: string | null
+  token_type: 'invite' | 'recovery' | null
+  /** Whether Supabase's mailer accepted an email for this invite. */
+  emailed: boolean
+  email_error?: string
+}
 
 function json(body: unknown, status = 200) {
   return new Response(JSON.stringify(body), {
@@ -44,14 +75,19 @@ function json(body: unknown, status = 200) {
   })
 }
 
+/** A sign-in token for an account that already exists. 'recovery' works for
+ * any user (confirmed or not) and lets them set a password on arrival. */
+async function recoveryToken(admin: SupabaseClient, email: string) {
+  const { data, error } = await admin.auth.admin.generateLink({ type: 'recovery', email })
+  if (error || !data.properties?.hashed_token) return null
+  return data.properties.hashed_token
+}
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response(null, { headers: CORS_HEADERS })
 
   try {
     const body = (await req.json()) as InviteBody
-    if (!body.email || !body.full_name || !body.role) {
-      return json({ error: 'email, full_name and role are required' }, 400)
-    }
 
     const authHeader = req.headers.get('Authorization')
     if (!authHeader) return json({ error: 'Missing Authorization header' }, 401)
@@ -80,22 +116,56 @@ Deno.serve(async (req) => {
     }
     const academyId = callerProfile.academy_id
 
+    // Full privileges from here on — never exposed to the browser.
+    const admin = createClient(supabaseUrl, serviceRoleKey)
+
+    // ---- action: link — a fresh sign-in link for an existing account ----
+    if ('action' in body && body.action === 'link') {
+      if (!body.profile_id) return json({ error: 'profile_id is required' }, 400)
+      const { data: target } = await admin
+        .from('profiles')
+        .select('id, email, academy_id, status')
+        .eq('id', body.profile_id)
+        .maybeSingle()
+      if (!target || target.academy_id !== academyId) return json({ error: 'Not found' }, 404)
+      if (!target.email) return json({ error: 'This account has no email address' }, 400)
+
+      const token = await recoveryToken(admin, target.email)
+      if (!token) return json({ error: 'Could not create a sign-in link' }, 500)
+
+      // Try to email it too; a mailer failure is reported, not fatal.
+      const { error: mailError } = await admin.auth.resetPasswordForEmail(target.email)
+      const result: InviteResult = {
+        profile_id: target.id,
+        token_hash: token,
+        token_type: 'recovery',
+        emailed: !mailError,
+        email_error: mailError?.message,
+      }
+      return json(result)
+    }
+
+    if (!body.email || !body.full_name || !body.role) {
+      return json({ error: 'email, full_name and role are required' }, 400)
+    }
     if (body.role === 'parent' && !body.student_id) {
       return json({ error: 'student_id is required to invite a parent' }, 400)
     }
-
-    // Full privileges from here on — never exposed to the browser.
-    const admin = createClient(supabaseUrl, serviceRoleKey)
+    const email = body.email.trim().toLowerCase()
 
     // Reuse an existing account (e.g. a parent already linked to a sibling)
     // instead of creating a duplicate.
     const { data: existingProfile } = await admin
       .from('profiles')
       .select('id, academy_id')
-      .eq('email', body.email)
+      .eq('email', email)
       .maybeSingle()
 
     let profileId: string
+    let tokenHash: string | null = null
+    let tokenType: InviteResult['token_type'] = null
+    let emailed = false
+    let emailError: string | undefined
 
     if (existingProfile) {
       if (existingProfile.academy_id !== academyId) {
@@ -103,25 +173,41 @@ Deno.serve(async (req) => {
       }
       profileId = existingProfile.id
     } else {
-      const { data: invited, error: inviteError } = await admin.auth.admin.inviteUserByEmail(
-        body.email,
-      )
-      if (inviteError || !invited.user) {
-        return json({ error: inviteError?.message ?? 'Could not send the invite email' }, 500)
+      // 1. Create the account WITHOUT sending anything — this never hits the
+      //    mailer's rate limit, so the skater/coach is always created.
+      const { data: gen, error: genError } = await admin.auth.admin.generateLink({
+        type: 'invite',
+        email,
+      })
+      if (genError || !gen.user) {
+        return json({ error: genError?.message ?? 'Could not create the account' }, 500)
       }
+      profileId = gen.user.id
+      tokenHash = gen.properties?.hashed_token ?? null
+      tokenType = tokenHash ? 'invite' : null
 
       const { error: profileError } = await admin.from('profiles').insert({
-        id: invited.user.id,
+        id: profileId,
         academy_id: academyId,
         role: body.role,
         full_name: body.full_name,
         phone: body.phone ?? null,
-        email: body.email,
+        email,
         status: 'invited',
       })
-      if (profileError) return json({ error: profileError.message }, 500)
+      if (profileError) {
+        // Don't leave an auth user with no profile behind.
+        await admin.auth.admin.deleteUser(profileId)
+        return json({ error: profileError.message }, 500)
+      }
 
-      profileId = invited.user.id
+      // 2. Best effort: also email a link. resetPasswordForEmail works for an
+      //    unconfirmed user and its link sets a password — which is what an
+      //    invite does. If the mailer refuses (rate limit, no SMTP), the admin
+      //    still has the token above to share by hand.
+      const { error: mailError } = await admin.auth.resetPasswordForEmail(email)
+      emailed = !mailError
+      emailError = mailError?.message
     }
 
     if (body.role === 'parent') {
@@ -132,7 +218,14 @@ Deno.serve(async (req) => {
         relationship: body.relationship,
       })
       if (error) return json({ error: error.message }, 500)
-      return json({ profile_id: profileId })
+      const result: InviteResult = {
+        profile_id: profileId,
+        token_hash: tokenHash,
+        token_type: tokenType,
+        emailed,
+        email_error: emailError,
+      }
+      return json(result)
     }
 
     const { data: coach, error } = await admin
@@ -145,7 +238,15 @@ Deno.serve(async (req) => {
       .select('id')
       .single()
     if (error) return json({ error: error.message }, 500)
-    return json({ profile_id: profileId, coach_id: coach.id })
+    const result: InviteResult = {
+      profile_id: profileId,
+      coach_id: coach.id,
+      token_hash: tokenHash,
+      token_type: tokenType,
+      emailed,
+      email_error: emailError,
+    }
+    return json(result)
   } catch {
     return json({ error: 'Unexpected error' }, 500)
   }

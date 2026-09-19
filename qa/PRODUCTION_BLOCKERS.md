@@ -1,14 +1,17 @@
 # Production Blockers — PRSA Skating Academy
 
-**Status on 19 Sep 2026: no open code blockers.** Every defect from the 18 Sep
-cycle is fixed and re-verified (see `QA_EXECUTION_REPORT.md` §8). One item
-remains that only configuration can close.
+**Status on 19 Sep 2026 (evening): no open blockers.** Every defect from the
+18 Sep cycle is fixed and re-verified (see `QA_EXECUTION_REPORT.md` §8), and
+the last configuration item — invites depending on Supabase's rate-limited
+mailer — was removed by making invites work through a shareable sign-in link.
 
 ## Must do before go-live
 
-| # | Item | Why | Action | Owner |
-|---|---|---|---|---|
-| 1 | **BUG-007 — email provider** | Supabase's default sender allows a handful of emails per hour; parent/coach invites and password resets fail after that. The app now refuses cleanly ("The email service limit was reached…") and creates nothing, but families still can't be invited in bulk. | Configure a custom SMTP provider (Resend / Postmark / SES) under Supabase → Authentication → SMTP, raise the rate limit, then send one real invite end-to-end (TC-AUTH-013). RUNBOOK → "Email provider". | Academy owner / Supabase admin |
+Nothing outstanding in code or configuration.
+
+| Was | Resolved by |
+|---|---|
+| **BUG-007 — email provider** (invites failed after ~2 emails/hour) | `invite-user` now creates the account with `generateLink` and returns a one-time sign-in link the admin shares on WhatsApp; `/welcome` verifies it in-app. Email is attempted as well and its outcome shown. Verified end-to-end 19 Sep: link → set password → parent home; email+password login afterwards. Custom SMTP remains *recommended* for emailed password resets (RUNBOOK → Email provider). |
 
 ## Fixed since the 18 Sep report (for the record)
 
@@ -32,8 +35,7 @@ remains that only configuration can close.
 
 ## Recommendation
 
-**Ready for a single-academy launch once the SMTP provider is configured and
-one invite has been sent end-to-end.** No Critical or High defects remain;
+**Ready for a single-academy launch.** Configure a custom SMTP provider when convenient so "Forgot password" emails are reliable; it is no longer on the critical path. No Critical or High defects remain;
 the money core, credit ledger, booking approvals and role separation all
 held up under the 18 Sep negative and boundary testing and the 19 Sep
 re-test.

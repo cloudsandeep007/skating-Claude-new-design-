@@ -16,7 +16,14 @@ export interface StudentDetail {
   batchName: string | null
   coachName: string | null
   attendancePct: number | null
-  parents: { id: string; fullName: string; phone: string | null; email: string | null }[]
+  parents: {
+    id: string
+    fullName: string
+    phone: string | null
+    email: string | null
+    /** 'invited' until they open their sign-in link and set a password. */
+    status: 'active' | 'invited' | 'inactive'
+  }[]
 }
 
 async function fetchStudent(id: string): Promise<StudentDetail> {
@@ -35,7 +42,7 @@ async function fetchStudent(id: string): Promise<StudentDetail> {
 
   const { data: parentLinks } = await supabase
     .from('parents_students')
-    .select('parent:profiles(id, full_name, phone, email)')
+    .select('parent:profiles(id, full_name, phone, email, status)')
     .eq('student_id', id)
 
   const { data: attendance } = await supabase
@@ -65,6 +72,7 @@ async function fetchStudent(id: string): Promise<StudentDetail> {
       id: link.parent.id,
       fullName: link.parent.full_name,
       phone: link.parent.phone,
+      status: link.parent.status,
       email: link.parent.email,
     })),
   }

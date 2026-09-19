@@ -2,7 +2,13 @@ import { createBrowserRouter } from 'react-router-dom'
 
 import { AdminAnnouncementsPage } from '@/features/announcements'
 import { AdminAttendancePage, MarkAttendancePage } from '@/features/attendance'
-import { ForgotPasswordPage, LoginPage, ProtectedRoute, ResetPasswordPage } from '@/features/auth'
+import {
+  ForgotPasswordPage,
+  LoginPage,
+  ProtectedRoute,
+  ResetPasswordPage,
+  WelcomePage,
+} from '@/features/auth'
 import { AddBatchPage, BatchDetailPage, BatchesListPage, EditBatchPage } from '@/features/batches'
 import { AddCoachPage, CoachDetailPage, CoachesListPage, EditCoachPage } from '@/features/coaches'
 import { AdminDashboardPage } from '@/features/dashboard'
@@ -62,6 +68,7 @@ export const router = createBrowserRouter([
     element: <ResetPasswordPage />,
     errorElement: <RouteErrorBoundary />,
   },
+  { path: '/welcome', element: <WelcomePage />, errorElement: <RouteErrorBoundary /> },
   {
     element: <ProtectedRoute allowedRoles={['academy_admin']} />,
     errorElement: <RouteErrorBoundary />,

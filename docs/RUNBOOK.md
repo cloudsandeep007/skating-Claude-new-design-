@@ -329,37 +329,45 @@ Requests already waiting stay `pending` until decided; approve them from
 the queue ("Approve all" per session) or leave them to be released at
 marking time.
 
-## Email provider (invites and password resets)
+## Inviting parents and coaches (no email needed)
 
-Supabase's built-in email sender allows only a few messages per hour. When
-it is exhausted the app shows "The email service limit was reached, so the
-invite could not be sent right now" and the skater is *not* created. Before
-onboarding families in bulk, set a custom SMTP provider (Resend, Postmark,
-SES…) under **Supabase → Authentication → SMTP settings** and raise the
-rate limit under **Authentication → Rate limits**. Until then, link a parent
-who already has an account with "Existing parent" instead of inviting.
+When you add a skater with a new parent, or add a coach, the app creates
+their account and shows a **Sign-in link** dialog:
 
-## Applying an advance by hand
+1. Tap **Send on WhatsApp** — it opens WhatsApp to the number on the form
+   with a ready message — or **Copy** the link and send it any way you like.
+2. The person opens the link, chooses a password, and is signed in. From
+   then on they log in with their email and that password.
+3. The link works once and for 24 hours. If it is lost or expires, open the
+   skater's profile → parent card → **Sign-in link** (or the key icon on a
+   coach's profile) to make a new one. Do the same for anyone who forgets
+   their password.
 
-A family's advance is applied automatically when the next fee is generated
-(nightly, or **Generate now** on the Fees page). To apply it to a fee that is
-already open without waiting, open the skater → **Fees** tab → **Apply now**
-on the green advance banner.
+The dialog also says whether an email went out. Supabase's built-in mailer
+allows only about two emails an hour, so most of the time it will say the
+email could not be sent — that is expected and the link is all they need.
 
-## A parent says the invite email never arrived
+## Email provider (optional — for emailed invites and password resets)
 
-Inviting a parent (Add student → "New parent") creates their login and
-Supabase emails them a link; there is **no password until they open that
-link** and set one. If nothing arrives:
+To make invite and "Forgot password" emails reliable, connect a real
+sender. Resend (resend.com) has a free tier and takes ten minutes:
 
-1. Ask them to check Spam / Promotions for a mail from
-   `noreply@mail.app.supabase.io` ("You have been invited").
-2. Failing that, they can use **Forgot password** on the login page with the
-   same email — the reset link lets them set a password the same way.
-3. If neither mail arrives, Supabase's default sender has hit its hourly
-   limit — see "Email provider" above. Until a custom SMTP provider is set,
-   invites are best sent one at a time, spaced out.
+1. Create a Resend account, add and verify your domain, create an API key.
+2. In Supabase → **Authentication → SMTP Settings**: enable custom SMTP,
+   host `smtp.resend.com`, port `465`, user `resend`, password = the API key,
+   sender email `noreply@<your domain>`, sender name `PRSA Skating Academy`.
+3. In **Authentication → Rate Limits**, raise "emails sent" to 100 per hour.
+4. In **Authentication → URL Configuration**, set the Site URL to the
+   deployed app (the Vercel address) and add it to the redirect list — this
+   is what the "Forgot password" email links to.
 
-The invite link opens the app at the **Site URL** set under Supabase →
-Authentication → URL Configuration; make sure that points at the deployed
-app, not localhost, before inviting real families.
+The same values are templated in `supabase/config.toml` under
+`[auth.email.smtp]` for anyone who prefers `supabase config push`.
+
+## A parent says they cannot log in
+
+- Never signed in: open the skater → parent card → **Sign-in link** and send
+  it again. Their badge reads *Not signed in yet* until they do.
+- Forgot the password: same button — the link lets them set a new one. Or
+  they can use **Forgot password** on the login page once email is set up.
+- Wrong email on the account: edit the parent from the skater's profile.
