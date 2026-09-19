@@ -352,6 +352,8 @@ status too: `attendance_credit_truth` (on `attendance`) upserts a
 `booked`/`pending` one on absent/excused; `resolve_session_bookings()`
 (called by `save_attendance`) cancels any still-`booked`/`pending` row with
 no mark once the session is completed.
+**`0035`:** `credit_plan_status()` also returns `plan_name`, `plan_batch_id`
+and `plan_batch_name` so the Top-up dialog can name the plan.
 **QA fixes (`0033`/`0034`):** `payment_fee_portion(payment_id)` = amount −
 advance deposits out of that payment; `fee_paid_total()` sums it.
 `student_fees_list()` gains a `kind` column, clamps `balance` at 0 and, like

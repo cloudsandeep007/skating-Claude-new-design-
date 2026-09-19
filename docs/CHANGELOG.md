@@ -5,6 +5,20 @@ non-technical person can follow it. Newest first.
 
 ---
 
+## 2026-09-19 — A skater can only be put on a fee plan for their own batch
+
+- **Found while testing:** a skater enrolled in *Intermediate* had been put on
+  the *Beginner* batch's pay-per-class plan, so an 8-class top-up was quoted
+  at ₹4,000 (8 × ₹500) instead of ₹4,800 (8 × ₹600). The picker had offered
+  every plan and only tagged the wrong ones "(other batch)".
+- **Now:** the fee-plan picker on Add / Edit student offers only plans that
+  fit the chosen batch (academy-wide plans, plus plans scoped to that
+  batch); changing the batch clears a plan that no longer fits. The Top-up
+  dialog names the plan and its batch next to the rate ("₹600 per class ·
+  Intermediate · monthly") so a mismatch is obvious before money is taken.
+- The one affected skater was moved onto the Intermediate plan; no top-up
+  had been recorded on the wrong rate.
+
 ## 2026-09-19 — QA cycle fixes: all 21 defects from the 18 Sep test run
 
 Every defect in `qa/QA_EXECUTION_REPORT.md` is fixed and re-verified in the

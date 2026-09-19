@@ -345,3 +345,21 @@ A family's advance is applied automatically when the next fee is generated
 (nightly, or **Generate now** on the Fees page). To apply it to a fee that is
 already open without waiting, open the skater → **Fees** tab → **Apply now**
 on the green advance banner.
+
+## A parent says the invite email never arrived
+
+Inviting a parent (Add student → "New parent") creates their login and
+Supabase emails them a link; there is **no password until they open that
+link** and set one. If nothing arrives:
+
+1. Ask them to check Spam / Promotions for a mail from
+   `noreply@mail.app.supabase.io` ("You have been invited").
+2. Failing that, they can use **Forgot password** on the login page with the
+   same email — the reset link lets them set a password the same way.
+3. If neither mail arrives, Supabase's default sender has hit its hourly
+   limit — see "Email provider" above. Until a custom SMTP provider is set,
+   invites are best sent one at a time, spaced out.
+
+The invite link opens the app at the **Site URL** set under Supabase →
+Authentication → URL Configuration; make sure that points at the deployed
+app, not localhost, before inviting real families.

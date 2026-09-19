@@ -1857,6 +1857,9 @@ export type Database = {
           booking_window_days: number
           days_left: number
           min_topup: number
+          plan_batch_id: string
+          plan_batch_name: string
+          plan_name: string
           pricing_mode: Database["public"]["Enums"]["fee_pricing_mode"]
           rate: number
           term_end: string

@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
 import { Link, useNavigate } from 'react-router-dom'
@@ -19,6 +19,7 @@ import { Textarea } from '@/shared/ui/textarea'
 
 import { useCreateStudent } from '../api/createStudent'
 import { useLevelOptions, useParentOptions } from '../api/listOptions'
+import { eligibleFeePlans, planNoLongerFits } from '../hooks/eligiblePlans'
 import { StudentFormSchema, type StudentForm } from '../types'
 
 export function AddStudentPage() {
@@ -51,12 +52,16 @@ export function AddStudentPage() {
 
   const parentMode = form.watch('parent.mode')
   const selectedBatchId = form.watch('batchId')
-  const sortedFeePlans = [...(feePlans ?? [])].sort((a, b) => {
-    const aMatches = a.batchId === selectedBatchId
-    const bMatches = b.batchId === selectedBatchId
-    if (aMatches !== bMatches) return aMatches ? -1 : 1
-    return 0
-  })
+  const selectedPlanId = form.watch('feePlanId') ?? ''
+  // Only plans that fit the chosen batch are offered (academy-wide ones, and
+  // ones scoped to this batch). Switching batch drops a plan that no longer
+  // fits so a skater is never billed at another batch's rate.
+  const eligiblePlans = eligibleFeePlans(feePlans ?? [], selectedBatchId)
+  useEffect(() => {
+    if (planNoLongerFits(feePlans ?? [], selectedPlanId, selectedBatchId)) {
+      form.setValue('feePlanId', '', { shouldDirty: true })
+    }
+  }, [feePlans, selectedPlanId, selectedBatchId, form])
 
   async function onSubmit(values: StudentForm) {
     if (!profile?.academy_id || submitting.current) return
@@ -212,12 +217,17 @@ export function AddStudentPage() {
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {sortedFeePlans.map((plan) => (
+                        {eligiblePlans.length === 0 && (
+                          <div className="px-2 py-1.5 text-xs text-muted-foreground">
+                            {selectedBatchId
+                              ? 'No fee plan is set up for this batch yet'
+                              : 'Choose a batch first'}
+                          </div>
+                        )}
+                        {eligiblePlans.map((plan) => (
                           <SelectItem key={plan.id} value={plan.id}>
                             {plan.name} — {feePlanPriceLabel(plan)}
-                            {plan.batchId && plan.batchId !== selectedBatchId
-                              ? ' (other batch)'
-                              : ''}
+                            {plan.batchId ? '' : ' · all batches'}
                           </SelectItem>
                         ))}
                       </SelectContent>

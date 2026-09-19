@@ -82,6 +82,16 @@ deliberate — see DECISIONS.md.
 - An unknown skater id shows "Skater not found" with a link back; the
   list search ignores surrounding spaces.
 
+### Fee plan must fit the batch (2026-09-19)
+
+`eligibleFeePlans()` (`hooks/eligiblePlans.ts`, unit-tested) filters the
+plan picker to academy-wide plans and plans scoped to the selected batch;
+`planNoLongerFits()` clears the selection when the batch changes. A plan
+scoped to another batch would bill at that batch's rate, so it is never
+offered. The rule is enforced in the form, not the database: `students`
+is inserted before `student_batches` in `createStudent()`, so a database
+check would fire too early.
+
 ## Edge cases
 
 - **Blank optional fields** (DOB, level, medical notes) are stored as

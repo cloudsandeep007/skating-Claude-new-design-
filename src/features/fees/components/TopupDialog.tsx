@@ -126,7 +126,11 @@ export function TopupDialog({ target, onClose }: TopupDialogProps) {
               <DialogTitle>Top up classes — {target.studentName}</DialogTitle>
               <DialogDescription>
                 {status?.rate != null
-                  ? `₹${status.rate} per class · ${status.billingCycle} plan${
+                  ? `₹${status.rate} per class · ${status.planName ?? 'plan'}${
+                      status.planBatchName && status.planBatchName !== status.planName
+                        ? ` (${status.planBatchName} batch)`
+                        : ''
+                    } · ${status.billingCycle}${
                       status.termEnd
                         ? status.termStatus === 'expired'
                           ? ` · lapsed ${formatDate(status.termEnd)}`
